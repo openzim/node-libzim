@@ -1,0 +1,42 @@
+{
+  "name": "zim",
+  "version": "0.0.1+git",
+  "description": "Bindings to libzim (read/write OpenZIM files)",
+  "main": "lib/index",
+  "scripts": {
+    "test": "mocha",
+    "install": "node-pre-gyp install --fallback-to-build",
+    "gh-publish": "scripts/publish.js",
+    "clean": "rm -rf node_modules lib/binding build"
+  },
+  "binary": {
+    "module_name": "zim",
+    "module_path": "./lib/binding/{node_abi}-{platform}-{arch}",
+    "host": "https://github.com",
+    "remote_path": "/cscott/node-zim/releases/download/{version}/"
+  },
+  "dependencies": {
+    "nan": "~2.1.0",
+    "node-pre-gyp": "~0.6.11"
+  },
+  "bundleDependencies": [
+    "node-pre-gyp"
+  ],
+  "devDependencies": {
+    "mocha": "~2.3.3",
+    "should": "~7.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "cscott/node-zim"
+  },
+  "keywords": [
+    "zim",
+    "openzim"
+  ],
+  "author": "C. Scott Ananian <cscott@cscott.net>",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/cscott/node-zim/issues"
+  }
+}
