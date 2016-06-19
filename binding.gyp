@@ -20,7 +20,7 @@
         ]
       ],
       'sources': [
-        'src/node_zim.cc',
+        'src/node_libzim.cc',
       ],
     },
     {

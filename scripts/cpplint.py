@@ -52,7 +52,7 @@ import string
 import sys
 import unicodedata
 
-_PROJECT_NAME="node-zim" # CSA hack
+_PROJECT_NAME="node-libzim" # CSA hack
 
 _USAGE = """
 Syntax: cpplint.py [--verbose=#] [--output=vs7] [--filter=-x,+y,...]

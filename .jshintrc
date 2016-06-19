@@ -1,4 +1,5 @@
 {
         "predef": [ "describe", "specify", "it" ],
-        "node": true
+        "node": true,
+        "esversion": 6
 }

@@ -1,8 +1,8 @@
 // Helpful macros for this project.
 
 // Copyright (c) 2016 C. Scott Ananian <cscott@cscott.net>
-#ifndef NODE_ZIM_MACROS_H_
-#define NODE_ZIM_MACROS_H_
+#ifndef NODE_LIBZIM_MACROS_H_
+#define NODE_LIBZIM_MACROS_H_
 
 /** v8/nan helpers **/
 
@@ -23,4 +23,4 @@
   Nan::Utf8String var(info[i])
 
 
-#endif  // NODE_ZIM_MACROS_H_
+#endif  // NODE_LIBZIM_MACROS_H_
