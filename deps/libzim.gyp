@@ -97,7 +97,7 @@
         'build'
       ],
       'direct_dependent_settings': {
-        'include_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/include' ],
+        'include_dirs': [ './openzim/zimlib/include' ],
       },
       'link_settings': {
         'libraries': [

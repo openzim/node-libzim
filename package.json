@@ -4,7 +4,18 @@
   "description": "Bindings to libzim (read/write OpenZIM files)",
   "main": "lib/index",
   "scripts": {
-    "test": "mocha",
+    "configure": "node-pre-gyp configure",
+    "build": "node-pre-gyp build",
+    "debug-build": "node-pre-gyp --debug build",
+    "rebuild": "node-pre-gyp rebuild",
+    "debug-rebuild": "node-pre-gyp --debug rebuild",
+    "mocha": "mocha",
+    "jslint": "jshint . && jscs .",
+    "jscs-fix": "jscs --fix .",
+    "cpplint": "scripts/cpplint.py --root=src src/*.h src/*.cc",
+    "lint": "npm run jslint && npm run cpplint",
+    "test": "npm run lint && npm run mocha",
+    "valgrind": "valgrind --trace-children=yes --leak-check=full node --gc_interval=1 node_modules/.bin/_mocha --timeout 0",
     "install": "node-pre-gyp install --fallback-to-build",
     "gh-publish": "scripts/publish.js",
     "clean": "rm -rf node_modules lib/binding build"
@@ -16,15 +27,17 @@
     "remote_path": "/cscott/node-zim/releases/download/{version}/"
   },
   "dependencies": {
-    "nan": "~2.1.0",
-    "node-pre-gyp": "~0.6.11"
+    "nan": "^2.1.0",
+    "node-pre-gyp": "^0.6.28"
   },
   "bundleDependencies": [
     "node-pre-gyp"
   ],
   "devDependencies": {
-    "mocha": "~2.3.3",
-    "should": "~7.1.0"
+    "jscs": "^3.0.4",
+    "jshint": "^2.9.2",
+    "mocha": "^2.5.3",
+    "should": "^9.0.2"
   },
   "repository": {
     "type": "git",
