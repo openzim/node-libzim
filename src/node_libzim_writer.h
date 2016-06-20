@@ -1,16 +1,18 @@
 // Wrappers for zim::writer classes.
 
 // Copyright (c) 2016 C. Scott Ananian <cscott@cscott.net>
-#ifndef NODE_LIBZIM_WRITER_H_
-#define NODE_LIBZIM_WRITER_H_
+#ifndef NODE_LIBZIM_NODE_LIBZIM_WRITER_H_
+#define NODE_LIBZIM_NODE_LIBZIM_WRITER_H_
 
 #include "nan.h"
 
 #include <zim/writer/articlesource.h>
 #include <zim/writer/zimcreator.h>
 
+#include <unordered_map>
 #include <string>
-#include "./macros.h"
+
+#include "src/macros.h"
 
 namespace node_libzim {
 namespace writer {
@@ -77,7 +79,8 @@ class CategoryProxy : public zim::writer::Category {
 
 class ZimCreatorProxy : public zim::writer::ZimCreator {
  public:
-  virtual void create(const std::string &fname, zim::writer::ArticleSource& src);
+  virtual void create(const std::string &fname,
+                      zim::writer::ArticleSource* src);
   virtual unsigned getMinChunkSize();
   virtual void setMinChunkSize(int s);
 
@@ -133,7 +136,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
     };                                                                  \
     return scope.Escape(constructor()->NewInstance(2, argv));           \
   }                                                                     \
-  static std::unordered_map<const WrappedType*,ProxyType*> proxyMap;    \
+  static std::unordered_map<const WrappedType*, ProxyType*> proxyMap;   \
  private:                                                               \
   explicit Wrapper(WrappedType *field, bool owned) :                    \
     field ## _(field), owned_(owned) { }                                \
@@ -146,7 +149,8 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
   WrappedType *field ## _;                                              \
   bool owned_;                                                          \
                                                                         \
-  static inline WrappedType *getWrappedField(const Nan::FunctionCallbackInfo<v8::Value> &info) { \
+  static inline WrappedType *                                           \
+  getWrappedField(const Nan::FunctionCallbackInfo<v8::Value> &info) {   \
     Wrapper *obj = Nan::ObjectWrap::Unwrap<Wrapper>(info.Holder());     \
     return obj->field ## _;                                             \
   }                                                                     \
@@ -192,7 +196,8 @@ class ArticleWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE(getRedirectAid);
   WRAPPER_METHOD_DECLARE(getParameter);
   WRAPPER_METHOD_DECLARE(getNextCategory);
-  WRAPPER_DEFINE(ArticleWrap, zim::writer::Article, ArticleProxy, article)
+  WRAPPER_DEFINE(ArticleWrap, zim::writer::Article,
+                 ArticleProxy, article)
 };
 
 class ArticleSourceWrap : public Nan::ObjectWrap {
@@ -215,7 +220,8 @@ class ArticleSourceWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE(getMainPage);
   WRAPPER_METHOD_DECLARE(getLayoutPage);
   WRAPPER_METHOD_DECLARE(getCategory);
-  WRAPPER_DEFINE(ArticleSourceWrap, zim::writer::ArticleSource, ArticleSourceProxy, articleSource)
+  WRAPPER_DEFINE(ArticleSourceWrap, zim::writer::ArticleSource,
+                 ArticleSourceProxy, articleSource)
 };
 
 class CategoryWrap : public Nan::ObjectWrap {
@@ -230,7 +236,8 @@ class CategoryWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE(getData);
   WRAPPER_METHOD_DECLARE(getUrl);
   WRAPPER_METHOD_DECLARE(getTitle);
-  WRAPPER_DEFINE(CategoryWrap, zim::writer::Category, CategoryProxy, category)
+  WRAPPER_DEFINE(CategoryWrap, zim::writer::Category,
+                 CategoryProxy, category)
 };
 
 class ZimCreatorWrap : public Nan::ObjectWrap {
@@ -245,12 +252,13 @@ class ZimCreatorWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE(create);
   WRAPPER_METHOD_DECLARE(getMinChunkSize);
   WRAPPER_METHOD_DECLARE(setMinChunkSize);
-  WRAPPER_DEFINE(ZimCreatorWrap, zim::writer::ZimCreator, ZimCreatorProxy, zimCreator)
+  WRAPPER_DEFINE(ZimCreatorWrap, zim::writer::ZimCreator,
+                 ZimCreatorProxy, zimCreator)
 };
 
-NAN_MODULE_INIT(WriterInit);
+NAN_MODULE_INIT(Init);
 
-}
-}
+}  // namespace writer
+}  // namespace node_libzim
 
-#endif  // NODE_LIBZIM_WRITER_H_
+#endif  // NODE_LIBZIM_NODE_LIBZIM_WRITER_H_

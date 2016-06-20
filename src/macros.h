@@ -4,6 +4,8 @@
 #ifndef NODE_LIBZIM_MACROS_H_
 #define NODE_LIBZIM_MACROS_H_
 
+#include <string>
+
 #define NLZ_ERRORX(msg, ...) \
   fprintf(stderr, msg " %s\n", __VA_ARGS__, __func__)
 #define NLZ_ERROR(msg) \
@@ -52,9 +54,12 @@
     }                                                                          \
     int64_t var = Nan::To<int64_t>(info[i]).FromMaybe(0);
 
-static NAN_INLINE v8::Local<v8::String> CAST_STRING(v8::Local<v8::Value> v, v8::Local<v8::String> defaultValue) {
+static NAN_INLINE v8::Local<v8::String>
+CAST_STRING(v8::Local<v8::Value> v, v8::Local<v8::String> defaultValue) {
     Nan::EscapableHandleScope scope;
-    return scope.Escape(v->IsString() ? Nan::To<v8::String>(v).FromMaybe(defaultValue) : defaultValue);
+    return scope.Escape(v->IsString() ?
+                        Nan::To<v8::String>(v).FromMaybe(defaultValue) :
+                        defaultValue);
 }
 
 #endif  // NODE_LIBZIM_MACROS_H_

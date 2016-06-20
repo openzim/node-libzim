@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'zim',
-      "include_dirs": ["<!(node -e \"require('nan')\")"],
+      "include_dirs": ["<!(node -e \"require('nan')\")","."],
       'conditions': [
         ['libzim != "internal"', {
             'libraries': [ "<!@(pkg-config --ldflags libzim)" ],
@@ -21,6 +21,8 @@
       ],
       'sources': [
         'src/node_libzim.cc',
+        'src/node_libzim_writer.cc',
+        'src/node_libzim_writer.h',
       ],
     },
     {
