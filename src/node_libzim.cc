@@ -11,6 +11,7 @@
 #include <zim/writer/zimcreator.h>
 #include <zim/blob.h>
 
+#include <unordered_map>
 #include <string>
 
 // #define NODE_LIBZIM_TRACE
@@ -23,27 +24,32 @@ namespace writer {
 
 #define PROXY_GETFUNC(func, name)                                       \
   v8::Local<v8::Value> func ## val =                                    \
-    (proxy().IsEmpty() ? Nan::MaybeLocal<v8::Value>() :                 \
-     Nan::Get(Nan::New(proxy()), NEW_STR(name)))                        \
+    (proxy.IsEmpty() ? Nan::MaybeLocal<v8::Value>() :                   \
+     Nan::Get(Nan::New(proxy), NEW_STR(name)))                          \
     .FromMaybe<v8::Value>(Nan::Undefined());                            \
   Nan::MaybeLocal<v8::Object> func = func ## val->IsUndefined() ?       \
     Nan::MaybeLocal<v8::Object>() : Nan::To<v8::Object>(func ## val);
 
-#define PROXY_DEFAULT_CONSTRUCTOR(Proxy)                                \
+#define PROXY_DEFAULT_CONSTRUCTOR(Proxy, Wrapper)                       \
   Proxy::Proxy(v8::Local<v8::Object> p,                                 \
-               const Nan::FunctionCallbackInfo<v8::Value> *info) {      \
+               const Nan::FunctionCallbackInfo<v8::Value> *info) : proxy() { \
     /* default no-args superclass constructor */                        \
-    proxy().Reset(p);                                                   \
+    proxy.Reset(p);                                                     \
+    Wrapper::proxyMap[this] = this;                                     \
   }
+#define PROXY_DEFAULT_DESTRUCTOR(Proxy, Wrapper)                        \
+  Proxy::~Proxy() {                                                     \
+    if (!proxy.IsEmpty()) {                                             \
+      proxy.ClearWeak();                                                \
+      proxy.Reset();                                                    \
+      Wrapper::proxyMap.erase(this);                                    \
+    }                                                                   \
+  }
+
 #define PROXY_FROMJS(Proxy, Wrapper, WrappedType)                       \
 WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
                            const Nan::FunctionCallbackInfo<v8::Value> *info, \
                            bool owned) {                                \
-  /* Is this a wrapper? */                                              \
-  WrappedType *a = Wrapper::FromJS(p);                                  \
-  if (a) {                                                              \
-    return a;                                                           \
-  }                                                                     \
   Proxy *ap;                                                            \
   /* Does this object already have a proxy? */                          \
   if (p->IsObject()) {                                                  \
@@ -70,7 +76,7 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
   PROXY_GETFUNC(func, name);                                            \
   if (!func.IsEmpty()) {                                                \
     Nan::MaybeLocal<v8::Value> result =                                 \
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL); \
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL); \
     if (!result.IsEmpty()) {                                            \
       /* Convert JavaScript value to C++ string. */                     \
       Nan::Utf8String s(result.ToLocalChecked());                       \
@@ -82,7 +88,7 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
   PROXY_GETFUNC(func, name);                                            \
   if (!func.IsEmpty()) {                                                \
     Nan::MaybeLocal<v8::Value> result =                                 \
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL); \
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL); \
     if (!result.IsEmpty()) {                                            \
       return Nan::To<bool>(result.ToLocalChecked()).FromMaybe(false);   \
     }                                                                   \
@@ -90,7 +96,8 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
 
 // ArticleProxy
 
-PROXY_DEFAULT_CONSTRUCTOR(ArticleProxy)
+PROXY_DEFAULT_CONSTRUCTOR(ArticleProxy, ArticleWrap)
+PROXY_DEFAULT_DESTRUCTOR(ArticleProxy, ArticleWrap)
 PROXY_FROMJS(ArticleProxy, ArticleWrap, zim::writer::Article)
 
 std::string ArticleProxy::getAid() const {
@@ -102,7 +109,7 @@ char ArticleProxy::getNamespace() const {
   PROXY_GETFUNC(func, "getNamespace");
   if (!func.IsEmpty()) {
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL);
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       Nan::Utf8String s(result.ToLocalChecked());
       return s.length() ? **s : '\0';
@@ -125,7 +132,7 @@ zim::size_type ArticleProxy::getVersion() const {
   PROXY_GETFUNC(func, "getVersion");
   if (!func.IsEmpty()) {
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL);
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       return (zim::size_type)
         Nan::To<int64_t>(result.ToLocalChecked()).FromMaybe(0);
@@ -169,7 +176,8 @@ std::string ArticleProxy::getNextCategory() {
 
 // ArticleSourceProxy
 
-PROXY_DEFAULT_CONSTRUCTOR(ArticleSourceProxy)
+PROXY_DEFAULT_CONSTRUCTOR(ArticleSourceProxy, ArticleSourceWrap)
+PROXY_DEFAULT_DESTRUCTOR(ArticleSourceProxy, ArticleSourceWrap)
 PROXY_FROMJS(ArticleSourceProxy, ArticleSourceWrap, zim::writer::ArticleSource)
 
 void ArticleSourceProxy::setFilename(const std::string& fname) {
@@ -178,7 +186,7 @@ void ArticleSourceProxy::setFilename(const std::string& fname) {
     const int argc = 1;
     v8::Local<v8::Value> argv[argc] = { NEW_STR(fname) };
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()),
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
                           argc, argv);
     if (!result.IsEmpty()) {
       return; // handled by JavaScript
@@ -192,7 +200,7 @@ const zim::writer::Article* ArticleSourceProxy::getNextArticle() {
   PROXY_GETFUNC(func, "getNextArticle");
   if (!func.IsEmpty()) {
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL);
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
       return ArticleProxy::FromJS(result.ToLocalChecked(), NULL, false);
@@ -208,7 +216,7 @@ zim::Blob ArticleSourceProxy::getData(const std::string& aid) {
     const int argc = 1;
     v8::Local<v8::Value> argv[argc] = { NEW_STR(aid) };
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()),
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
                           argc, argv);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
@@ -222,7 +230,7 @@ zim::Uuid ArticleSourceProxy::getUuid() {
   PROXY_GETFUNC(func, "getUuid");
   if (!func.IsEmpty()) {
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL);
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
       //XXX
@@ -244,7 +252,7 @@ zim::writer::Category* ArticleSourceProxy::getCategory(const std::string& cid) {
     const int argc = 1;
     v8::Local<v8::Value> argv[argc] = { NEW_STR(cid) };
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()),
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
                           argc, argv);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
@@ -256,14 +264,15 @@ zim::writer::Category* ArticleSourceProxy::getCategory(const std::string& cid) {
 
 // CategoryProxy
 
-PROXY_DEFAULT_CONSTRUCTOR(CategoryProxy)
+PROXY_DEFAULT_CONSTRUCTOR(CategoryProxy, CategoryWrap)
+PROXY_DEFAULT_DESTRUCTOR(CategoryProxy, CategoryWrap)
 PROXY_FROMJS(CategoryProxy, CategoryWrap, zim::writer::Category)
 
 zim::Blob CategoryProxy::getData() {
   PROXY_GETFUNC(func, "getData");
   if (!func.IsEmpty()) {
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL);
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
       //XXX
@@ -284,13 +293,16 @@ std::string CategoryProxy::getTitle() const {
 }
 
 // ZimCreatorProxy
-PROXY_FROMJS(ZimCreatorProxy, ZimCreatorWrap, zim::writer::ZimCreator)
 
 ZimCreatorProxy::ZimCreatorProxy(v8::Local<v8::Object> p,
-                                 const Nan::FunctionCallbackInfo<v8::Value> *info) {
+                                 const Nan::FunctionCallbackInfo<v8::Value> *info) : proxy() {
   /* XXX Invoke alternate superclass constructor */
-  proxy().Reset(p);
+  proxy.Reset(p);
+  ZimCreatorWrap::proxyMap[this] = this;                                     \
 }
+PROXY_DEFAULT_DESTRUCTOR(ZimCreatorProxy, ZimCreatorWrap)
+PROXY_FROMJS(ZimCreatorProxy, ZimCreatorWrap, zim::writer::ZimCreator)
+
 void ZimCreatorProxy::create(const std::string &fname,
                              zim::writer::ArticleSource& src) {
   PROXY_GETFUNC(func, "create");
@@ -301,7 +313,7 @@ void ZimCreatorProxy::create(const std::string &fname,
       ArticleSourceWrap::FromC(&src, false)
     };
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()),
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
                           argc, argv);
     if (!result.IsEmpty()) {
       return;
@@ -313,7 +325,7 @@ unsigned ZimCreatorProxy::getMinChunkSize() {
   PROXY_GETFUNC(func, "getMinChunkSize");
   if (!func.IsEmpty()) {
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()), 0, NULL);
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       return Nan::To<uint32_t>(result.ToLocalChecked()).FromMaybe(0);
     }
@@ -326,7 +338,7 @@ void ZimCreatorProxy::setMinChunkSize(int s) {
     const int argc = 1;
     v8::Local<v8::Value> argv[argc] = { Nan::New(s) };
     Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy()),
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
                           argc, argv);
     if (!result.IsEmpty()) {
       return;
@@ -345,6 +357,9 @@ void ZimCreatorProxy::setMinChunkSize(int s) {
   info.GetReturnValue().Set(Nan::New(r))
 
 // ArticleWrap
+
+std::unordered_map<const zim::writer::Article*,ArticleProxy*>
+  ArticleWrap::proxyMap;
 
 NAN_METHOD(ArticleWrap::getAid) { WRAPPER_GET_STRING(getAid); }
 NAN_METHOD(ArticleWrap::getNamespace) {
@@ -369,6 +384,9 @@ NAN_METHOD(ArticleWrap::getParameter) { WRAPPER_GET_STRING(getParameter); }
 NAN_METHOD(ArticleWrap::getNextCategory) { WRAPPER_GET_STRING(getNextCategory); }
 
 // ArticleSourceWrap
+
+std::unordered_map<const zim::writer::ArticleSource*,ArticleSourceProxy*>
+  ArticleSourceWrap::proxyMap;
 
 NAN_METHOD(ArticleSourceWrap::setFilename) {
   REQUIRE_ARGUMENT_STD_STRING(0, fname);
@@ -400,6 +418,9 @@ NAN_METHOD(ArticleSourceWrap::getCategory) {
 
 // CategoryWrap
 
+std::unordered_map<const zim::writer::Category*,CategoryProxy*>
+  CategoryWrap::proxyMap;
+
 NAN_METHOD(CategoryWrap::getData) {
   zim::Blob b = getWrappedField(info)->getData();
   // XXX convert to wrapped blob
@@ -408,6 +429,9 @@ NAN_METHOD(CategoryWrap::getUrl) { WRAPPER_GET_STRING(getUrl); }
 NAN_METHOD(CategoryWrap::getTitle) { WRAPPER_GET_STRING(getTitle); }
 
 // ZimCreatorWrap
+
+std::unordered_map<const zim::writer::ZimCreator*,ZimCreatorProxy*>
+  ZimCreatorWrap::proxyMap;
 
 NAN_METHOD(ZimCreatorWrap::create) {
   REQUIRE_ARGUMENT_STD_STRING(0, fname);
@@ -429,15 +453,19 @@ NAN_METHOD(ZimCreatorWrap::setMinChunkSize) {
 
 
 // Tell node about our module!
+NAN_MODULE_INIT(WriterInit) {
+  ArticleWrap::Init(target);
+  ArticleSourceWrap::Init(target);
+  CategoryWrap::Init(target);
+  ZimCreatorWrap::Init(target);
+}
+
 NAN_MODULE_INIT(RegisterModule) {
   Nan::HandleScope scope;
 
   v8::Local<v8::Object> writer = Nan::New<v8::Object>();
   Nan::Set(target, NEW_STR("writer"), writer);
-  ArticleWrap::Init(writer);
-  ArticleSourceWrap::Init(writer);
-  CategoryWrap::Init(writer);
-  ZimCreatorWrap::Init(writer);
+  WriterInit(writer);
 }
 
 NODE_MODULE(zim, RegisterModule)

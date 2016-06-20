@@ -19,21 +19,13 @@ namespace writer {
   static WrappedType *FromJS(v8::Local<v8::Value> p,                    \
                              const Nan::FunctionCallbackInfo<v8::Value> *info, \
                              bool owned);                               \
-  virtual ~Proxy() {                                                    \
-    if (!proxy().IsEmpty()) {                                           \
-      proxy().ClearWeak();                                              \
-      proxy().Reset();                                                  \
-    }                                                                   \
-  }                                                                     \
+  virtual ~Proxy();                                                     \
+  Nan::Persistent<v8::Object> proxy;                                    \
  private:                                                               \
   explicit Proxy(v8::Local<v8::Object> p,                               \
                  const Nan::FunctionCallbackInfo<v8::Value> *info);     \
-  static inline Nan::Persistent<v8::Object> & proxy() {                 \
-    static Nan::Persistent<v8::Object> my_proxy;                        \
-    return my_proxy;                                                    \
-  }                                                                     \
   void MakeWeak() {                                                     \
-    proxy().SetWeak(this, WeakCallback, Nan::WeakCallbackType::kParameter); \
+    proxy.SetWeak(this, WeakCallback, Nan::WeakCallbackType::kParameter); \
   }                                                                     \
   static void WeakCallback(const Nan::WeakCallbackInfo<Proxy> &info) {  \
     Proxy *pp = info.GetParameter();                                    \
@@ -112,16 +104,18 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
       return Nan::ThrowTypeError("You must use `new` with this constructor."); \
     }                                                                   \
     Wrapper *obj;                                                       \
+    WrappedType *c;                                                     \
     if (info[0]->IsExternal()) {                                        \
-      WrappedType *c = reinterpret_cast<WrappedType*>                   \
+      c = reinterpret_cast<WrappedType*>                                \
         (v8::Local<v8::External>::Cast(info[0])->Value());              \
       obj = new Wrapper(c, info.Length() > 1 ? info[1]->IsTrue() : false); \
     } else {                                                            \
-      WrappedType *c =                                                  \
+      c =                                                               \
         ProxyType::FromJS(Nan::New<v8::Object>(), &info, true);         \
-      obj = new Wrapper(c, true);                                      \
+      obj = new Wrapper(c, true);                                       \
     }                                                                   \
-    obj->Wrap(info.This());                                             \
+    obj->Wrap(info.Holder());                                           \
+    /* Return `this`. */                                                \
     info.GetReturnValue().Set(info.This());                             \
   }                                                                     \
   static v8::Local<v8::Value> FromC(const WrappedType *o, bool owned) { \
@@ -129,20 +123,17 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
     if (!o) {                                                           \
       return scope.Escape(Nan::Null());                                 \
     }                                                                   \
+    /* Instance of ProxyType don't need to be re-wrapped. */            \
+    if (proxyMap.count(o)) {                                            \
+      return scope.Escape(Nan::New(proxyMap.at(o)->proxy));             \
+    }                                                                   \
     v8::Local<v8::Value> argv[] = {                                     \
-      Nan::New<v8::External>(const_cast<WrappedType*>(o)),        \
+      Nan::New<v8::External>(const_cast<WrappedType*>(o)),              \
       Nan::New(owned)                                                   \
     };                                                                  \
     return scope.Escape(constructor()->NewInstance(2, argv));           \
   }                                                                     \
-  static WrappedType *FromJS(v8::Local<v8::Value> v) {                  \
-    if (!Nan::New(cons_template())->HasInstance(v)) {                   \
-      return NULL;                                                      \
-    }                                                                   \
-    Wrapper *obj = Nan::ObjectWrap::Unwrap<Wrapper>                     \
-      (Nan::To<v8::Object>(v).ToLocalChecked());                        \
-    return obj->field ## _;                                             \
-  }                                                                     \
+  static std::unordered_map<const WrappedType*,ProxyType*> proxyMap;    \
  private:                                                               \
   explicit Wrapper(WrappedType *field, bool owned) :                    \
     field ## _(field), owned_(owned) { }                                \
@@ -256,6 +247,8 @@ class ZimCreatorWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE(setMinChunkSize);
   WRAPPER_DEFINE(ZimCreatorWrap, zim::writer::ZimCreator, ZimCreatorProxy, zimCreator)
 };
+
+NAN_MODULE_INIT(WriterInit);
 
 }
 }
