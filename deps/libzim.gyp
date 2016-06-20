@@ -65,8 +65,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/',
                 #'CFLAGS=-fPIC', 'CXXFLAGS=-fPIC', # required on x64
                 '--enable-static', '--disable-shared',
-                '<@(configure_options)',
-                '--with-data-packaging=static'
+                '<@(configure_options)'
           ]
         }
       ]

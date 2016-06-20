@@ -5,6 +5,7 @@ describe('Example from the README', function() {
   var zim = require('../');
   class TestArticle extends zim.writer.Article {
     constructor(id) {
+      super();
       this._id = id;
       this._data = 'this is article ' + id;
     }
@@ -22,6 +23,7 @@ describe('Example from the README', function() {
 
   class TestArticleSource extends zim.writer.ArticleSource {
     constructor(max) {
+      super();
       var maxx = (max === undefined) ? 16 : max;
       this._next = 0;
       this._articles = [];
