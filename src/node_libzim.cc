@@ -6,14 +6,17 @@
 #include <v8.h>
 #include "nan.h"
 
-#include "src/node_libzim_writer.h"
+#include "src/blob.h"
 #include "src/macros.h"
+#include "src/writer.h"
 
 namespace node_libzim {
 
 // Tell node about our module!
 NAN_MODULE_INIT(RegisterModule) {
   Nan::HandleScope scope;
+
+  BlobWrap::Init(target);
 
   v8::Local<v8::Object> writer = Nan::New<v8::Object>();
   Nan::Set(target, NEW_STR("writer"), writer);

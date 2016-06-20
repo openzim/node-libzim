@@ -1,8 +1,8 @@
 // Wrappers for zim::writer classes.
 
 // Copyright (c) 2016 C. Scott Ananian <cscott@cscott.net>
-#ifndef NODE_LIBZIM_NODE_LIBZIM_WRITER_H_
-#define NODE_LIBZIM_NODE_LIBZIM_WRITER_H_
+#ifndef NODE_LIBZIM_WRITER_H_
+#define NODE_LIBZIM_WRITER_H_
 
 #include "nan.h"
 
@@ -261,4 +261,4 @@ NAN_MODULE_INIT(Init);
 }  // namespace writer
 }  // namespace node_libzim
 
-#endif  // NODE_LIBZIM_NODE_LIBZIM_WRITER_H_
+#endif  // NODE_LIBZIM_WRITER_H_

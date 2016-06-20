@@ -1,4 +1,4 @@
-// Binding to zimlib
+// Binding to zim::writer
 
 // Copyright (c) 2016 C. Scott Ananian <cscott@cscott.net>
 
@@ -16,8 +16,9 @@
 
 // #define NODE_LIBZIM_TRACE
 
-#include "src/node_libzim_writer.h"
+#include "src/blob.h"
 #include "src/macros.h"
+#include "src/writer.h"
 
 namespace node_libzim {
 namespace writer {
@@ -220,7 +221,7 @@ zim::Blob ArticleSourceProxy::getData(const std::string& aid) {
                           argc, argv);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
-      // XXX
+      return BlobWrap::FromJS(result.ToLocalChecked());
     }
   }
   Nan::ThrowTypeError("no implementation for getData");
@@ -275,7 +276,7 @@ zim::Blob CategoryProxy::getData() {
       Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
-      // XXX
+      return BlobWrap::FromJS(result.ToLocalChecked());
     }
   }
   Nan::ThrowTypeError("no implementation for getData");
@@ -405,7 +406,7 @@ NAN_METHOD(ArticleSourceWrap::getNextArticle) {
 NAN_METHOD(ArticleSourceWrap::getData) {
   REQUIRE_ARGUMENT_STD_STRING(0, aid);
   const zim::Blob b = getWrappedField(info)->getData(aid);
-  // XXX convert to wrapped blob
+  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
 }
 NAN_METHOD(ArticleSourceWrap::getUuid) {
   zim::Uuid uuid = getWrappedField(info)->getUuid();
@@ -431,7 +432,7 @@ std::unordered_map<const zim::writer::Category*, CategoryProxy*>
 
 NAN_METHOD(CategoryWrap::getData) {
   zim::Blob b = getWrappedField(info)->getData();
-  // XXX convert to wrapped blob
+  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
 }
 NAN_METHOD(CategoryWrap::getUrl) { WRAPPER_GET_STRING(getUrl); }
 NAN_METHOD(CategoryWrap::getTitle) { WRAPPER_GET_STRING(getTitle); }

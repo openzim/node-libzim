@@ -7,7 +7,7 @@ describe('Example from the README', function() {
     constructor(id) {
       super();
       this._id = id;
-      this._data = 'this is article ' + id;
+      this._data = new Buffer('this is article ' + id);
     }
     getAid() { return this._id; }
     getNamespace() { return 'A'; }
@@ -17,7 +17,7 @@ describe('Example from the README', function() {
     getMimeType() { return 'text/plain'; }
     getRedirectAid() { return ''; }
     data() {
-      return new zim.Blob(new Buffer(this._data));
+      return new zim.Blob(this._data);
     }
   }
 

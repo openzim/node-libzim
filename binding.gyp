@@ -20,9 +20,11 @@
         ]
       ],
       'sources': [
+        'src/blob.h',
+        'src/blob.cc',
+        'src/writer.h',
+        'src/writer.cc',
         'src/node_libzim.cc',
-        'src/node_libzim_writer.cc',
-        'src/node_libzim_writer.h',
       ],
     },
     {
