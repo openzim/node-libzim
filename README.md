@@ -31,15 +31,18 @@ class TestArticle extends zim.writer.Article {
 }
 
 class TestArticleSource extends zim.writer.ArticleSource {
-  constructor(max = 16) {
+  constructor(max = 16, szfunc) {
     super();
     this._next = 0;
     this._articles = [];
+    this.getCurrentSize = szfunc;
     for (var n = 0; n < max ; n++) {
       this._articles[n] = new TestArticle("" + (n+1));
     }
   }
   getNextArticle() {
+    console.log('After ' + this._next + ' articles:',
+                this.getCurrentSize(), 'bytes');
     return this._articles[this._next++];
   }
   getData(aid) {
@@ -48,7 +51,7 @@ class TestArticleSource extends zim.writer.ArticleSource {
 }
 
 c = new zim.writer.ZimCreator();
-src = new TestArticleSource();
+src = new TestArticleSource(8, () => c.getCurrentSize());
 c.create("foo.zim", src);
 ```
 

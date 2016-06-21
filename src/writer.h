@@ -6,6 +6,7 @@
 
 #include "nan.h"
 
+#include <zim/zim.h>
 #include <zim/writer/articlesource.h>
 #include <zim/writer/zimcreator.h>
 
@@ -83,6 +84,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
                       zim::writer::ArticleSource* src);
   virtual unsigned getMinChunkSize();
   virtual void setMinChunkSize(int s);
+  virtual zim::offset_type getCurrentSize();
 
   DEFINE_PROXY(ZimCreatorProxy, zim::writer::ZimCreator)
 };
@@ -246,11 +248,13 @@ class ZimCreatorWrap : public Nan::ObjectWrap {
     WRAPPER_METHOD_INIT(tpl, create);
     WRAPPER_METHOD_INIT(tpl, getMinChunkSize);
     WRAPPER_METHOD_INIT(tpl, setMinChunkSize);
+    WRAPPER_METHOD_INIT(tpl, getCurrentSize);
     WRAPPER_INIT_FINISH(tpl);
   }
   WRAPPER_METHOD_DECLARE(create);
   WRAPPER_METHOD_DECLARE(getMinChunkSize);
   WRAPPER_METHOD_DECLARE(setMinChunkSize);
+  WRAPPER_METHOD_DECLARE(getCurrentSize);
   WRAPPER_DEFINE(ZimCreatorWrap, zim::writer::ZimCreator,
                  ZimCreatorProxy, zimCreator)
 };

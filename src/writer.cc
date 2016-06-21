@@ -350,6 +350,18 @@ void ZimCreatorProxy::setMinChunkSize(int s) {
   }
   return this->zim::writer::ZimCreator::setMinChunkSize(s);
 }
+zim::offset_type ZimCreatorProxy::getCurrentSize() {
+  PROXY_GETFUNC(func, "getCurrentSize");
+  if (!func.IsEmpty()) {
+    Nan::MaybeLocal<v8::Value> result =
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
+    if (!result.IsEmpty()) {
+      return (zim::offset_type)
+        Nan::To<int64_t>(result.ToLocalChecked()).FromMaybe(0);
+    }
+  }
+  return this->zim::writer::ZimCreator::getCurrentSize();
+}
 
 // WRAPPERS
 
@@ -459,6 +471,11 @@ NAN_METHOD(ZimCreatorWrap::setMinChunkSize) {
   REQUIRE_ARGUMENT_INTEGER(0, size);
   getWrappedField(info)->setMinChunkSize(static_cast<int>(size));
   info.GetReturnValue().Set(Nan::Undefined());
+}
+NAN_METHOD(ZimCreatorWrap::getCurrentSize) {
+  zim::offset_type size = getWrappedField(info)->getCurrentSize();
+  // Note that `double` represents integers exactly up to 2^56
+  info.GetReturnValue().Set(Nan::New(static_cast<double>(size)));
 }
 
 NAN_MODULE_INIT(Init) {
