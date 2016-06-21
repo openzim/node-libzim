@@ -1,5 +1,6 @@
 // Example from the README.
 'use strict';
+var path = require('path');
 
 describe('Example from the README', function() {
   var zim = require('../');
@@ -37,11 +38,16 @@ describe('Example from the README', function() {
     getData(aid) {
       return this._articles[(+aid) - 1].data();
     }
+    getUuid() {
+      var uuid = zim.Uuid.generate();
+      console.log('Generating UUID: ' + uuid);
+      return uuid;
+    }
   }
   it('should write a file named foo.zim', function() {
     var c = new zim.writer.ZimCreator();
     var src = new TestArticleSource();
-    c.create('foo.zim', src);
+    c.create(path.join(__dirname, 'foo.zim'), src);
     // XXX verify file is present.
   });
 });

@@ -21,7 +21,7 @@
       ],
       'sources': [
         'src/blob.h',
-        'src/blob.cc',
+        'src/uuid.h',
         'src/writer.h',
         'src/writer.cc',
         'src/node_libzim.cc',

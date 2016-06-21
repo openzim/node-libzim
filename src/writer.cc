@@ -18,6 +18,7 @@
 
 #include "src/blob.h"
 #include "src/macros.h"
+#include "src/uuid.h"
 #include "src/writer.h"
 
 namespace node_libzim {
@@ -234,7 +235,7 @@ zim::Uuid ArticleSourceProxy::getUuid() {
       Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
     if (!result.IsEmpty()) {
       // Convert JavaScript value to C++ object.
-      // XXX
+      return UuidWrap::FromJS(result.ToLocalChecked());
     }
   }
   return this->zim::writer::ArticleSource::getUuid();
@@ -410,7 +411,7 @@ NAN_METHOD(ArticleSourceWrap::getData) {
 }
 NAN_METHOD(ArticleSourceWrap::getUuid) {
   zim::Uuid uuid = getWrappedField(info)->getUuid();
-  // XXX convert to wrapped Uuid
+  info.GetReturnValue().Set(UuidWrap::FromC(uuid));
 }
 NAN_METHOD(ArticleSourceWrap::getMainPage) {
     WRAPPER_GET_STRING(getMainPage);

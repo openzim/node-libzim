@@ -8,6 +8,7 @@
 
 #include "src/blob.h"
 #include "src/macros.h"
+#include "src/uuid.h"
 #include "src/writer.h"
 
 namespace node_libzim {
@@ -17,6 +18,7 @@ NAN_MODULE_INIT(RegisterModule) {
   Nan::HandleScope scope;
 
   BlobWrap::Init(target);
+  UuidWrap::Init(target);
 
   v8::Local<v8::Object> writer = Nan::New<v8::Object>();
   Nan::Set(target, NEW_STR("writer"), writer);

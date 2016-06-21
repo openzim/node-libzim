@@ -21,14 +21,14 @@ class BlobWrap : public Nan::ObjectWrap {
     tpl->SetClassName(class_name);
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    SetPrototypeMethod(tpl, "data", data);
-    SetPrototypeMethod(tpl, "size", size);
+    Nan::SetPrototypeMethod(tpl, "data", data);
+    Nan::SetPrototypeMethod(tpl, "size", size);
 
     constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(target, class_name, Nan::GetFunction(tpl).ToLocalChecked());
   }
   static v8::Local<v8::Object> FromC(zim::Blob b, bool owned) {
-    Nan::EscapableHandleScope scope;                                    \
+    Nan::EscapableHandleScope scope;
     v8::Local<v8::Value> argv[] = {
       Nan::New<v8::External>(&b),
       Nan::New(owned)
