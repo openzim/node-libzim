@@ -382,7 +382,7 @@ NAN_METHOD(ArticleWrap::isRedirect) { WRAPPER_GET_BOOL(isRedirect); }
 NAN_METHOD(ArticleWrap::isLinktarget) { WRAPPER_GET_BOOL(isLinktarget); }
 NAN_METHOD(ArticleWrap::isDeleted) { WRAPPER_GET_BOOL(isDeleted); }
 NAN_METHOD(ArticleWrap::getMimeType) { WRAPPER_GET_STRING(getMimeType); }
-NAN_METHOD(ArticleWrap::shouldCompress) { WRAPPER_GET_BOOL(isRedirect); }
+NAN_METHOD(ArticleWrap::shouldCompress) { WRAPPER_GET_BOOL(shouldCompress); }
 NAN_METHOD(ArticleWrap::getRedirectAid) { WRAPPER_GET_STRING(getRedirectAid); }
 NAN_METHOD(ArticleWrap::getParameter) { WRAPPER_GET_STRING(getParameter); }
 NAN_METHOD(ArticleWrap::getNextCategory) {
