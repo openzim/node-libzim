@@ -353,9 +353,9 @@ void ZimCreatorProxy::setMinChunkSize(int s) {
 
 // WRAPPERS
 
-#define WRAPPER_GET_STRING(name)                                \
+#define WRAPPER_GET_STRING(name)                                        \
   std::string r = getWrappedField(info)->name();                        \
-  info.GetReturnValue().Set(Nan::New<v8::String>(r).FromMaybe(Nan::Undefined()))
+  info.GetReturnValue().Set(NEW_STR(r))
 #define WRAPPER_GET_BOOL(name)                                          \
   bool r = getWrappedField(info)->name();                        \
   info.GetReturnValue().Set(Nan::New(r))

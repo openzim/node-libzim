@@ -108,7 +108,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
     }                                                                   \
     Wrapper *obj;                                                       \
     WrappedType *c;                                                     \
-    if (info[0]->IsExternal()) {                                        \
+    if (info.Length() > 0 && info[0]->IsExternal()) {                   \
       c = reinterpret_cast<WrappedType*>                                \
         (v8::Local<v8::External>::Cast(info[0])->Value());              \
       obj = new Wrapper(c, info.Length() > 1 ? info[1]->IsTrue() : false); \
@@ -118,8 +118,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
       obj = new Wrapper(c, true);                                       \
     }                                                                   \
     obj->Wrap(info.Holder());                                           \
-    /* Return `this`. */                                                \
-    info.GetReturnValue().Set(info.This());                             \
+    info.GetReturnValue().Set(Nan::Undefined());                        \
   }                                                                     \
   static v8::Local<v8::Value> FromC(const WrappedType *o, bool owned) { \
     Nan::EscapableHandleScope scope;                                    \
