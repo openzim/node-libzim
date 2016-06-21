@@ -4,6 +4,10 @@ var path = require('path');
 
 describe('Example from the README', function() {
   var zim = require('../');
+
+  // Construct-only functions are not supported in old node versions.
+  if (zim._noConstruct_) { return; }
+
   class TestArticle extends zim.writer.Article {
     constructor(id) {
       super();
