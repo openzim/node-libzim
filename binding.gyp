@@ -10,9 +10,10 @@
       'conditions': [
         ['libzim != "internal"', {
             'libraries': [ "<!@(pkg-config --ldflags libzim)" ],
-            'cflags': [ "<!@(pkg-config --cppflags libzim)" ]
+            'cflags': [ "<!@(pkg-config --cppflags libzim)", '-std=c++11' ]
         },
         {
+            'cflags': [ '-std=c++11' ],
             'dependencies': [
               'deps/libzim.gyp:libzim'
             ]
