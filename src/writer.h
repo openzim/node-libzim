@@ -142,7 +142,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
     field ## _(field), owned_(owned) { }                                \
   virtual ~Wrapper() {                                                  \
     if (owned_) {                                                       \
-      ProxyType *proxy = reinterpret_cast<ProxyType *>(field ## _);     \
+      ProxyType *proxy = static_cast<ProxyType *>(field ## _);          \
       delete proxy;                                                     \
     }                                                                   \
   }                                                                     \
