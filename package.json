@@ -9,7 +9,7 @@
     "debug-build": "node-pre-gyp --debug build",
     "rebuild": "node-pre-gyp rebuild",
     "debug-rebuild": "node-pre-gyp --debug rebuild",
-    "mocha": "mocha",
+    "mocha": "mocha --harmony",
     "jslint": "jshint . && jscs .",
     "jscs-fix": "jscs --fix .",
     "cpplint": "scripts/cpplint.py --root=src src/*.h src/*.cc",
