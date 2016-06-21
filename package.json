@@ -17,6 +17,7 @@
     "test": "npm run lint && npm run mocha",
     "valgrind": "valgrind --trace-children=yes --leak-check=full node --gc_interval=1 node_modules/.bin/_mocha --timeout 0",
     "install": "node-pre-gyp install --fallback-to-build",
+    "prepublishx": "npm-package-integrity",
     "gh-publish": "scripts/publish.js",
     "clean": "rm -rf node_modules lib/binding build"
   },
@@ -37,6 +38,7 @@
     "jscs": "^3.0.4",
     "jshint": "^2.9.2",
     "mocha": "^2.5.3",
+    "npm-package-integrity": "^1.1.1",
     "should": "^9.0.2"
   },
   "repository": {
