@@ -104,7 +104,7 @@ PROXY_FROMJS(ArticleProxy, ArticleWrap, zim::writer::Article)
 
 std::string ArticleProxy::getAid() const {
   PROXY_GET_STRING("getAid");
-  Nan::ThrowTypeError("no implementation for getAid");
+  Nan::ThrowTypeError("no implementation for Article::getAid");
   return "";
 }
 char ArticleProxy::getNamespace() const {
@@ -117,17 +117,17 @@ char ArticleProxy::getNamespace() const {
       return s.length() ? **s : '\0';
     }
   }
-  Nan::ThrowTypeError("no implementation for getNamespace");
+  Nan::ThrowTypeError("no implementation for Article::getNamespace");
   return '\0';
 }
 std::string ArticleProxy::getUrl() const {
   PROXY_GET_STRING("getUrl");
-  Nan::ThrowTypeError("no implementation for getUrl");
+  Nan::ThrowTypeError("no implementation for Article::getUrl");
   return "";
 }
 std::string ArticleProxy::getTitle() const {
   PROXY_GET_STRING("getTitle");
-  Nan::ThrowTypeError("no implementation for getTitle");
+  Nan::ThrowTypeError("no implementation for Article::getTitle");
   return "";
 }
 zim::size_type ArticleProxy::getVersion() const {
@@ -156,7 +156,7 @@ bool ArticleProxy::isDeleted() const {
 }
 std::string ArticleProxy::getMimeType() const {
   PROXY_GET_STRING("getMimeType");
-  Nan::ThrowTypeError("no implementation for getMimeType");
+  Nan::ThrowTypeError("no implementation for Article::getMimeType");
   return "";
 }
 bool ArticleProxy::shouldCompress() const {
@@ -209,7 +209,7 @@ const zim::writer::Article* ArticleSourceProxy::getNextArticle() {
     }
   }
   // Throw: this method doesn't have a default superclass implementation.
-  Nan::ThrowTypeError("no implementation for getNextArticle");
+  Nan::ThrowTypeError("no implementation for ArticleSource::getNextArticle");
   return NULL;
 }
 zim::Blob ArticleSourceProxy::getData(const std::string& aid) {
@@ -225,7 +225,7 @@ zim::Blob ArticleSourceProxy::getData(const std::string& aid) {
       return BlobWrap::FromJS(result.ToLocalChecked());
     }
   }
-  Nan::ThrowTypeError("no implementation for getData");
+  Nan::ThrowTypeError("no implementation for ArticleSource::getData");
   return zim::Blob(NULL, 0);
 }
 zim::Uuid ArticleSourceProxy::getUuid() {
@@ -280,17 +280,17 @@ zim::Blob CategoryProxy::getData() {
       return BlobWrap::FromJS(result.ToLocalChecked());
     }
   }
-  Nan::ThrowTypeError("no implementation for getData");
+  Nan::ThrowTypeError("no implementation for Category::getData");
   return zim::Blob(NULL, 0);
 }
 std::string CategoryProxy::getUrl() const {
   PROXY_GET_STRING("getUrl");
-  Nan::ThrowTypeError("no implementation for getUrl");
+  Nan::ThrowTypeError("no implementation for Category::getUrl");
   return "";
 }
 std::string CategoryProxy::getTitle() const {
   PROXY_GET_STRING("getTitle");
-  Nan::ThrowTypeError("no implementation for getData");
+  Nan::ThrowTypeError("no implementation for Category::getTitle");
   return "";
 }
 
