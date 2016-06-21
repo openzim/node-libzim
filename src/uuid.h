@@ -45,7 +45,8 @@ class UuidWrap : public Nan::ObjectWrap {
       v8::Local<v8::String> hidden_field = NEW_STR("zim::UuidWrap");
       v8::Local<v8::Value> b = o->GetHiddenValue(hidden_field);
       if (!b.IsEmpty() && node::Buffer::HasInstance(b)) {
-        return zim::Uuid(node::Buffer::Data(b));
+        v8::Local<v8::Object> bo = Nan::To<v8::Object>(b).ToLocalChecked();
+        return zim::Uuid(node::Buffer::Data(bo));
       }
     }
     Nan::ThrowTypeError("Not a Uuid.");
@@ -82,7 +83,8 @@ class UuidWrap : public Nan::ObjectWrap {
         (v8::Local<v8::External>::Cast(info[0])->Value());
       u = new UuidWrap(zu);
     } else if (node::Buffer::HasInstance(info[0]) &&
-               node::Buffer::Length(info[0]) == 16) {
+               node::Buffer::Length(Nan::To<v8::Object>
+                                    (info[0]).ToLocalChecked()) == 16) {
       // Create new JS object representing uuid; we own data.
       u = new UuidWrap(Nan::To<v8::Object>(info[0]).ToLocalChecked());
     } else {

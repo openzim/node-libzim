@@ -42,7 +42,8 @@ class BlobWrap : public Nan::ObjectWrap {
       v8::Local<v8::String> hidden_field = NEW_STR("zim::BlobWrap");
       v8::Local<v8::Value> b = o->GetHiddenValue(hidden_field);
       if (!b.IsEmpty() && node::Buffer::HasInstance(b)) {
-        return zim::Blob(node::Buffer::Data(b), node::Buffer::Length(b));
+        v8::Local<v8::Object> bo = Nan::To<v8::Object>(b).ToLocalChecked();
+        return zim::Blob(node::Buffer::Data(bo), node::Buffer::Length(bo));
       }
     }
     Nan::ThrowTypeError("Not a Blob.");
