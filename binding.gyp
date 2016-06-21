@@ -9,8 +9,9 @@
       "include_dirs": ["<!(node -e \"require('nan')\")","."],
       'conditions': [
         ['libzim != "internal"', {
-            'libraries': [ "<!@(pkg-config --ldflags libzim)" ],
-            'cflags': [ "<!@(pkg-config --cppflags libzim)", '-std=c++11' ]
+            'libraries': [ "<!@(sh -c 'pkg-config --exists libzim && pkg-config --libs libzim || echo -lzim')" ],
+            'cflags': [ "<!@(sh -c 'pkg-config --exists libzim && pkg-config --cppflags libzim || true')", '-std=c++11' ],
+            'defines': [ 'EXTERNAL_LIBZIM' ],
         },
         {
             'cflags': [ '-std=c++11' ],
@@ -20,6 +21,14 @@
         }
         ]
       ],
+      'xcode_settings': {
+        'MACOSX_DEPLOYMENT_TARGET': '10.7',
+
+        'OTHER_CFLAGS': [
+          '-std=c++11',
+          '-stdlib=libc++'
+        ],
+      },
       'sources': [
         'src/blob.h',
         'src/uuid.h',
