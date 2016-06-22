@@ -25,7 +25,7 @@ class TestArticle extends zim.writer.Article {
   isRedirect() { return false; }
   getMimeType() { return "text/plain"; }
   getRedirectAid() { return ""; }
-  data() {
+  getData() {
     return new zim.Blob(this._data);
   }
 }
@@ -44,9 +44,6 @@ class TestArticleSource extends zim.writer.ArticleSource {
     console.log('After ' + this._next + ' articles:',
                 this.getCurrentSize(), 'bytes');
     return this._articles[this._next++];
-  }
-  getData(aid) {
-    return this._articles[(+aid)-1].data();
   }
 }
 

@@ -23,7 +23,7 @@ describe('Example from the README', function() {
     isRedirect() { return false; }
     getMimeType() { return 'text/plain'; }
     getRedirectAid() { return ''; }
-    data() {
+    getData() {
       return new zim.Blob(this._data);
     }
   }
@@ -43,9 +43,6 @@ describe('Example from the README', function() {
       console.log('After ' + this._next + ' articles:',
                   this.getCurrentSize(), 'bytes');
       return this._articles[this._next++];
-    }
-    getData(aid) {
-      return this._articles[(+aid) - 1].data();
     }
     getUuid() {
       var uuid = zim.Uuid.generate();

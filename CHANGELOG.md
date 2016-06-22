@@ -1,4 +1,5 @@
 # node-libzim x.x.x (not yet released)
+* Adapt to zimlib move of ArticleSource::getData to Article::getData.
 
 # node-libzim 0.0.3 (2016-06-23)
 * Add support for `getCurrentSize()` method in zimlib's zim::writer.

@@ -51,6 +51,7 @@ class ArticleProxy : public zim::writer::Article {
   virtual bool shouldCompress() const;
   virtual std::string getRedirectAid() const;
   virtual std::string getParameter() const;
+  virtual zim::Blob getData() const;
   virtual std::string getNextCategory();
 
   DEFINE_PROXY(ArticleProxy, zim::writer::Article)
@@ -60,7 +61,6 @@ class ArticleSourceProxy : public zim::writer::ArticleSource {
  public:
   virtual void setFilename(const std::string& fname);
   virtual const zim::writer::Article* getNextArticle();
-  virtual zim::Blob getData(const std::string& aid);
   virtual zim::Uuid getUuid();
   virtual std::string getMainPage();
   virtual std::string getLayoutPage();
@@ -182,6 +182,7 @@ class ArticleWrap : public Nan::ObjectWrap {
     WRAPPER_METHOD_INIT(tpl, getRedirectAid);
     WRAPPER_METHOD_INIT(tpl, getParameter);
     WRAPPER_METHOD_INIT(tpl, getNextCategory);
+    WRAPPER_METHOD_INIT(tpl, getData);
     WRAPPER_INIT_FINISH(tpl);
   }
   WRAPPER_METHOD_DECLARE(getAid);
@@ -197,6 +198,7 @@ class ArticleWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE(getRedirectAid);
   WRAPPER_METHOD_DECLARE(getParameter);
   WRAPPER_METHOD_DECLARE(getNextCategory);
+  WRAPPER_METHOD_DECLARE(getData);
   WRAPPER_DEFINE(ArticleWrap, zim::writer::Article,
                  ArticleProxy, article)
 };
@@ -207,7 +209,6 @@ class ArticleSourceWrap : public Nan::ObjectWrap {
     WRAPPER_INIT(tpl, "ArticleSource");
     WRAPPER_METHOD_INIT(tpl, setFilename);
     WRAPPER_METHOD_INIT(tpl, getNextArticle);
-    WRAPPER_METHOD_INIT(tpl, getData);
     WRAPPER_METHOD_INIT(tpl, getUuid);
     WRAPPER_METHOD_INIT(tpl, getMainPage);
     WRAPPER_METHOD_INIT(tpl, getLayoutPage);
@@ -216,7 +217,6 @@ class ArticleSourceWrap : public Nan::ObjectWrap {
   }
   WRAPPER_METHOD_DECLARE(setFilename);
   WRAPPER_METHOD_DECLARE(getNextArticle);
-  WRAPPER_METHOD_DECLARE(getData);
   WRAPPER_METHOD_DECLARE(getUuid);
   WRAPPER_METHOD_DECLARE(getMainPage);
   WRAPPER_METHOD_DECLARE(getLayoutPage);

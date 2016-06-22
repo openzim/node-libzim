@@ -171,6 +171,19 @@ std::string ArticleProxy::getParameter() const {
   PROXY_GET_STRING("getParameter");
   return this->zim::writer::Article::getParameter();
 }
+zim::Blob ArticleProxy::getData() const {
+  PROXY_GETFUNC(func, "getData");
+  if (!func.IsEmpty()) {
+    Nan::MaybeLocal<v8::Value> result =
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
+    if (!result.IsEmpty()) {
+      // Convert JavaScript value to C++ object.
+      return BlobWrap::FromJS(result.ToLocalChecked());
+    }
+  }
+  Nan::ThrowTypeError("no implementation for Article::getData");
+  return zim::Blob(NULL, 0);
+}
 std::string ArticleProxy::getNextCategory() {
   PROXY_GET_STRING("getNextCategory");
   return this->zim::writer::Article::getNextCategory();
@@ -211,22 +224,6 @@ const zim::writer::Article* ArticleSourceProxy::getNextArticle() {
   // Throw: this method doesn't have a default superclass implementation.
   Nan::ThrowTypeError("no implementation for ArticleSource::getNextArticle");
   return NULL;
-}
-zim::Blob ArticleSourceProxy::getData(const std::string& aid) {
-  PROXY_GETFUNC(func, "getData");
-  if (!func.IsEmpty()) {
-    const int argc = 1;
-    v8::Local<v8::Value> argv[argc] = { NEW_STR(aid) };
-    Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
-                          argc, argv);
-    if (!result.IsEmpty()) {
-      // Convert JavaScript value to C++ object.
-      return BlobWrap::FromJS(result.ToLocalChecked());
-    }
-  }
-  Nan::ThrowTypeError("no implementation for ArticleSource::getData");
-  return zim::Blob(NULL, 0);
 }
 zim::Uuid ArticleSourceProxy::getUuid() {
   PROXY_GETFUNC(func, "getUuid");
@@ -397,6 +394,10 @@ NAN_METHOD(ArticleWrap::getMimeType) { WRAPPER_GET_STRING(getMimeType); }
 NAN_METHOD(ArticleWrap::shouldCompress) { WRAPPER_GET_BOOL(shouldCompress); }
 NAN_METHOD(ArticleWrap::getRedirectAid) { WRAPPER_GET_STRING(getRedirectAid); }
 NAN_METHOD(ArticleWrap::getParameter) { WRAPPER_GET_STRING(getParameter); }
+NAN_METHOD(ArticleWrap::getData) {
+  const zim::Blob b = getWrappedField(info)->getData();
+  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
+}
 NAN_METHOD(ArticleWrap::getNextCategory) {
     WRAPPER_GET_STRING(getNextCategory);
 }
@@ -415,11 +416,6 @@ NAN_METHOD(ArticleSourceWrap::getNextArticle) {
   const zim::writer::Article *a = getWrappedField(info)->getNextArticle();
   // Convert to wrapped article
   info.GetReturnValue().Set(ArticleWrap::FromC(a, false));
-}
-NAN_METHOD(ArticleSourceWrap::getData) {
-  REQUIRE_ARGUMENT_STD_STRING(0, aid);
-  const zim::Blob b = getWrappedField(info)->getData(aid);
-  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
 }
 NAN_METHOD(ArticleSourceWrap::getUuid) {
   zim::Uuid uuid = getWrappedField(info)->getUuid();
