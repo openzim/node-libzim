@@ -14,8 +14,9 @@ var zim = require('libzim');
 
 class TestArticle extends zim.writer.Article {
   constructor(id) {
+    super();
     this._id = id;
-    this._data = "this is article " + id;
+    this._data = new Buffer("this is article " + id);
   }
   getAid() { return this._id; }
   getNamespace() { return 'A'; }
@@ -25,12 +26,13 @@ class TestArticle extends zim.writer.Article {
   getMimeType() { return "text/plain"; }
   getRedirectAid() { return ""; }
   data() {
-    return new zim.Blob(new Buffer(this._data));
+    return new zim.Blob(this._data);
   }
 }
 
 class TestArticleSource extends zim.writer.ArticleSource {
   constructor(max = 16) {
+    super();
     this._next = 0;
     this._articles = [];
     for (var n = 0; n < max ; n++) {
