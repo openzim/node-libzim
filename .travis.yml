@@ -13,9 +13,7 @@ addons:
     packages:
     - gcc-5-multilib
     - g++-5-multilib
-    - libc6-dev:i386
     - liblzma-dev
-    - liblzma5:i386
 
 ## don't re-build for tags so that [publish binary] is not re-run
 ## https://github.com/travis-ci/travis-ci/issues/1532
@@ -26,7 +24,7 @@ addons:
 
 matrix:
   include:
-     # Linux
+     # Linux amd64
      - os: linux
        env: NODE_VERSION="node" PUBLISHABLE=false # latest
      - os: linux
@@ -36,12 +34,12 @@ matrix:
        compiler: clang
        env: NODE_VERSION="5.11.1" # node abi 47
      - os: linux
-       env: NODE_VERSION="4.4.5" BUILD_X86=true # node abi 46
+       env: NODE_VERSION="4.4.5" # node abi 46
      - os: linux
        compiler: clang
        env: NODE_VERSION="4.0.0" PUBLISHABLE=false
      - os: linux
-       env: NODE_VERSION="iojs-3.3.1" BUILD_X86=true # node abi 45
+       env: NODE_VERSION="iojs-3.3.1" # node abi 45
      - os: linux
        compiler: clang
        env: NODE_VERSION="iojs-3.1.0" PUBLISHABLE=false
@@ -49,25 +47,80 @@ matrix:
        compiler: clang
        env: NODE_VERSION="iojs-2.4.0" PUBLISHABLE=false
      - os: linux
-       env: NODE_VERSION="iojs-2.4.0" BUILD_X86=true # node abi 44
+       env: NODE_VERSION="iojs-2.4.0" # node abi 44
      - os: linux
        compiler: clang
        env: NODE_VERSION="iojs-1.8.4" PUBLISHABLE=false
      - os: linux
-       env: NODE_VERSION="iojs-1.8.4" BUILD_X86=true # node abi 43
+       env: NODE_VERSION="iojs-1.8.4" # node abi 43
      - os: linux
-       env: NODE_VERSION="0.12.7" BUILD_X86=true # node abi 14
+       env: NODE_VERSION="0.12.7" # node abi 14
      - os: linux
-       env: NODE_VERSION="0.10.40" BUILD_X86=true # node abi 11
+       env: NODE_VERSION="0.10.40" # node abi 11
      - os: linux
        env: NODE_VERSION="0.8.28" # node abi 1
+     # Linux x86 builds
+     - os: linux
+       env: NODE_VERSION="6.2.2" BUILD_X86=true # node abi 48
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="5.11.1" BUILD_X86=true # node abi 47
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="4.4.5" BUILD_X86=true # node abi 46
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="iojs-3.3.1" BUILD_X86=true # node abi 45
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="iojs-2.4.0" BUILD_X86=true # node abi 44
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="iojs-1.8.4" BUILD_X86=true # node abi 43
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="0.12.7" BUILD_X86=true # node abi 14
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="0.10.40" BUILD_X86=true # node abi 11
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
+     - os: linux
+       env: NODE_VERSION="0.8.28" BUILD_X86=true # node abi 1
+       addons:
+         apt:
+            sources: [ 'ubuntu-toolchain-r-test' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
      # test building against external libzim
      - os: linux
        env: NODE_VERSION="4.4.5" EXTERNAL_LIBZIM=true PUBLISHABLE=false
        addons:
          apt:
             sources: [ 'ubuntu-toolchain-r-test' ]
-            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'libc6-dev:i386', 'liblzma-dev', 'libzim-dev' ]
+            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev', 'libzim-dev' ]
      # OS X
      - os: osx
        compiler: clang
@@ -160,6 +213,7 @@ script:
 # https://github.com/travis-ci/apt-package-whitelist/issues/3176
 - unset EXTERNAL_LIBZIM
 # XXX end hack.
+- if test -n "$BUILD_X86"; then source scripts/publish_x86.sh ; echo PATH=$PATH ; fi
 - if test -z "$EXTERNAL_LIBZIM" ; then npm install --build-from-source ; else npm install --build-from-source --libzim=external ; fi
 - node-pre-gyp package testpackage
 - npm test
@@ -168,4 +222,4 @@ script:
 - if scripts/validate_tag.sh --check ; then PUBLISH=true; fi
 # Workaround to trigger a manual x86 build
 - if test "$TRAVIS_BRANCH" == "x86" -a  "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then PUBLISH=true; fi
-- if test "$PUBLISH,$PUBLISHABLE" = "true,true"; then npm test && npm install core-js@1.1.4 && npm install request@2.64.0 && npm run gh-publish && if test -n "$BUILD_X86"; then scripts/publish_x86.sh ; fi ; fi
+- if test "$PUBLISH,$PUBLISHABLE" = "true,true"; then npm test && npm install core-js@1.1.4 && npm install request@2.64.0 && npm run gh-publish ; fi
