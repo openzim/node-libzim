@@ -19,6 +19,7 @@
 #include "src/blob.h"
 #include "src/macros.h"
 #include "src/uuid.h"
+#include "src/wrapper.h"
 #include "src/writer.h"
 
 namespace node_libzim {
@@ -362,70 +363,20 @@ zim::offset_type ZimCreatorProxy::getCurrentSize() {
 
 // WRAPPERS
 
-#define WRAPPER_GET_STRING(name)                                        \
-  std::string r = getWrappedField(info)->name();                        \
-  info.GetReturnValue().Set(NEW_STR(r))
-#define WRAPPER_GET_BOOL(name)                                          \
-  bool r = getWrappedField(info)->name();                               \
-  info.GetReturnValue().Set(Nan::New(r))
-
 // ArticleWrap
 
 std::unordered_map<const zim::writer::Article*, ArticleProxy*>
   ArticleWrap::proxyMap;
-
-NAN_METHOD(ArticleWrap::getAid) { WRAPPER_GET_STRING(getAid); }
-NAN_METHOD(ArticleWrap::getNamespace) {
-  const char r = getWrappedField(info)->getNamespace();
-  const char rr[2] = { r, 0 };
-  info.GetReturnValue().Set(Nan::New<v8::String>(rr, 1)
-                            .FromMaybe(Nan::EmptyString()));
-}
-NAN_METHOD(ArticleWrap::getUrl) { WRAPPER_GET_STRING(getUrl); }
-NAN_METHOD(ArticleWrap::getTitle) { WRAPPER_GET_STRING(getTitle); }
-NAN_METHOD(ArticleWrap::getVersion) {
-  zim::size_type r = getWrappedField(info)->getVersion();
-  info.GetReturnValue().Set(Nan::New(r));
-}
-NAN_METHOD(ArticleWrap::isRedirect) { WRAPPER_GET_BOOL(isRedirect); }
-NAN_METHOD(ArticleWrap::isLinktarget) { WRAPPER_GET_BOOL(isLinktarget); }
-NAN_METHOD(ArticleWrap::isDeleted) { WRAPPER_GET_BOOL(isDeleted); }
-NAN_METHOD(ArticleWrap::getMimeType) { WRAPPER_GET_STRING(getMimeType); }
-NAN_METHOD(ArticleWrap::shouldCompress) { WRAPPER_GET_BOOL(shouldCompress); }
-NAN_METHOD(ArticleWrap::getRedirectAid) { WRAPPER_GET_STRING(getRedirectAid); }
-NAN_METHOD(ArticleWrap::getParameter) { WRAPPER_GET_STRING(getParameter); }
-NAN_METHOD(ArticleWrap::getData) {
-  const zim::Blob b = getWrappedField(info)->getData();
-  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
-}
-NAN_METHOD(ArticleWrap::getNextCategory) {
-    WRAPPER_GET_STRING(getNextCategory);
-}
 
 // ArticleSourceWrap
 
 std::unordered_map<const zim::writer::ArticleSource*, ArticleSourceProxy*>
   ArticleSourceWrap::proxyMap;
 
-NAN_METHOD(ArticleSourceWrap::setFilename) {
-  REQUIRE_ARGUMENT_STD_STRING(0, fname);
-  getWrappedField(info)->setFilename(fname);
-  info.GetReturnValue().Set(Nan::Undefined());
-}
 NAN_METHOD(ArticleSourceWrap::getNextArticle) {
   const zim::writer::Article *a = getWrappedField(info)->getNextArticle();
   // Convert to wrapped article
   info.GetReturnValue().Set(ArticleWrap::FromC(a, false));
-}
-NAN_METHOD(ArticleSourceWrap::getUuid) {
-  zim::Uuid uuid = getWrappedField(info)->getUuid();
-  info.GetReturnValue().Set(UuidWrap::FromC(uuid));
-}
-NAN_METHOD(ArticleSourceWrap::getMainPage) {
-    WRAPPER_GET_STRING(getMainPage);
-}
-NAN_METHOD(ArticleSourceWrap::getLayoutPage) {
-    WRAPPER_GET_STRING(getLayoutPage);
 }
 NAN_METHOD(ArticleSourceWrap::getCategory) {
   REQUIRE_ARGUMENT_STD_STRING(0, cid);
@@ -438,13 +389,6 @@ NAN_METHOD(ArticleSourceWrap::getCategory) {
 
 std::unordered_map<const zim::writer::Category*, CategoryProxy*>
   CategoryWrap::proxyMap;
-
-NAN_METHOD(CategoryWrap::getData) {
-  zim::Blob b = getWrappedField(info)->getData();
-  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
-}
-NAN_METHOD(CategoryWrap::getUrl) { WRAPPER_GET_STRING(getUrl); }
-NAN_METHOD(CategoryWrap::getTitle) { WRAPPER_GET_STRING(getTitle); }
 
 // ZimCreatorWrap
 
@@ -459,19 +403,8 @@ NAN_METHOD(ZimCreatorWrap::create) {
   getWrappedField(info)->create(fname, *as);
   info.GetReturnValue().Set(Nan::Undefined());
 }
-NAN_METHOD(ZimCreatorWrap::getMinChunkSize) {
-  unsigned r = getWrappedField(info)->getMinChunkSize();
-  info.GetReturnValue().Set(Nan::New(r));
-}
 NAN_METHOD(ZimCreatorWrap::setMinChunkSize) {
-  REQUIRE_ARGUMENT_INTEGER(0, size);
-  getWrappedField(info)->setMinChunkSize(static_cast<int>(size));
-  info.GetReturnValue().Set(Nan::Undefined());
-}
-NAN_METHOD(ZimCreatorWrap::getCurrentSize) {
-  zim::offset_type size = getWrappedField(info)->getCurrentSize();
-  // Note that `double` represents integers exactly up to 2^56
-  info.GetReturnValue().Set(Nan::New(static_cast<double>(size)));
+  WRAPPER_SET_INTEGER(setMinChunkSize, int);
 }
 
 NAN_MODULE_INIT(Init) {

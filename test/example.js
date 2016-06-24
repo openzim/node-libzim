@@ -1,9 +1,11 @@
 // Example from the README.
 'use strict';
+var assert = require('assert');
 var path = require('path');
 
 describe('Example from the README', function() {
   var zim = require('../');
+  var dump = require('../bin/zimdump.js');
 
   // Construct-only functions are not supported in old node versions.
   if (zim._noConstruct_) { return; }
@@ -14,7 +16,11 @@ describe('Example from the README', function() {
     constructor(id) {
       super();
       this._id = id;
-      this._data = new Buffer('this is article ' + id + '\n' + padding);
+      var data = 'this is article ' + id + '\n';
+      while (data.length < 512) {
+        data += Math.random() + '\n';
+      }
+      this._data = new Buffer(data, 'utf8');
     }
     getAid() { return this._id; }
     getNamespace() { return 'A'; }
@@ -55,7 +61,16 @@ describe('Example from the README', function() {
     c.setMinChunkSize(1);
     var szfunc = function() { return c.getCurrentSize(); };
     var src = new TestArticleSource(8, szfunc);
-    c.create(path.join(__dirname, 'foo.zim'), src);
-    // XXX verify file is present.
+    var fname = path.join(__dirname, 'foo.zim');
+    c.create(fname, src);
+    // Verify file is present.
+    dump.main(['-F', '-l', '-v', fname]);
+    // Verify that files are accurate.
+    var zf = new zim.File(fname);
+    src._articles.forEach(function(a) {
+      var data = a._data;
+      var aa = zf.getArticleByTitle(a.getNamespace(), a.getTitle());
+      assert.deepEqual(aa.getData().data(), data);
+    });
   });
 });

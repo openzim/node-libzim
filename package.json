@@ -25,6 +25,9 @@
     "gh-publish": "scripts/publish.js",
     "clean": "rm -rf node_modules lib/binding build"
   },
+  "bin": {
+    "zimdump": "./bin/zimdump.js"
+  },
   "binary": {
     "module_name": "zim",
     "module_path": "./lib/binding/{node_abi}-{platform}-{arch}",
@@ -33,7 +36,8 @@
   },
   "dependencies": {
     "nan": "^2.1.0",
-    "node-pre-gyp": "^0.6.28"
+    "node-pre-gyp": "^0.6.28",
+    "yargs": "^4.7.1"
   },
   "bundleDependencies": [
     "node-pre-gyp"
