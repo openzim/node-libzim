@@ -50,13 +50,13 @@
     };                                                                  \
     return scope.Escape(constructor()->NewInstance(1, argv));           \
   }                                                                     \
-  static WrappedType FromJS(v8::Local<v8::Value> v) {                     \
+  static WrappedType FromJS(v8::Local<v8::Value> v) {                   \
     if (v->IsObject()) {                                                \
       Nan::HandleScope scope;                                           \
       v8::Local<v8::Object> o = Nan::To<v8::Object>(v).ToLocalChecked();\
       v8::Local<v8::String> hidden_field = NEW_STR(#WrappedType);       \
       v8::Local<v8::Value> vv = o->GetHiddenValue(hidden_field);        \
-      if (!vv.IsEmpty() && o->SameValue(vv)) {                          \
+      if (!vv.IsEmpty() && o->StrictEquals(vv)) {                       \
         Wrapper *obj = Nan::ObjectWrap::Unwrap<Wrapper>(o);             \
         return obj->field ## _;                                         \
       }                                                                 \
