@@ -1,6 +1,6 @@
 {
   "name": "libzim",
-  "version": "0.0.4+git",
+  "version": "1.0.0",
   "description": "Bindings to zimlib (read/write OpenZIM files)",
   "main": "lib/index",
   "scripts": {
