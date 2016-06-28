@@ -114,13 +114,17 @@ matrix:
          apt:
             sources: [ 'ubuntu-toolchain-r-test' ]
             packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev:i386', 'liblzma5:i386', 'libc6-dev:i386' ]
-     # test building against external libzim
-     - os: linux
-       env: NODE_VERSION="4.4.5" EXTERNAL_LIBZIM=true PUBLISHABLE=false
-       addons:
-         apt:
-            sources: [ 'ubuntu-toolchain-r-test' ]
-            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev', 'libzim-dev' ]
+#
+# DISABLE EXTERNAL LIBZIM BUILD
+# We need a newer version of libzim to be packaged upstream.
+#
+#     # test building against external libzim
+#     - os: linux
+#       env: NODE_VERSION="4.4.5" EXTERNAL_LIBZIM=true PUBLISHABLE=false
+#       addons:
+#         apt:
+#            sources: [ 'ubuntu-toolchain-r-test' ]
+#            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'liblzma-dev', 'libzim-dev' ]
      # OS X
      - os: osx
        compiler: clang
