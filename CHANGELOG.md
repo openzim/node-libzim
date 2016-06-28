@@ -1,4 +1,7 @@
 # node-libzim x.x.x (not yet released)
+* Wrap zim::File and related classes.  This should complete basic coverage
+  of API needed for reading files.
+* Implement a clone of `zimdump` to demonstrate API coverage.
 
 # node-libzim 0.0.4 (2016-06-23)
 * Adapt to zimlib move of ArticleSource::getData to Article::getData.
