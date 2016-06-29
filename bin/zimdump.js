@@ -79,7 +79,67 @@ ZimDumper.prototype.dumpArticle = function() {
 };
 ZimDumper.prototype.dumpIndex = function() {
   if (this.pos.get().getNamespace() === 'X') {
-    // XXX
+    var parameter = zim.ZIntStream.fromBuffer(this.pos.get().getParameter());
+    var ppos = 0;
+    var off = 0;
+    // Read flags
+    var flags = parameter[ppos++];
+    if (ppos > parameter.length) {
+      throw new Error('invalid index parameter data');
+    }
+    // Process categories
+    for (var c = 0, flag = 1; c < 4; c++, flag <<= 1) {
+      if (!(flags & flag)) {
+        continue;  // Category empty.
+      }
+      var len = parameter[ppos++];
+      var idx = parameter[ppos++];
+      var wpos = parameter[ppos++];
+      if (ppos > parameter.length) {
+        throw new Error('invalid index parameter data');
+      }
+      if (this.verbose) {
+        this.log('c' + c + '\tidx=' + idx + '\tpos=' + wpos);
+      } else {
+        this.log('c' + c + '\t' + idx + ';' + wpos);
+      }
+      // Prepare data stream.
+      var blob = this.pos.get().getData();
+      if (off + len > blob.size()) {
+        throw new Error('invalid index data');
+      }
+      var ins = zim.ZIntStream.fromBuffer(blob.data().slice(off, off + len));
+      var inspos = 0;
+      off += len;
+
+      var lastidx = 0;
+      var lastpos = 0;
+      var str = '';
+      while (inspos < ins.length) {
+        idx = ins[inspos++];
+        wpos = ins[inspos++];
+        var oidx = idx;
+        var owpos = wpos;
+        if (idx === 0) {
+          idx = lastidx;
+          lastpos = (wpos += lastpos);
+        } else {
+          lastidx = (idx += lastidx);
+          lastpos = wpos;
+        }
+        if (this.verbose) {
+          this.log(
+            'c' + c + '\tidx=' + oidx + ' => ' + idx +
+            '\tpos=' + owpos + ' => ' + wpos
+          );
+        } else {
+          str += '\t' + idx + ';' + wpos;
+        }
+      }
+      if (!this.verbose) {
+        this.log(str);
+      }
+    }
   } else {
     this.log('no index article');
   }
@@ -99,22 +159,22 @@ ZimDumper.prototype.listArticles = function(info, listTable, extra) {
 ZimDumper.prototype.listArticle = function(article, extra) {
   var dirent = article.getDirent();
   this.log('url:', dirent.getUrl());
-  this.log('\ttitle:    ', dirent.getTitle());
-  this.log('\tidx:      ', article.getIndex());
-  this.log('\tnamespace:', dirent.getNamespace());
-  this.log('\ttype:     ', dirent.isRedirect() ? 'redirect' :
+  this.log('\ttitle:          ', dirent.getTitle());
+  this.log('\tidx:            ', article.getIndex());
+  this.log('\tnamespace:      ', dirent.getNamespace());
+  this.log('\ttype:           ', dirent.isRedirect() ? 'redirect' :
            dirent.isLinktarget() ? 'linktarget' :
            dirent.isDeleted() ? 'deleted' :
            'article');
   if (dirent.isRedirect()) {
-    this.log('\tredirect index:', dirent.getRedirectIndex());
+    this.log('\tredirect index: ', dirent.getRedirectIndex());
   } else if (dirent.isLinktarget()) {
     // Nothing else
   } else if (dirent.isDeleted()) {
     // Nothing else
   } else {
-    this.log('\tmime-type:', article.getMimeType());
-    this.log('\tarticle size:', article.getArticleSize());
+    this.log('\tmime-type:      ', article.getMimeType());
+    this.log('\tarticle size:   ', article.getArticleSize());
     if (this.verbose) {
       var cluster = article.getCluster();
 
@@ -126,19 +186,33 @@ ZimDumper.prototype.listArticle = function(article, extra) {
       this.log('\tblob number:    ', dirent.getBlobNumber());
       var c;
       switch (cluster.getCompression()) {
-      case zim.zimcompDefault: { c = 'default'; break; }
-      case zim.zimcompNone:    { c = 'none'; break; }
-      case zim.zimcompZip:     { c = 'zip'; break; }
-      case zim.zimcompBzip2:   { c = 'bzip2'; break; }
-      case zim.zimcompLzma:    { c = 'lzma'; break; }
-      default: { c = 'unknown (' + cluster.getCompression() + ')'; break; }
-    }
+        case zim.zimcompDefault: { c = 'default'; break; }
+        case zim.zimcompNone:    { c = 'none'; break; }
+        case zim.zimcompZip:     { c = 'zip'; break; }
+        case zim.zimcompBzip2:   { c = 'bzip2'; break; }
+        case zim.zimcompLzma:    { c = 'lzma'; break; }
+        default: { c = 'unknown (' + cluster.getCompression() + ')'; break; }
+      }
       this.log('\tcompression:    ', c);
     }
-    if (extra) {
-      this.log('\textra:          ');
-      // XXX implement parameter support.
+  }
+
+  if (extra) {
+    var str = '\textra:           ';
+    var b = dirent.getParameter();
+    var i;
+    for (i = 0; i < b.length; i++) {
+      str += b[i].toString(16) + ' ';
     }
+    str += ':';
+
+    if (b.length > 1) {
+      var a = zim.ZIntStream.fromBuffer(b);
+      for (i = 0; i < a.length; i++) {
+        str += '\t' + a[i];
+      }
+    }
+    this.log(str);
   }
 };
 ZimDumper.prototype.listArticleT = function(article, extra) {
@@ -161,8 +235,8 @@ ZimDumper.prototype.listArticleT = function(article, extra) {
     str +=
       '\t' + dirent.getMimeType() +
       '\t' + article.getArticleSize();
-    if (verbose) {
-      cluster = article.getCluster();
+    if (this.verbose) {
+      var cluster = article.getCluster();
       str +=
         '\t' + dirent.getClusterNumber() +
         '\t' + cluster.count() +
@@ -175,8 +249,18 @@ ZimDumper.prototype.listArticleT = function(article, extra) {
 
   if (extra) {
     var parameter = dirent.getParameter();
+    var i;
     str += '\t';
-    // XXX
+    for (i = 0; i < parameter.length; i++) {
+      str += parameter[i].toString(16) + '\t';
+    }
+
+    if (parameter.length > 1) {
+      var a = zim.ZIntStream.fromBuffer(parameter);
+      for (i = 0; i < a.length; i++) {
+        str += '\t' + a[i];
+      }
+    }
   }
   this.log(str);
 };

@@ -15,7 +15,10 @@ describe('Example from the README', function() {
   class TestArticle extends zim.writer.Article {
     constructor(id) {
       super();
-      this._id = id;
+      this._id = '' + id;
+      this._compress = ((id & 1) === 1);
+      this._param = [ id, 0xFFFFFFFF, Math.pow(2, 32),
+                      Math.pow(2, 52), Math.pow(2, 53), ];
       var data = 'this is article ' + id + '\n';
       while (data.length < 512) {
         data += Math.random() + '\n';
@@ -29,6 +32,8 @@ describe('Example from the README', function() {
     isRedirect() { return false; }
     getMimeType() { return 'text/plain'; }
     getRedirectAid() { return ''; }
+    getParameter() { return zim.ZIntStream.toBuffer(this._param); }
+    shouldCompress() { return this._compress; }
     getData() {
       return new zim.Blob(this._data);
     }
@@ -42,7 +47,7 @@ describe('Example from the README', function() {
       this._articles = [];
       this.getCurrentSize = szfunc;
       for (var n = 0; n < maxx ; n++) {
-        this._articles[n] = new TestArticle('' + (n + 1));
+        this._articles[n] = new TestArticle(n + 1);
       }
     }
     getNextArticle() {
@@ -71,6 +76,8 @@ describe('Example from the README', function() {
       var data = a._data;
       var aa = zf.getArticleByTitle(a.getNamespace(), a.getTitle());
       assert.deepEqual(aa.getData().data(), data);
+      var b = aa.getParameter();
+      assert.deepEqual(zim.ZIntStream.fromBuffer(b), a._param);
     });
   });
 });

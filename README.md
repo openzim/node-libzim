@@ -299,6 +299,15 @@ Returns 16.
 #### `zim.Uuid#toString()` → `string`
 Returns a pretty-printed UID.
 <hr>
+### `zim.ZIntStream`
+[`zim.ZIntStream`]: #zimzintstream
+#### `zim.ZIntStream.fromBuffer(Buffer buf)` → `array`
+Converts an array of numbers between `0` and `2^53` to a [`Buffer`].
+See `zim.writer.Article.getParameter()`.
+#### `zim.ZIntStream.toBuffer(array of number)` → [`Buffer`]
+Converts a [`Buffer`] to an array of numbers between `0` and `2^53`.
+See `zim.Article.getParameter()`.
+<hr>
 ### `zim.writer.Article`
 [`zim.writer.Article`]: #zimwriterarticle
 An abstract base class describing an article for use by
