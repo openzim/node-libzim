@@ -88,9 +88,9 @@ ZimDumper.prototype.listArticles = function(info, listTable, extra) {
   for (var it = this.pos; it.hasNext();) {
     var a = it.next().value;
     if (listTable) {
-      listArticleT(a, extra);
+      this.listArticleT(a, extra);
     } else if (info) {
-      listArticle(a, extra);
+      this.listArticle(a, extra);
     } else {
       this.log(a.getUrl());
     }
