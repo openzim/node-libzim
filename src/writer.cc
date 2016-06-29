@@ -87,6 +87,25 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
       return ss;                                                        \
     }                                                                   \
   }
+#define PROXY_GET_STRING_BUFFER(name)                                   \
+  PROXY_GETFUNC(func, name);                                            \
+  if (!func.IsEmpty()) {                                                \
+    Nan::MaybeLocal<v8::Value> result =                                 \
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL); \
+    if (!result.IsEmpty()) {                                            \
+      v8::Local<v8::Value> r = result.ToLocalChecked();                 \
+      if (node::Buffer::HasInstance(r)) {                               \
+        v8::Local<v8::Object> ro = Nan::To<v8::Object>(r).ToLocalChecked(); \
+        std::string ss(node::Buffer::Data(ro), node::Buffer::Length(ro)); \
+        return ss;                                                      \
+      } else {                                                          \
+        /* Convert JavaScript value to C++ string. */                   \
+        Nan::Utf8String s(r);                                           \
+        std::string ss(*s, s.length());                                 \
+        return ss;                                                      \
+      }                                                                 \
+    }                                                                   \
+  }
 #define PROXY_GET_BOOL(name)                                            \
   PROXY_GETFUNC(func, name);                                            \
   if (!func.IsEmpty()) {                                                \
@@ -169,7 +188,7 @@ std::string ArticleProxy::getRedirectAid() const {
   return this->zim::writer::Article::getRedirectAid();
 }
 std::string ArticleProxy::getParameter() const {
-  PROXY_GET_STRING("getParameter");
+  PROXY_GET_STRING_BUFFER("getParameter");
   return this->zim::writer::Article::getParameter();
 }
 zim::Blob ArticleProxy::getData() const {

@@ -170,7 +170,7 @@ class ArticleWrap : public Nan::ObjectWrap {
   WRAPPER_METHOD_DECLARE_GET(getMimeType, STRING);
   WRAPPER_METHOD_DECLARE_GET(shouldCompress, BOOL);
   WRAPPER_METHOD_DECLARE_GET(getRedirectAid, STRING);
-  WRAPPER_METHOD_DECLARE_GET(getParameter, STRING);
+  WRAPPER_METHOD_DECLARE_GET(getParameter, STRING_BUFFER);
   WRAPPER_METHOD_DECLARE_GET(getNextCategory, STRING);
   WRAPPER_METHOD_DECLARE_GET(getData, BLOB);
   PROXY_WRAPPER_DEFINE(ArticleWrap, zim::writer::Article,

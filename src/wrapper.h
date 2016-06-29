@@ -111,6 +111,12 @@
 #define WRAPPER_GET_STRING(name)                                        \
   std::string r = getWrappedField(info)->name();                        \
   info.GetReturnValue().Set(NEW_STR(r))
+#define WRAPPER_GET_STRING_BUFFER(name)                                 \
+  std::string r = getWrappedField(info)->name();                        \
+  Nan::MaybeLocal<v8::Object> buf = Nan::CopyBuffer(r.data(), r.length()); \
+  if (!buf.IsEmpty()) {                                                 \
+    info.GetReturnValue().Set(buf.ToLocalChecked());                    \
+  }
 #define WRAPPER_GET_CHAR(name)                                          \
   const char r = getWrappedField(info)->name();                         \
   const char rr[2] = { r, 0 };                                          \
@@ -140,6 +146,10 @@
   info.GetReturnValue().Set(Nan::Undefined());
 #define WRAPPER_SET_STRING(name)                                        \
   REQUIRE_ARGUMENT_STD_STRING(0, val);                                  \
+  getWrappedField(info)->name(val);                                     \
+  info.GetReturnValue().Set(Nan::Undefined());
+#define WRAPPER_SET_STRING_BUFFER(name)                                 \
+  REQUIRE_ARGUMENT_STD_STRING_BUFFER(0, val);                           \
   getWrappedField(info)->name(val);                                     \
   info.GetReturnValue().Set(Nan::Undefined());
 #define WRAPPER_SET_INTEGER(name, type)                                 \

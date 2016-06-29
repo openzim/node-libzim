@@ -48,7 +48,21 @@
 #define REQUIRE_ARGUMENT_STD_STRING(i, var)                             \
   REQUIRE_ARGUMENT_STRING(i, var ## utf8);                              \
   std::string var(*var ## utf8, var ## utf8.length())
-
+#define REQUIRE_ARGUMENT_STD_STRING_BUFFER(i, var)                      \
+  if (info.Length() <= (i) ||                                           \
+      !(info[i]->IsString() || node::Buffer::HasInstance(info[i]))) {   \
+    return Nan::ThrowTypeError("Argument " #i " must be a string or Buffer"); \
+  }                                                                     \
+  std::string var;                                                      \
+  if (node::Buffer::HasInstance(info[i])) {                             \
+    v8::Local<v8::Object> var ## obj =                                  \
+      Nan::To<v8::Object>(info[i]).ToLocalChecked();                    \
+    var = std::string(node::Buffer::Data(var ## obj),                   \
+                      node::Buffer::Length(var ## obj));                \
+  } else {                                                              \
+    Nan::Utf8String var ## utf8(info[i]);                               \
+    var = std::string(*var ## utf8, var ## utf8.length());              \
+  }
 #define REQUIRE_ARGUMENT_CHAR(i, var)                                   \
   REQUIRE_ARGUMENT_STRING(i, var ## _utf8);                             \
   if (var ## _utf8.length() != 1) {                                     \
