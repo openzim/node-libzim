@@ -76,8 +76,8 @@ NAN_METHOD(FileWrap::getArticleByTitle) {
     a = getWrappedField(info)->getArticleByTitle(idx);
   } else if (info.Length() == 2) {
     REQUIRE_ARGUMENT_CHAR(0, ns);
-    REQUIRE_ARGUMENT_STD_STRING(1, url);
-    a = getWrappedField(info)->getArticleByTitle(ns, url);
+    REQUIRE_ARGUMENT_STD_STRING(1, title);
+    a = getWrappedField(info)->getArticleByTitle(ns, title);
   } else {
     return Nan::ThrowTypeError
       ("Must have single integer argument or two string arguments.");
