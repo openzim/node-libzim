@@ -15,6 +15,7 @@
 namespace node_libzim {
 
 class BlobWrap : public Nan::ObjectWrap {
+  friend class ClusterWrap;  // for access to constructor()
  public:
   static NAN_MODULE_INIT(Init) {
     WRAPPER_INIT(tpl, "Blob");
