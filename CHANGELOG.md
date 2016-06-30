@@ -1,3 +1,5 @@
+# node-libzim x.x.x (not yet released)
+
 # node-libzim 1.0.0 (2016-06-30)
 * Wrap zim::File and related classes.  This should complete basic coverage
   of API needed for reading files.
