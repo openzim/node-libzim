@@ -29,6 +29,9 @@ matrix:
        env: NODE_VERSION="node" PUBLISHABLE=false # latest
      - os: linux
        compiler: clang
+       env: NODE_VERSION="10.9.0"
+     - os: linux
+       compiler: clang
        env: NODE_VERSION="6.2.2" # node abi 48
      - os: linux
        compiler: clang
