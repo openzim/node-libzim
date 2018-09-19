@@ -124,7 +124,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
       Nan::New<v8::External>(const_cast<WrappedType*>(o)),              \
       Nan::New(owned)                                                   \
     };                                                                  \
-    return scope.Escape(constructor()->NewInstance(2, argv));           \
+    return scope.Escape(Nan::NewInstance(constructor(), 2, argv).ToLocalChecked());           \
   }                                                                     \
   static std::unordered_map<const WrappedType*, ProxyType*> proxyMap;   \
  private:                                                               \

@@ -58,7 +58,7 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
   if (p->IsObject()) {                                                  \
     v8::Local<v8::String> hidden_field = NEW_STR("zim::" #Proxy);       \
     v8::Local<v8::Object> obj = Nan::To<v8::Object>(p).ToLocalChecked(); \
-    v8::Local<v8::Value> proxy = obj->GetHiddenValue(hidden_field);     \
+    v8::Local<v8::Value> proxy = Nan::GetPrivate(obj, hidden_field).ToLocalChecked();     \
     if (!proxy.IsEmpty() && proxy->IsExternal()) {                      \
       ap = reinterpret_cast<Proxy*>                                     \
         (v8::Local<v8::External>::Cast(proxy)->Value());                \
@@ -66,7 +66,7 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
     }                                                                   \
     /* Have to make one. */                                             \
     ap = new Proxy(obj, info);                                          \
-    obj->SetHiddenValue(hidden_field, Nan::New<v8::External>(ap));      \
+    Nan::SetPrivate(obj, hidden_field, Nan::New<v8::External>(ap));      \
     /* Clean up the proxy when p goes away. */                          \
     if (!owned) {                                                       \
       ap->MakeWeak();                                                   \
