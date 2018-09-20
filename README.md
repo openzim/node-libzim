@@ -1,6 +1,7 @@
 # libzim
 [![NPM][NPM1]][NPM2]
 
+[![CodeFactor](https://www.codefactor.io/repository/github/openzim/node-libzim/badge)](https://www.codefactor.io/repository/github/openzim/node-libzim)
 [![Build Status][1]][2] [![dependency status][3]][4] [![dev dependency status][5]][6]
 
 The node `libzim` package binds to the `zimlib` library from [OpenZIM][]
