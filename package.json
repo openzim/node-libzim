@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "nan": "^2.1.0",
-    "node-pre-gyp": "^0.6.28",
+    "node-pre-gyp": "^0.9.0",
     "yargs": "^4.7.1"
   },
   "bundleDependencies": [
