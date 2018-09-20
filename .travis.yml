@@ -29,8 +29,8 @@ matrix:
      # Linux
      - os: linux
        env: NODE_VERSION="node" # latest
-     - os: linux PUBLISHABLE=true
-       env: NODE_VERSION="8.12.0"
+     - os: linux
+       env: NODE_VERSION="8.12.0" PUBLISHABLE=true
      # OS X
      - os: osx
        compiler: clang
