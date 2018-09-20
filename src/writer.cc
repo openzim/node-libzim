@@ -19,6 +19,7 @@
 #include "src/blob.h"
 #include "src/macros.h"
 #include "src/uuid.h"
+#include "src/wrapper.h"
 #include "src/writer.h"
 
 namespace node_libzim {
@@ -57,7 +58,7 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
   if (p->IsObject()) {                                                  \
     v8::Local<v8::String> hidden_field = NEW_STR("zim::" #Proxy);       \
     v8::Local<v8::Object> obj = Nan::To<v8::Object>(p).ToLocalChecked(); \
-    v8::Local<v8::Value> proxy = obj->GetHiddenValue(hidden_field);     \
+    v8::Local<v8::Value> proxy = Nan::GetPrivate(obj, hidden_field).ToLocalChecked();     \
     if (!proxy.IsEmpty() && proxy->IsExternal()) {                      \
       ap = reinterpret_cast<Proxy*>                                     \
         (v8::Local<v8::External>::Cast(proxy)->Value());                \
@@ -65,7 +66,7 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
     }                                                                   \
     /* Have to make one. */                                             \
     ap = new Proxy(obj, info);                                          \
-    obj->SetHiddenValue(hidden_field, Nan::New<v8::External>(ap));      \
+    Nan::SetPrivate(obj, hidden_field, Nan::New<v8::External>(ap));      \
     /* Clean up the proxy when p goes away. */                          \
     if (!owned) {                                                       \
       ap->MakeWeak();                                                   \
@@ -86,6 +87,25 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
       return ss;                                                        \
     }                                                                   \
   }
+#define PROXY_GET_STRING_BUFFER(name)                                   \
+  PROXY_GETFUNC(func, name);                                            \
+  if (!func.IsEmpty()) {                                                \
+    Nan::MaybeLocal<v8::Value> result =                                 \
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL); \
+    if (!result.IsEmpty()) {                                            \
+      v8::Local<v8::Value> r = result.ToLocalChecked();                 \
+      if (node::Buffer::HasInstance(r)) {                               \
+        v8::Local<v8::Object> ro = Nan::To<v8::Object>(r).ToLocalChecked(); \
+        std::string ss(node::Buffer::Data(ro), node::Buffer::Length(ro)); \
+        return ss;                                                      \
+      } else {                                                          \
+        /* Convert JavaScript value to C++ string. */                   \
+        Nan::Utf8String s(r);                                           \
+        std::string ss(*s, s.length());                                 \
+        return ss;                                                      \
+      }                                                                 \
+    }                                                                   \
+  }
 #define PROXY_GET_BOOL(name)                                            \
   PROXY_GETFUNC(func, name);                                            \
   if (!func.IsEmpty()) {                                                \
@@ -104,7 +124,7 @@ PROXY_FROMJS(ArticleProxy, ArticleWrap, zim::writer::Article)
 
 std::string ArticleProxy::getAid() const {
   PROXY_GET_STRING("getAid");
-  Nan::ThrowTypeError("no implementation for getAid");
+  Nan::ThrowTypeError("no implementation for Article::getAid");
   return "";
 }
 char ArticleProxy::getNamespace() const {
@@ -117,17 +137,17 @@ char ArticleProxy::getNamespace() const {
       return s.length() ? **s : '\0';
     }
   }
-  Nan::ThrowTypeError("no implementation for getNamespace");
+  Nan::ThrowTypeError("no implementation for Article::getNamespace");
   return '\0';
 }
 std::string ArticleProxy::getUrl() const {
   PROXY_GET_STRING("getUrl");
-  Nan::ThrowTypeError("no implementation for getUrl");
+  Nan::ThrowTypeError("no implementation for Article::getUrl");
   return "";
 }
 std::string ArticleProxy::getTitle() const {
   PROXY_GET_STRING("getTitle");
-  Nan::ThrowTypeError("no implementation for getTitle");
+  Nan::ThrowTypeError("no implementation for Article::getTitle");
   return "";
 }
 zim::size_type ArticleProxy::getVersion() const {
@@ -156,7 +176,7 @@ bool ArticleProxy::isDeleted() const {
 }
 std::string ArticleProxy::getMimeType() const {
   PROXY_GET_STRING("getMimeType");
-  Nan::ThrowTypeError("no implementation for getMimeType");
+  Nan::ThrowTypeError("no implementation for Article::getMimeType");
   return "";
 }
 bool ArticleProxy::shouldCompress() const {
@@ -168,8 +188,21 @@ std::string ArticleProxy::getRedirectAid() const {
   return this->zim::writer::Article::getRedirectAid();
 }
 std::string ArticleProxy::getParameter() const {
-  PROXY_GET_STRING("getParameter");
+  PROXY_GET_STRING_BUFFER("getParameter");
   return this->zim::writer::Article::getParameter();
+}
+zim::Blob ArticleProxy::getData() const {
+  PROXY_GETFUNC(func, "getData");
+  if (!func.IsEmpty()) {
+    Nan::MaybeLocal<v8::Value> result =
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
+    if (!result.IsEmpty()) {
+      // Convert JavaScript value to C++ object.
+      return BlobWrap::FromJS(result.ToLocalChecked());
+    }
+  }
+  Nan::ThrowTypeError("no implementation for Article::getData");
+  return zim::Blob(NULL, 0);
 }
 std::string ArticleProxy::getNextCategory() {
   PROXY_GET_STRING("getNextCategory");
@@ -209,24 +242,8 @@ const zim::writer::Article* ArticleSourceProxy::getNextArticle() {
     }
   }
   // Throw: this method doesn't have a default superclass implementation.
-  Nan::ThrowTypeError("no implementation for getNextArticle");
+  Nan::ThrowTypeError("no implementation for ArticleSource::getNextArticle");
   return NULL;
-}
-zim::Blob ArticleSourceProxy::getData(const std::string& aid) {
-  PROXY_GETFUNC(func, "getData");
-  if (!func.IsEmpty()) {
-    const int argc = 1;
-    v8::Local<v8::Value> argv[argc] = { NEW_STR(aid) };
-    Nan::MaybeLocal<v8::Value> result =
-      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy),
-                          argc, argv);
-    if (!result.IsEmpty()) {
-      // Convert JavaScript value to C++ object.
-      return BlobWrap::FromJS(result.ToLocalChecked());
-    }
-  }
-  Nan::ThrowTypeError("no implementation for getData");
-  return zim::Blob(NULL, 0);
 }
 zim::Uuid ArticleSourceProxy::getUuid() {
   PROXY_GETFUNC(func, "getUuid");
@@ -280,17 +297,17 @@ zim::Blob CategoryProxy::getData() {
       return BlobWrap::FromJS(result.ToLocalChecked());
     }
   }
-  Nan::ThrowTypeError("no implementation for getData");
+  Nan::ThrowTypeError("no implementation for Category::getData");
   return zim::Blob(NULL, 0);
 }
 std::string CategoryProxy::getUrl() const {
   PROXY_GET_STRING("getUrl");
-  Nan::ThrowTypeError("no implementation for getUrl");
+  Nan::ThrowTypeError("no implementation for Category::getUrl");
   return "";
 }
 std::string CategoryProxy::getTitle() const {
   PROXY_GET_STRING("getTitle");
-  Nan::ThrowTypeError("no implementation for getData");
+  Nan::ThrowTypeError("no implementation for Category::getTitle");
   return "";
 }
 
@@ -350,74 +367,35 @@ void ZimCreatorProxy::setMinChunkSize(int s) {
   }
   return this->zim::writer::ZimCreator::setMinChunkSize(s);
 }
+zim::offset_type ZimCreatorProxy::getCurrentSize() {
+  PROXY_GETFUNC(func, "getCurrentSize");
+  if (!func.IsEmpty()) {
+    Nan::MaybeLocal<v8::Value> result =
+      Nan::CallAsFunction(func.ToLocalChecked(), Nan::New(proxy), 0, NULL);
+    if (!result.IsEmpty()) {
+      return (zim::offset_type)
+        Nan::To<int64_t>(result.ToLocalChecked()).FromMaybe(0);
+    }
+  }
+  return this->zim::writer::ZimCreator::getCurrentSize();
+}
 
 // WRAPPERS
-
-#define WRAPPER_GET_STRING(name)                                \
-  std::string r = getWrappedField(info)->name();                        \
-  info.GetReturnValue().Set(Nan::New<v8::String>(r).FromMaybe(Nan::Undefined()))
-#define WRAPPER_GET_BOOL(name)                                          \
-  bool r = getWrappedField(info)->name();                        \
-  info.GetReturnValue().Set(Nan::New(r))
 
 // ArticleWrap
 
 std::unordered_map<const zim::writer::Article*, ArticleProxy*>
   ArticleWrap::proxyMap;
 
-NAN_METHOD(ArticleWrap::getAid) { WRAPPER_GET_STRING(getAid); }
-NAN_METHOD(ArticleWrap::getNamespace) {
-  const char r = getWrappedField(info)->getNamespace();
-  const char rr[2] = { r, 0 };
-  info.GetReturnValue().Set(Nan::New<v8::String>(rr, 1)
-                            .FromMaybe(Nan::EmptyString()));
-}
-NAN_METHOD(ArticleWrap::getUrl) { WRAPPER_GET_STRING(getUrl); }
-NAN_METHOD(ArticleWrap::getTitle) { WRAPPER_GET_STRING(getTitle); }
-NAN_METHOD(ArticleWrap::getVersion) {
-  zim::size_type r = getWrappedField(info)->getVersion();
-  info.GetReturnValue().Set(Nan::New(r));
-}
-NAN_METHOD(ArticleWrap::isRedirect) { WRAPPER_GET_BOOL(isRedirect); }
-NAN_METHOD(ArticleWrap::isLinktarget) { WRAPPER_GET_BOOL(isLinktarget); }
-NAN_METHOD(ArticleWrap::isDeleted) { WRAPPER_GET_BOOL(isDeleted); }
-NAN_METHOD(ArticleWrap::getMimeType) { WRAPPER_GET_STRING(getMimeType); }
-NAN_METHOD(ArticleWrap::shouldCompress) { WRAPPER_GET_BOOL(isRedirect); }
-NAN_METHOD(ArticleWrap::getRedirectAid) { WRAPPER_GET_STRING(getRedirectAid); }
-NAN_METHOD(ArticleWrap::getParameter) { WRAPPER_GET_STRING(getParameter); }
-NAN_METHOD(ArticleWrap::getNextCategory) {
-    WRAPPER_GET_STRING(getNextCategory);
-}
-
 // ArticleSourceWrap
 
 std::unordered_map<const zim::writer::ArticleSource*, ArticleSourceProxy*>
   ArticleSourceWrap::proxyMap;
 
-NAN_METHOD(ArticleSourceWrap::setFilename) {
-  REQUIRE_ARGUMENT_STD_STRING(0, fname);
-  getWrappedField(info)->setFilename(fname);
-  info.GetReturnValue().Set(Nan::Undefined());
-}
 NAN_METHOD(ArticleSourceWrap::getNextArticle) {
   const zim::writer::Article *a = getWrappedField(info)->getNextArticle();
   // Convert to wrapped article
   info.GetReturnValue().Set(ArticleWrap::FromC(a, false));
-}
-NAN_METHOD(ArticleSourceWrap::getData) {
-  REQUIRE_ARGUMENT_STD_STRING(0, aid);
-  const zim::Blob b = getWrappedField(info)->getData(aid);
-  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
-}
-NAN_METHOD(ArticleSourceWrap::getUuid) {
-  zim::Uuid uuid = getWrappedField(info)->getUuid();
-  info.GetReturnValue().Set(UuidWrap::FromC(uuid));
-}
-NAN_METHOD(ArticleSourceWrap::getMainPage) {
-    WRAPPER_GET_STRING(getMainPage);
-}
-NAN_METHOD(ArticleSourceWrap::getLayoutPage) {
-    WRAPPER_GET_STRING(getLayoutPage);
 }
 NAN_METHOD(ArticleSourceWrap::getCategory) {
   REQUIRE_ARGUMENT_STD_STRING(0, cid);
@@ -430,13 +408,6 @@ NAN_METHOD(ArticleSourceWrap::getCategory) {
 
 std::unordered_map<const zim::writer::Category*, CategoryProxy*>
   CategoryWrap::proxyMap;
-
-NAN_METHOD(CategoryWrap::getData) {
-  zim::Blob b = getWrappedField(info)->getData();
-  info.GetReturnValue().Set(BlobWrap::FromC(b, false));
-}
-NAN_METHOD(CategoryWrap::getUrl) { WRAPPER_GET_STRING(getUrl); }
-NAN_METHOD(CategoryWrap::getTitle) { WRAPPER_GET_STRING(getTitle); }
 
 // ZimCreatorWrap
 
@@ -451,14 +422,8 @@ NAN_METHOD(ZimCreatorWrap::create) {
   getWrappedField(info)->create(fname, *as);
   info.GetReturnValue().Set(Nan::Undefined());
 }
-NAN_METHOD(ZimCreatorWrap::getMinChunkSize) {
-  unsigned r = getWrappedField(info)->getMinChunkSize();
-  info.GetReturnValue().Set(Nan::New(r));
-}
 NAN_METHOD(ZimCreatorWrap::setMinChunkSize) {
-  REQUIRE_ARGUMENT_INTEGER(0, size);
-  getWrappedField(info)->setMinChunkSize(static_cast<int>(size));
-  info.GetReturnValue().Set(Nan::Undefined());
+  WRAPPER_SET_INTEGER(setMinChunkSize, int);
 }
 
 NAN_MODULE_INIT(Init) {

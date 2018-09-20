@@ -27,15 +27,20 @@ if (process.config.variables.target_arch !== 'ia32') {
 }
 
 console.log(path.join(libzim, 'autogen.sh'));
-var out = child_process.execFileSync(path.join(libzim, 'autogen.sh'), [
+child_process.execFile(path.join(libzim, 'autogen.sh'), [
     //'autogen.sh'
 ], {
     cwd: libzim,
     stdio: 'inherit'
-});
+}, function(err, stdout, stderr) {
+    if (err) { throw err; }
 
-console.log(confArgs.join(' '));
-out = child_process.execFileSync(confArgs[0], confArgs.slice(1), {
-    cwd: confdir,
-    stdio: 'inherit'
+    console.log(confArgs.join(' '));
+    child_process.execFile(confArgs[0], confArgs.slice(1), {
+        cwd: confdir,
+        stdio: 'inherit'
+    }, function(err, stdout, stderr) {
+        if (err) { throw err; }
+        process.exit(0);
+    });
 });

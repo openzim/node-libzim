@@ -10,22 +10,20 @@
 #include <zim/blob.h>
 
 #include "src/macros.h"
+#include "src/wrapper.h"
 
 namespace node_libzim {
 
 class BlobWrap : public Nan::ObjectWrap {
+  friend class ClusterWrap;  // for access to constructor()
  public:
   static NAN_MODULE_INIT(Init) {
-    v8::Local<v8::String> class_name = NEW_STR("Blob");
-    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-    tpl->SetClassName(class_name);
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+    WRAPPER_INIT(tpl, "Blob");
 
-    Nan::SetPrototypeMethod(tpl, "data", data);
-    Nan::SetPrototypeMethod(tpl, "size", size);
+    WRAPPER_METHOD_INIT(tpl, data);
+    WRAPPER_METHOD_INIT(tpl, size);
 
-    constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
-    Nan::Set(target, class_name, Nan::GetFunction(tpl).ToLocalChecked());
+    WRAPPER_INIT_FINISH(tpl);
   }
   static v8::Local<v8::Object> FromC(zim::Blob b, bool owned) {
     Nan::EscapableHandleScope scope;
@@ -33,16 +31,17 @@ class BlobWrap : public Nan::ObjectWrap {
       Nan::New<v8::External>(&b),
       Nan::New(owned)
     };
-    return scope.Escape(Nan::New(constructor())->NewInstance(2, argv));
+    return scope.Escape(Nan::NewInstance(constructor(), 2, argv).ToLocalChecked());
   }
   static zim::Blob FromJS(v8::Local<v8::Value> v) {
     if (v->IsObject()) {
       Nan::HandleScope scope;
       v8::Local<v8::Object> o = Nan::To<v8::Object>(v).ToLocalChecked();
       v8::Local<v8::String> hidden_field = NEW_STR("zim::BlobWrap");
-      v8::Local<v8::Value> b = o->GetHiddenValue(hidden_field);
+      v8::Local<v8::Value> b = Nan::GetPrivate(o, hidden_field).ToLocalChecked();
       if (!b.IsEmpty() && node::Buffer::HasInstance(b)) {
-        return zim::Blob(node::Buffer::Data(b), node::Buffer::Length(b));
+        v8::Local<v8::Object> bo = Nan::To<v8::Object>(b).ToLocalChecked();
+        return zim::Blob(node::Buffer::Data(bo), node::Buffer::Length(bo));
       }
     }
     Nan::ThrowTypeError("Not a Blob.");
@@ -55,7 +54,7 @@ class BlobWrap : public Nan::ObjectWrap {
     char *data = const_cast<char*>(blob_.data());  // Sketchy!
     unsigned size = blob_.size();
     Nan::MaybeLocal<v8::Object> buf = owned ?
-      Nan::NewBuffer(data, size) :
+      Nan::NewBuffer(data, size):
       Nan::NewBuffer(data, size, DontFree, NULL);
     buffer_.Reset(buf.ToLocalChecked());
   }
@@ -86,7 +85,7 @@ class BlobWrap : public Nan::ObjectWrap {
       return Nan::ThrowTypeError("Constructor argument must be a Buffer.");
     }
     v8::Local<v8::String> hidden_field = NEW_STR("zim::BlobWrap");
-    info.This()->SetHiddenValue(hidden_field, Nan::New(b->buffer_));
+    Nan::SetPrivate(info.This(), hidden_field, Nan::New(b->buffer_));
     b->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   }
@@ -101,13 +100,9 @@ class BlobWrap : public Nan::ObjectWrap {
     info.GetReturnValue().Set(Nan::New(b->blob_.size()));
   }
 
-  static inline Nan::Persistent<v8::Function> & constructor() {
-    static Nan::Persistent<v8::Function> my_constructor;
-    return my_constructor;
-  }
-
   zim::Blob blob_;
   Nan::Persistent<v8::Object> buffer_;
+  WRAPPER_DEFINE_SHORT()
 };
 
 }  // namespace node_libzim

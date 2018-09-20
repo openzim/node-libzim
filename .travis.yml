@@ -28,74 +28,25 @@ matrix:
   include:
      # Linux
      - os: linux
-       env: NODE_VERSION="node" PUBLISHABLE=false # latest
+       env: NODE_VERSION="node" # latest
      - os: linux
        compiler: clang
-       env: NODE_VERSION="6.2.2" # node abi 48
+       env: NODE_VERSION="10.9.0" PUBLISHABLE=true
      - os: linux
        compiler: clang
-       env: NODE_VERSION="5.11.1" # node abi 47
+       env: NODE_VERSION="9.9.0"
      - os: linux
-       env: NODE_VERSION="4.4.5" BUILD_X86=true # node abi 46
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="4.0.0" PUBLISHABLE=false
-     - os: linux
-       env: NODE_VERSION="iojs-3.3.1" BUILD_X86=true # node abi 45
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="iojs-3.1.0" PUBLISHABLE=false
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="iojs-2.4.0" PUBLISHABLE=false
-     - os: linux
-       env: NODE_VERSION="iojs-2.4.0" BUILD_X86=true # node abi 44
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="iojs-1.8.4" PUBLISHABLE=false
-     - os: linux
-       env: NODE_VERSION="iojs-1.8.4" BUILD_X86=true # node abi 43
-     - os: linux
-       env: NODE_VERSION="0.12.7" BUILD_X86=true # node abi 14
-     - os: linux
-       env: NODE_VERSION="0.10.40" BUILD_X86=true # node abi 11
-     - os: linux
-       env: NODE_VERSION="0.8.28" # node abi 1
-     # test building against external libzim
-     - os: linux
-       env: NODE_VERSION="0.10.40" EXTERNAL_LIBZIM=true PUBLISHABLE=false
-       addons:
-         apt:
-            sources: [ 'ubuntu-toolchain-r-test', 'libzim-dev:i386' ]
-            packages: [ 'gcc-5-multilib', 'g++-5-multilib', 'libzim-dev' ]
+       env: NODE_VERSION="8.9.4"
      # OS X
      - os: osx
        compiler: clang
-       env: NODE_VERSION="6.2.2" # node abi 48
+       env: NODE_VERSION="10.9.0"
      - os: osx
        compiler: clang
-       env: NODE_VERSION="5.11.1" # node abi 47
+       env: NODE_VERSION="9.9.0"
      - os: osx
        compiler: clang
-       env: NODE_VERSION="4.4.5" # node abi 46
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="iojs-3.3.1" # node abi 45
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="iojs-2.4.0" # node abi 44
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="iojs-1.8.4" # node abi 43
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.12.7" # node abi 14
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.10.40" # node abi 11
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.8.28" # node abi 1
+       env: NODE_VERSION="8.9.4"
 
 env:
   global:
