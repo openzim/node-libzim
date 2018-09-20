@@ -38,4 +38,10 @@ if [ `node -e "console.log(process.arch)"` != "ia32" ]; then
     echo "Can't built 32-bit binaries."
     exit 1
 fi
-if test "$NODE_VERSION" = "0.8.28" ; then npm install -g npm@1.4.28 ; fi
+# install 32 bit compiler toolchain and X11
+# test source compile in 32 bit mode
+npm install --build-from-source
+node-pre-gyp package testpackage
+npm test
+npm run gh-publish
+npm run clean
