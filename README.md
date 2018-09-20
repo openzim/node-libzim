@@ -56,7 +56,7 @@ You can use [`npm`](https://github.com/isaacs/npm) to download and install:
 
 * The latest `libzim` package: `npm install libzim`
 
-* GitHub's `master` branch: `npm install https://github.com/cscott/node-libzim/tarball/master`
+* GitHub's `master` branch: `npm install https://github.com/openzim/node-libzim/tarball/master`
 
 In both cases the module is automatically built with npm's internal
 version of `node-gyp`, and thus your system must meet [node-gyp's
@@ -400,9 +400,9 @@ in [OpenZIM][]: GPLv2.
 [NPM1]: https://nodei.co/npm/libzim.png
 [NPM2]: https://nodei.co/npm/libzim/
 
-[1]: https://travis-ci.org/cscott/node-libzim.png
-[2]: https://travis-ci.org/cscott/node-libzim
-[3]: https://david-dm.org/cscott/node-libzim.png
-[4]: https://david-dm.org/cscott/node-libzim
-[5]: https://david-dm.org/cscott/node-libzim/dev-status.png
-[6]: https://david-dm.org/cscott/node-libzim#info=devDependencies
+[1]: https://travis-ci.org/openzim/node-libzim.png
+[2]: https://travis-ci.org/openzim/node-libzim
+[3]: https://david-dm.org/openzim/node-libzim.png
+[4]: https://david-dm.org/openzim/node-libzim
+[5]: https://david-dm.org/openzim/node-libzim/dev-status.png
+[6]: https://david-dm.org/openzim/node-libzim#info=devDependencies
