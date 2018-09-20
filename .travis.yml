@@ -27,12 +27,12 @@ addons:
 matrix:
   include:
      # OS X
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="node"
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="8.12.0"
+     #- os: osx
+     #  compiler: clang
+     #  env: NODE_VERSION="node"
+     #- os: osx
+     #  compiler: clang
+     #  env: NODE_VERSION="8.12.0"
      # Linux
      - os: linux
        env: NODE_VERSION="node" # latest
