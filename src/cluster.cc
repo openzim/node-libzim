@@ -40,7 +40,7 @@ NAN_METHOD(ClusterWrap::getBlobSize) {
 NAN_METHOD(ClusterWrap::clear) {
   getWrappedField(info)->clear();
   v8::Local<v8::String> hidden_field = NEW_STR("zim::ClusterWrap::refs");
-  info.Holder()->SetHiddenValue(hidden_field, Nan::Undefined());
+  Nan::SetPrivate(info.Holder(), hidden_field, Nan::Undefined());
 }
 NAN_METHOD(ClusterWrap::addBlob) {
   REQUIRE_ARGUMENTS(1);
@@ -50,7 +50,7 @@ NAN_METHOD(ClusterWrap::addBlob) {
     v8::Local<v8::Value> argv[] = {
       arg,
     };
-    arg = cons->NewInstance(1, argv);
+    arg = Nan::NewInstance(cons, 1, argv).ToLocalChecked();
   }
   zim::Blob b;
   {
@@ -62,11 +62,10 @@ NAN_METHOD(ClusterWrap::addBlob) {
   // Record dependency link between this clusterwrap and blobwrap
   // so that blob isn't GC'ed before cluster.
   v8::Local<v8::String> hidden_field = NEW_STR("zim::ClusterWrap::refs");
-  v8::Local<v8::Value> refs = Nan::GetPrivate(info.Holder(), hidden_field)
-    .ToLocalChecked();
+  v8::Local<v8::Value> refs = Nan::GetPrivate(info.Holder(), hidden_field).ToLocalChecked();
   if (refs.IsEmpty() || !refs->IsArray()) {
     refs = Nan::New<v8::Array>();
-    info.Holder()->SetHiddenValue(hidden_field, refs);
+    Nan::SetPrivate(info.Holder(), hidden_field, refs);
   }
   v8::Local<v8::Array> refsArray = v8::Local<v8::Array>::Cast(refs);
   Nan::Set(refsArray, refsArray->Length(), arg);

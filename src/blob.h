@@ -31,16 +31,14 @@ class BlobWrap : public Nan::ObjectWrap {
       Nan::New<v8::External>(&b),
       Nan::New(owned)
     };
-    return scope.Escape(Nan::NewInstance(constructor(), 2, argv)
-      .ToLocalChecked());
+    return scope.Escape(Nan::NewInstance(constructor(), 2, argv).ToLocalChecked());
   }
   static zim::Blob FromJS(v8::Local<v8::Value> v) {
     if (v->IsObject()) {
       Nan::HandleScope scope;
       v8::Local<v8::Object> o = Nan::To<v8::Object>(v).ToLocalChecked();
       v8::Local<v8::String> hidden_field = NEW_STR("zim::BlobWrap");
-      v8::Local<v8::Value> b = Nan::GetPrivate(o, hidden_field)
-        .ToLocalChecked();
+      v8::Local<v8::Value> b = Nan::GetPrivate(o, hidden_field).ToLocalChecked();
       if (!b.IsEmpty() && node::Buffer::HasInstance(b)) {
         v8::Local<v8::Object> bo = Nan::To<v8::Object>(b).ToLocalChecked();
         return zim::Blob(node::Buffer::Data(bo), node::Buffer::Length(bo));
@@ -56,7 +54,7 @@ class BlobWrap : public Nan::ObjectWrap {
     char *data = const_cast<char*>(blob_.data());  // Sketchy!
     unsigned size = blob_.size();
     Nan::MaybeLocal<v8::Object> buf = owned ?
-      Nan::NewBuffer(data, size) :
+      Nan::NewBuffer(data, size):
       Nan::NewBuffer(data, size, DontFree, NULL);
     buffer_.Reset(buf.ToLocalChecked());
   }
@@ -87,7 +85,7 @@ class BlobWrap : public Nan::ObjectWrap {
       return Nan::ThrowTypeError("Constructor argument must be a Buffer.");
     }
     v8::Local<v8::String> hidden_field = NEW_STR("zim::BlobWrap");
-    info.This()->SetHiddenValue(hidden_field, Nan::New(b->buffer_));
+    Nan::SetPrivate(info.This(), hidden_field, Nan::New(b->buffer_));
     b->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   }

@@ -38,8 +38,7 @@ v8::Local<v8::Object> FileheaderWrap::FromC(v8::Local<v8::Object> file,
     file,
     Nan::New<v8::External>(const_cast<zim::Fileheader*>(fileheader))
   };
-  return scope.Escape(Nan::NewInstance(constructor(), 2, argv)
-    .ToLocalChecked());
+  return scope.Escape(Nan::NewInstance(constructor(), 2, argv).ToLocalChecked());
 }
 
 }  // namespace node_libzim
