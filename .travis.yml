@@ -54,8 +54,8 @@ before_install:
 - if test "$TRAVIS_OS_NAME" = "osx clang" ; then
     brew update;
     brew install xz;
-    export LDFLAGS="-L/usr/local/opt/icu4c/lib"
-    export CPPFLAGS="-I/usr/local/opt/icu4c/include"
+    export LDFLAGS="-L/usr/local/opt/icu4c/lib";
+    export CPPFLAGS="-I/usr/local/opt/icu4c/include";
   fi
 - if test "$TRAVIS_OS_NAME $CC" = "linux clang" ; then
     if [ -z "$(ls -A $HOME/llvm-$LLVM_VERSION)" ]; then
