@@ -48,14 +48,16 @@
     v8::Local<v8::Value> argv[] = {                                     \
       Nan::New<v8::External>(const_cast<WrappedType*>(&val))            \
     };                                                                  \
-    return scope.Escape(constructor()->NewInstance(1, argv));           \
+    return scope.Escape(Nan::NewInstance(constructor(), 1, argv)        \
+      .ToLocalChecked());                                               \
   }                                                                     \
   static WrappedType FromJS(v8::Local<v8::Value> v) {                   \
     if (v->IsObject()) {                                                \
       Nan::HandleScope scope;                                           \
       v8::Local<v8::Object> o = Nan::To<v8::Object>(v).ToLocalChecked();\
       v8::Local<v8::String> hidden_field = NEW_STR(#WrappedType);       \
-      v8::Local<v8::Value> vv = o->GetHiddenValue(hidden_field);        \
+      v8::Local<v8::Value> vv = Nan::GetPrivate(o, hidden_field)        \
+        .ToLocalChecked();                                              \
       if (!vv.IsEmpty() && o->StrictEquals(vv)) {                       \
         Wrapper *obj = Nan::ObjectWrap::Unwrap<Wrapper>(o);             \
         return obj->field ## _;                                         \
@@ -65,7 +67,7 @@
     return WrappedType();                                               \
   }                                                                     \
  private:                                                               \
-  explicit Wrapper(const WrappedType *v) : field ## _(*v) { }                 \
+  explicit Wrapper(const WrappedType *v) : field ## _(*v) { }           \
   virtual ~Wrapper() { }                                                \
   WrappedType field ## _;                                               \
   static inline WrappedType *                                           \
@@ -91,11 +93,11 @@
       w = new Wrapper(&wt);                                             \
     }                                                                   \
     v8::Local<v8::String> hidden_field = NEW_STR(#WrappedType);         \
-    info.This()->SetHiddenValue(hidden_field, info.This());             \
+    Nan::SetPrivate(info.This(), hidden_field, info.This());            \
     w->Wrap(info.This());                                               \
   }
 #define WRAPPER_DEFINE_SHORT()                                          \
-  static inline Nan::Persistent<v8::FunctionTemplate> & cons_template() { \
+  static inline Nan::Persistent<v8::FunctionTemplate> & cons_template() {\
     static Nan::Persistent<v8::FunctionTemplate> my_template;           \
     return my_template;                                                 \
   }                                                                     \

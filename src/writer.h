@@ -92,7 +92,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
 
 // Wrappers
 
-#define PROXY_WRAPPER_DEFINE(Wrapper, WrappedType, ProxyType, field)          \
+#define PROXY_WRAPPER_DEFINE(Wrapper, WrappedType, ProxyType, field)    \
   static NAN_METHOD(New) {                                              \
     if (!info.IsConstructCall()) {                                      \
       return Nan::ThrowTypeError("You must use `new` with this constructor."); \
@@ -102,7 +102,7 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
     if (info.Length() > 0 && info[0]->IsExternal()) {                   \
       c = reinterpret_cast<WrappedType*>                                \
         (v8::Local<v8::External>::Cast(info[0])->Value());              \
-      obj = new Wrapper(c, info.Length() > 1 ? info[1]->IsTrue() : false); \
+      obj = new Wrapper(c, info.Length() > 1 ? info[1]->IsTrue() : false);\
     } else {                                                            \
       c =                                                               \
         ProxyType::FromJS(Nan::New<v8::Object>(), &info, true);         \
@@ -124,7 +124,8 @@ class ZimCreatorProxy : public zim::writer::ZimCreator {
       Nan::New<v8::External>(const_cast<WrappedType*>(o)),              \
       Nan::New(owned)                                                   \
     };                                                                  \
-    return scope.Escape(constructor()->NewInstance(2, argv));           \
+    return scope.Escape(Nan::NewInstance(constructor(), 2, argv)        \
+    .ToLocalChecked());                                                 \
   }                                                                     \
   static std::unordered_map<const WrappedType*, ProxyType*> proxyMap;   \
  private:                                                               \

@@ -62,7 +62,8 @@ NAN_METHOD(ClusterWrap::addBlob) {
   // Record dependency link between this clusterwrap and blobwrap
   // so that blob isn't GC'ed before cluster.
   v8::Local<v8::String> hidden_field = NEW_STR("zim::ClusterWrap::refs");
-  v8::Local<v8::Value> refs = info.Holder()->GetHiddenValue(hidden_field);
+  v8::Local<v8::Value> refs = Nan::GetPrivate(info.Holder(), hidden_field)
+    .ToLocalChecked();
   if (refs.IsEmpty() || !refs->IsArray()) {
     refs = Nan::New<v8::Array>();
     info.Holder()->SetHiddenValue(hidden_field, refs);

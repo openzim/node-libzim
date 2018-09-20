@@ -57,8 +57,9 @@ WrappedType *Proxy::FromJS(v8::Local<v8::Value> p,                      \
   /* Does this object already have a proxy? */                          \
   if (p->IsObject()) {                                                  \
     v8::Local<v8::String> hidden_field = NEW_STR("zim::" #Proxy);       \
-    v8::Local<v8::Object> obj = Nan::To<v8::Object>(p).ToLocalChecked(); \
-    v8::Local<v8::Value> proxy = obj->GetHiddenValue(hidden_field);     \
+    v8::Local<v8::Object> obj = Nan::To<v8::Object>(p).ToLocalChecked();\
+    v8::Local<v8::Value> proxy = Nan::GetPrivate(obj, hidden_field)     \
+      .ToLocalChecked();                                                \
     if (!proxy.IsEmpty() && proxy->IsExternal()) {                      \
       ap = reinterpret_cast<Proxy*>                                     \
         (v8::Local<v8::External>::Cast(proxy)->Value());                \
