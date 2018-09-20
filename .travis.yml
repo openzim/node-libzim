@@ -55,6 +55,7 @@ before_install:
     brew update;
     brew install xz;
     brew link xz;
+    export CPPFLAGS='-I/usr/local/include';
   fi
 - if test "$TRAVIS_OS_NAME $CC" = "linux clang" ; then
     if [ -z "$(ls -A $HOME/llvm-$LLVM_VERSION)" ]; then
