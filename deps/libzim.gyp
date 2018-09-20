@@ -100,7 +100,8 @@
       },
       'link_settings': {
         'libraries': [
-            '<(SHARED_INTERMEDIATE_DIR)/src/.libs/libzim.a'
+            '<(SHARED_INTERMEDIATE_DIR)/src/.libs/libzim.a',
+            '-llzma',
         ]
       },
       'sources': [
