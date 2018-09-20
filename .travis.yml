@@ -29,24 +29,15 @@ matrix:
      # Linux
      - os: linux
        env: NODE_VERSION="node" # latest
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="10.9.0" PUBLISHABLE=true
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="9.9.0"
-     - os: linux
-       env: NODE_VERSION="8.9.4"
+     - os: linux PUBLISHABLE=true
+       env: NODE_VERSION="8.12.0"
      # OS X
      - os: osx
        compiler: clang
-       env: NODE_VERSION="10.9.0"
+       env: NODE_VERSION="node"
      - os: osx
        compiler: clang
-       env: NODE_VERSION="9.9.0"
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="8.9.4"
+       env: NODE_VERSION="8.12.0"
 
 env:
   global:
