@@ -26,11 +26,6 @@ addons:
 
 matrix:
   include:
-     # Linux
-     - os: linux
-       env: NODE_VERSION="node" # latest
-     - os: linux
-       env: NODE_VERSION="8.12.0" PUBLISHABLE=true
      # OS X
      - os: osx
        compiler: clang
@@ -38,6 +33,11 @@ matrix:
      - os: osx
        compiler: clang
        env: NODE_VERSION="8.12.0"
+     # Linux
+     - os: linux
+       env: NODE_VERSION="node" # latest
+     - os: linux
+       env: NODE_VERSION="8.12.0" PUBLISHABLE=true
 
 env:
   global:
