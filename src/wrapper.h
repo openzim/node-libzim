@@ -48,14 +48,16 @@
     v8::Local<v8::Value> argv[] = {                                     \
       Nan::New<v8::External>(const_cast<WrappedType*>(&val))            \
     };                                                                  \
-    return scope.Escape(Nan::NewInstance(constructor(), 1, argv).ToLocalChecked());           \
+    return scope.Escape(Nan::NewInstance(constructor(), 1, argv)        \
+      .ToLocalChecked());                                               \
   }                                                                     \
   static WrappedType FromJS(v8::Local<v8::Value> v) {                   \
     if (v->IsObject()) {                                                \
       Nan::HandleScope scope;                                           \
       v8::Local<v8::Object> o = Nan::To<v8::Object>(v).ToLocalChecked();\
       v8::Local<v8::String> hidden_field = NEW_STR(#WrappedType);       \
-      v8::Local<v8::Value> vv = Nan::GetPrivate(o, hidden_field).ToLocalChecked();         \
+      v8::Local<v8::Value> vv = Nan::GetPrivate(o, hidden_field)        \
+        .ToLocalChecked();                                              \
       if (!vv.IsEmpty() && o->StrictEquals(vv)) {                       \
         Wrapper *obj = Nan::ObjectWrap::Unwrap<Wrapper>(o);             \
         return obj->field ## _;                                         \

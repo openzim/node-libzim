@@ -31,14 +31,16 @@ class BlobWrap : public Nan::ObjectWrap {
       Nan::New<v8::External>(&b),
       Nan::New(owned)
     };
-    return scope.Escape(Nan::NewInstance(constructor(), 2, argv).ToLocalChecked());
+    return scope.Escape(Nan::NewInstance(constructor(), 2, argv)
+      .ToLocalChecked());
   }
   static zim::Blob FromJS(v8::Local<v8::Value> v) {
     if (v->IsObject()) {
       Nan::HandleScope scope;
       v8::Local<v8::Object> o = Nan::To<v8::Object>(v).ToLocalChecked();
       v8::Local<v8::String> hidden_field = NEW_STR("zim::BlobWrap");
-      v8::Local<v8::Value> b = Nan::GetPrivate(o, hidden_field).ToLocalChecked();
+      v8::Local<v8::Value> b = Nan::GetPrivate(o, hidden_field)
+        .ToLocalChecked();
       if (!b.IsEmpty() && node::Buffer::HasInstance(b)) {
         v8::Local<v8::Object> bo = Nan::To<v8::Object>(b).ToLocalChecked();
         return zim::Blob(node::Buffer::Data(bo), node::Buffer::Length(bo));
