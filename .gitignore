@@ -1,0 +1,7 @@
+node_modules/
+build/*/build/
+dist/
+auto*.gypi
+*.log.*
+*.log
+*.tgz

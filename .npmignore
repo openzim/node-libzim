@@ -1,0 +1,10 @@
+node_modules/
+build/*/build/
+build/asmjs
+dist/*.node
+auto*.gypi
+*.ts
+!*.d.ts
+*.log.*
+*.log
+*.tgz

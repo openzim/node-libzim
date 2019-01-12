@@ -1,0 +1,5 @@
+{
+	"sources": [
+		"src/example.cc"
+	]
+}

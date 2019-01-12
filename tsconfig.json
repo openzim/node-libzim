@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noImplicitAny": true,
+		"outDir": "dist",
+		"removeComments": false,
+		"target": "es5"
+	},
+	"files": [
+		"typings/node.d.ts",
+
+		"src/serve.ts",
+		"src/example.ts"
+	]
+}
