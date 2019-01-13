@@ -12,6 +12,7 @@ script:
 - npm i
 - npm i -g typescript
 - tsc
+- npm run test
 install: travis/install_deps.sh
 env:
   matrix:
