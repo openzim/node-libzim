@@ -8,6 +8,10 @@ node_js:
 cache: ccache
 before_install:
 - PATH=$PATH:$HOME/bin
+script:
+- npm i
+- npm i -g typescript
+- tsc
 install: travis/install_deps.sh
 env:
   matrix:
