@@ -1,6 +1,7 @@
 node_modules/
 build/*/build/
 dist/*.node
+!dist/*.js
 auto*.gypi
 *.ts
 !*.d.ts
