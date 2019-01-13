@@ -115,7 +115,6 @@ NBIND_CLASS(ZimReaderManager)
     method(getArticleByUrl);
     method(suggest);
     method(search);
-    method(finalise);
 }
 
 #endif
