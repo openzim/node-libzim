@@ -1,8 +1,8 @@
-import { ZimArticle, ZimCreator } from "./";
+import { ZimArticle, ZimCreator, ZimReader } from "./";
 
 (async function () {
     console.info('Starting');
-    const creator = new ZimCreator('test.zim', { welcome: 'file4', favicon:'./file2' });
+    const creator = new ZimCreator('test.zim', { welcome: 'file4', favicon: './file2' });
     console.info(`Created Zim`);
 
     for (let i = 100; i > 0; i--) {
@@ -12,5 +12,19 @@ import { ZimArticle, ZimCreator } from "./";
 
     await creator.finalise();
 
-    console.log('Done');
+    console.log('Done Writing');
+
+
+    const zimFile = new ZimReader('test.zim');
+
+    const suggestResults = await zimFile.suggest('Content');
+    console.info(`Suggest Results:`, suggestResults);
+
+    const searchResults = await zimFile.search('Content');
+    console.info(`Search Results:`, searchResults);
+
+    const article3Content = await zimFile.getArticleByUrl('./file3');
+    console.info(`Article by url (article3):`, article3Content);
+
+    await zimFile.close();
 })();

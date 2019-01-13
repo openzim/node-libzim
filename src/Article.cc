@@ -4,6 +4,7 @@
 #include <vector>
 #include <zim/writer/zimcreator.h>
 #include <zim/blob.h>
+#include <zim/article.h>
 
 #include "nbind/api.h"
 
@@ -152,15 +153,16 @@ class Article
 
     void toJS(nbind::cbOutput output)
     {
-        output(ns,
-               aid,
-               url,
-               title,
+        nbind::Buffer buf((unsigned char *)bufferData, bufferLength);
+
+        output(url,
+               bufferData,
+               std::string(1, ns),
                mimeType,
                redirectAid,
-               fileName,
-               bufferData,
-               bufferLength);
+               aid,
+               title,
+               fileName);
     }
 };
 
