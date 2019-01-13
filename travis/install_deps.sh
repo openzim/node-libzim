@@ -2,7 +2,7 @@ set -e
 
 REPO_NAME=${TRAVIS_REPO_SLUG#*/}
 # ARCHIVE_NAME=deps_${TRAVIS_OS_NAME}_${PLATFORM}_${REPO_NAME}.tar.gz
-ARCHIVE_NAME=deps_${TRAVIS_OS_NAME}_${PLATFORM}_kiwix-lib.tar.gz
+ARCHIVE_NAME=deps_${TRAVIS_OS_NAME}_${PLATFORM}_zim-tools.tar.gz
 
 # Ninja
 cd $HOME
@@ -11,8 +11,6 @@ then
   brew update
   brew upgrade python3
   pip3 install meson==0.43.0
-
-  brew install libmagic
 
   wget https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip
   unzip ninja-mac.zip ninja
@@ -29,4 +27,6 @@ cp ninja $HOME/bin
 # Dependencies comming from kiwix-build.
 cd ${HOME}
 wget http://tmp.kiwix.org/ci/${ARCHIVE_NAME}
+mkdir -p BUILD_${PLATFORM}
+cd BUILD_${PLATFORM}
 tar xf ${HOME}/${ARCHIVE_NAME}
