@@ -1,7 +1,7 @@
-nbind-example-universal
+libzim-binding
 =======================
 
-[![build status](https://travis-ci.org/charto/nbind-example-universal.svg?branch=master)](http://travis-ci.org/charto/nbind-example-universal)
+[![Build Status](https://travis-ci.org/ISNIT0/node-libzim.svg?branch=master)](https://travis-ci.org/ISNIT0/node-libzim)
 
 This is an example of using [nbind](https://github.com/charto/nbind)
 to distribute a native Node.js addon with an asm.js fallback,
