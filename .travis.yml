@@ -12,6 +12,9 @@ install: travis/install_deps.sh
 env:
   - CC=gcc-4.8 CXX=g++-4.8
   - CC=echo CXX=echo
+  matrix:
+    - PLATFORM="native_static"
+    - PLATFORM="native_dyn"
 
 addons:
   apt:
