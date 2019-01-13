@@ -1,5 +1,5 @@
 {
-  "name": "nbind-example-universal",
+  "name": "libzim",
   "version": "0.2.0",
   "description": "Example of compiling C++ to asm.js and Node.js addons",
   "scripts": {
@@ -12,10 +12,11 @@
     "build:native": "autogypi -r build && node-gyp -C build/native configure build && copyasm build/native dist",
     "build:asmjs": "autogypi -r build && node-gyp -C build/asmjs  configure build --asmjs=1 && copyasm build/asmjs dist",
     "install": "(npm run build:native || echo Warning: problems with native build)",
-    "prepublish": "tsc && (npm run build:asmjs || echo Warning: problems with asm.js build)",
+    "__prepublish": "tsc && (npm run build:asmjs || echo Warning: problems with asm.js build)",
     "start": "node dist/serve.js",
-    "test": "node dist/example.js"
+    "test": "node dist/test.js"
   },
+  "main": "dist/index.js",
   "author": "Juha Järvi",
   "license": "MIT",
   "repository": {
@@ -27,9 +28,14 @@
   },
   "homepage": "https://github.com/charto/nbind-example-universal#readme",
   "dependencies": {
+    "@types/mime": "^2.0.0",
+    "@types/node": "^10.12.18",
+    "@types/rimraf": "^2.0.2",
     "autogypi": "^0.2.2",
+    "mime": "^2.4.0",
     "nbind": "^0.3.6",
-    "node-gyp": "^3.3.1"
+    "node-gyp": "^3.3.1",
+    "rimraf": "^2.6.3"
   },
   "devDependencies": {
     "typescript": "^2.1.4"

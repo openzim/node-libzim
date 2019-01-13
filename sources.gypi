@@ -1,5 +1,5 @@
 {
 	"sources": [
-		"src/example.cc"
+		"src/ZimCreator.cc"
 	]
 }

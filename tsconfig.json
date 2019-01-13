@@ -1,6 +1,9 @@
 {
 	"compilerOptions": {
 		"module": "commonjs",
+		"lib": [
+			"es2015"
+		],
 		"moduleResolution": "node",
 		"noImplicitAny": true,
 		"outDir": "dist",
@@ -8,9 +11,7 @@
 		"target": "es5"
 	},
 	"files": [
-		"typings/node.d.ts",
-
-		"src/serve.ts",
-		"src/example.ts"
+		"src/index.ts",
+		"src/test.ts"
 	]
 }
