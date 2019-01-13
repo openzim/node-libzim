@@ -1,5 +1,5 @@
 {
-  "name": "libzim",
+  "name": "libzim-binding",
   "version": "0.2.0",
   "description": "Example of compiling C++ to asm.js and Node.js addons",
   "scripts": {
