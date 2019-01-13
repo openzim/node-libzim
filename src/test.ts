@@ -25,6 +25,5 @@ import { ZimArticle, ZimCreator, ZimReader } from "./";
 
     const article3Content = await zimFile.getArticleByUrl('./file3');
     console.info(`Article by url (article3):`, article3Content);
-
-    await zimFile.close();
+    
 })();

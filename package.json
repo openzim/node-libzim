@@ -13,20 +13,19 @@
     "build:asmjs": "autogypi -r build && node-gyp -C build/asmjs  configure build --asmjs=1 && copyasm build/asmjs dist",
     "install": "(npm run build:native || echo Warning: problems with native build)",
     "__prepublish": "tsc && (npm run build:asmjs || echo Warning: problems with asm.js build)",
-    "start": "node dist/serve.js",
     "test": "node dist/test.js"
   },
   "main": "dist/index.js",
-  "author": "Juha Järvi",
+  "author": "Joseph Reeve",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/charto/nbind-example-universal.git"
+    "url": "https://github.com/isnit0/node-libzim.git"
   },
   "bugs": {
-    "url": "https://github.com/charto/nbind-example-universal/issues"
+    "url": "https://github.com/isnit0/node-libzim/issues"
   },
-  "homepage": "https://github.com/charto/nbind-example-universal#readme",
+  "homepage": "https://github.com/isnit0/node-libzim#readme",
   "dependencies": {
     "@types/mime": "^2.0.0",
     "@types/node": "^10.12.18",

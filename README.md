@@ -3,37 +3,66 @@ libzim-binding
 
 [![Build Status](https://travis-ci.org/ISNIT0/node-libzim.svg?branch=master)](https://travis-ci.org/ISNIT0/node-libzim)
 
-This is an example of using [nbind](https://github.com/charto/nbind)
-to distribute a native Node.js addon with an asm.js fallback,
-also usable from web browsers.
+> This package was build using [nbind](https://github.com/charto/nbind)
 
-The **optional** native addon is installed if you have one of the following C++ compilers:
+## Dependencies
+You will need a copy of Libzim installed on your machine.
+Libzim be be included in this library at some point in the future, but for now install it ([see here](https://github.com/openzim/libzim/)).
 
-- GCC 4.8 or above
-- Clang 3.6 or above
-- Visual Studio 2015 ([The Community version](https://www.visualstudio.com/en-us/products/visual-studio-community-vs.aspx) is fine)
+## Usage
 
-Otherwise the asm.js fallback is used.
-
-Usage
------
-
-First install:
-
-```bash
-git clone https://github.com/charto/nbind-example-universal.git
-cd nbind-example-universal
-npm install
+```
+npm i libzim-binding
 ```
 
-Then run the example in Node.js with `npm test` or in the browser by running
-`npm start` and navigating to [http://localhost:8080/](http://localhost:8080/).
+### Building a Zim file
+```typescript
+// write.ts
+import { ZimArticle, ZimCreator } from "libzim-binding";
 
-Note that you shouldn't add the compiled asm.js code in version control.
-In this example it's present in the `dist` directory simply to allow installing
-directly from Github without having Emscripten available.
+(async () => {
+
+    console.info('Starting');
+    const creator = new ZimCreator('test.zim', { welcome: 'index.html', favicon: './favicon.png' });
+
+    for (let i = 100; i > 0; i--) {
+        const a = new ZimArticle(`file${i}`, `Content ${i}`);
+        await creator.addArticle(a);
+    }
+
+    const welcome = new ZimArticle(`index.html`, `<h1>Welcome!</h1>`);
+    await creator.addArticle(a);
+
+    await creator.finalise();
+
+    console.log('Done Writing');
+
+})();
+```
+
+### Reading a Zim file
+```typescript
+// read.ts
+
+import { ZimArticle, ZimReader } from "libzim-binding";
+
+(async () => {
+
+    const zimFile = new ZimReader('test.zim');
+
+    const suggestResults = await zimFile.suggest('Content');
+    console.info(`Suggest Results:`, suggestResults);
+
+    const searchResults = await zimFile.search('Content');
+    console.info(`Search Results:`, searchResults);
+
+    const article3Content = await zimFile.getArticleByUrl('./file3');
+    console.info(`Article by url (./file3):`, article3Content);
+
+})();
+
+```
 
 License
 =======
-
-This example is public domain.
+MIT - [./LICENSE](./LICENSE)
