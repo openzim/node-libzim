@@ -5,6 +5,10 @@ node_js:
   - "stable"
   - "latest"
 
+before_install:
+- PATH=$PATH:$HOME/bin
+install: travis/install_deps.sh
+
 env:
   - CC=gcc-4.8 CXX=g++-4.8
   - CC=echo CXX=echo
