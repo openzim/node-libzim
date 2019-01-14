@@ -10,7 +10,7 @@
     "ndts": "ndts",
     "tsc": "tsc",
     "build:native": "autogypi -r build && node-gyp -C build/native configure build && copyasm build/native dist",
-    "install": "(npm run build:native || echo Warning: problems with native build)",
+    "install": "npm run download && (npm run build:native || echo Warning: problems with native build)",
     "download": "node ./download-libzim.js",
     "__prepublish": "tsc && (npm run build:asmjs || echo Warning: problems with asm.js build)",
     "test": "node dist/test.js"
