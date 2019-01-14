@@ -11,6 +11,12 @@ const url = `http://download.openzim.org/release/libzim/libzim-${process.env.LIB
 console.info(`Downloading Libzim Binaries from: `, url);
 const dlFile = `./download/libzim-${process.env.LIBZIM_VERSION}.tar.xz`;
 
+try {
+    fs.statSync(dlFile);
+    console.warn(`File [${dlFile}] already exists, not downloading`);
+    process.exit(0);
+} catch (err) { }
+
 axios({
     url,
     method: 'get',
