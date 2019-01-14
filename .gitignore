@@ -5,3 +5,4 @@ auto*.gypi
 *.log.*
 *.log
 *.tgz
+download

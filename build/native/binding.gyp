@@ -1,11 +1,14 @@
 {
+	"variables": {
+      "libzim": "-L../../../download/include",
+  	},
 	"targets": [
 		{
 			"includes": [
 				"../auto.gypi",
 				"../../sources.gypi"
 			],
-			'libraries': [ "-L/usr/local/lib", "-lzim" ],
+			"libraries": [ "<(libzim)", "-lzim" ],
 		}
 	],
 	"includes": [
