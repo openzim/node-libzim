@@ -4,7 +4,7 @@ import { ZimArticle } from "./Article";
 import * as rimraf from 'rimraf';
 import { statSync } from 'fs';
 
-interface ZimCreatorOpts {
+export interface ZimCreatorOpts {
     welcome: string;
     favicon: string;
 }
@@ -17,7 +17,7 @@ class ZimCreatorWrapper {
 
 binding.bind('ZimCreatorWrapper', ZimCreatorWrapper);
 
-interface ZimMetadata {
+export interface ZimMetadata {
     Counter?: string,
     Creator?: string,
     Date?: string,
@@ -50,14 +50,19 @@ class ZimCreator {
         } catch (err) {
         }
 
-        this._c = lib.ZimCreatorManager.create(
-            fileName,
-            opts.welcome
-        );
+        this._createZimCreator(fileName, opts.welcome);
+
         this.setMetadata(metadata);
-        if(opts.favicon) {
+        if (opts.favicon) {
             this.setFaviconMetadata(opts.favicon);
         }
+    }
+
+    _createZimCreator(fileName: string, welcome: string) {
+        this._c = lib.ZimCreatorManager.create(
+            fileName,
+            welcome
+        );
     }
 
     addArticle(article: ZimArticle) {
