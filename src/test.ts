@@ -1,11 +1,17 @@
 import { ZimArticle, ZimCreator, ZimReader } from "./";
 
 (async function () {
+
     console.info('Starting');
-    const creator = new ZimCreator('test.zim', { welcome: 'file4', favicon: './file2' });
+    const creator = new ZimCreator({
+        fileName: 'test.zim',
+        welcome: 'file4',
+        fullTextIndexLanguage: 'eng',
+        minChunkSize: 2048,
+    }, { favicon: './file2' });
     console.info(`Created Zim`);
 
-    for (let i = 100; i > 0; i--) {
+    for (let i = 200; i > 0; i--) {
         const a = new ZimArticle(`file${i}`, `Content ${i} asdf as dfasd f`);
         await creator.addArticle(a);
     }
@@ -25,5 +31,5 @@ import { ZimArticle, ZimCreator, ZimReader } from "./";
 
     const article3Content = await zimFile.getArticleByUrl('./file3');
     console.info(`Article by url (article3):`, article3Content);
-    
+
 })();

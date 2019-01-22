@@ -33,10 +33,14 @@ class ZimCreatorWrapper
 class ZimCreatorManager
 {
   public:
-	static ZimCreatorWrapper *create(std::string fileName, std::string mainPage)
+	static ZimCreatorWrapper *create(std::string fileName, std::string mainPage, std::string fullTextIndexLanguage, int minChunkSize)
 	{
+		bool shouldIndex = !fullTextIndexLanguage.empty();
+
 		static ZimCreatorWrapper cw;
 		cw._c = new OverriddenZimCreator(mainPage); // TODO: consider when to delete this
+		cw._c->setIndexing(shouldIndex, fullTextIndexLanguage);
+		cw._c->setMinChunkSize(minChunkSize);
 		cw._c->startZimCreation(fileName);
 		return (&cw);
 	}

@@ -5,8 +5,10 @@ import * as rimraf from 'rimraf';
 import { statSync } from 'fs';
 
 export interface ZimCreatorOpts {
-    welcome: string;
-    favicon: string;
+    fileName: string;
+    welcome?: string;
+    fullTextIndexLanguage?: string;
+    minChunkSize?: number;
 }
 
 class ZimCreatorWrapper {
@@ -27,13 +29,15 @@ export interface ZimMetadata {
     Publisher?: string,
     Tags?: string,
     Title?: string,
+    favicon?: string
 }
 
 class ZimCreator {
     tmpDir: string;
     _c: any;
     fileName: string;
-    constructor(fileName: string, opts: ZimCreatorOpts, metadata: ZimMetadata = {}) {
+    constructor(opts: ZimCreatorOpts, metadata: ZimMetadata = {}) {
+        const fileName = opts.fileName;
         this.tmpDir = fileName.split('.').slice(0, -1).join('.') + '.tmp';
         this.fileName = fileName;
 
@@ -50,18 +54,17 @@ class ZimCreator {
         } catch (err) {
         }
 
-        this._createZimCreator(fileName, opts.welcome);
+        this._createZimCreator(opts);
 
         this.setMetadata(metadata);
-        if (opts.favicon) {
-            this.setFaviconMetadata(opts.favicon);
-        }
     }
 
-    _createZimCreator(fileName: string, welcome: string) {
+    _createZimCreator(opts: ZimCreatorOpts) {
         this._c = lib.ZimCreatorManager.create(
-            fileName,
-            welcome
+            opts.fileName,
+            opts.welcome || '',
+            opts.fullTextIndexLanguage || '',
+            opts.minChunkSize || 2048
         );
     }
 
@@ -84,8 +87,12 @@ class ZimCreator {
 
         for (let key of keys) {
             const content = (metadata as any)[key];
-            const article = new ZimArticle(key, content, 'M');
-            await this.addArticle(article);
+            if (key === 'favicon') {
+                await this.setFaviconMetadata(content);
+            } else {
+                const article = new ZimArticle(key, content, 'M');
+                await this.addArticle(article);
+            }
         }
     }
 
