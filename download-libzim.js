@@ -6,10 +6,11 @@ const fs = require('fs');
 
 mkdirp.sync('./download');
 
-const url = `http://download.openzim.org/release/libzim/libzim-${process.env.LIBZIM_VERSION}.tar.xz`;
+// const url = `http://download.openzim.org/release/libzim/libzim-${process.env.LIBZIM_VERSION}.tar.xz`;
+const url = `https://download.openzim.org/nightly/2019-02-06/libzim_linux-x86_64-2019-02-06.tar.gz`;
 
 console.info(`Downloading Libzim Binaries from: `, url);
-const dlFile = `./download/libzim-${process.env.LIBZIM_VERSION}.tar.xz`;
+const dlFile = `./download/libzim-${process.env.LIBZIM_VERSION}.tar.gz`;
 
 try {
     fs.statSync(dlFile);

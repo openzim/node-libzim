@@ -1,6 +1,6 @@
 {
 	"variables": {
-      "libzim": "-L../../../download/include",
+      "libzim": "-L../../../download/",
   	},
 	"targets": [
 		{
@@ -8,7 +8,7 @@
 				"../auto.gypi",
 				"../../sources.gypi"
 			],
-			"libraries": [ "<(libzim)", "-lzim" ],
+			"libraries": [ "<(libzim)" ],
 		}
 	],
 	"includes": [
