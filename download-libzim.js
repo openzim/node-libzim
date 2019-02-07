@@ -49,3 +49,5 @@ for (let url of urls) {
             console.error(`Failed to download and extract file:`, err);
         });
 }
+
+exec(`ln -s libzim.so.4.0.4 download/libzim.so.4`);

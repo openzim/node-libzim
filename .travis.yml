@@ -10,7 +10,6 @@ before_install:
 - PATH=$PATH:$HOME/bin
 script:
 - npm i
-- ls download
 - npm i -g typescript
 - tsc
 - npm run test

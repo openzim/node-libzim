@@ -8,7 +8,7 @@
 			"libraries": [ 
 				"-Wl,-rpath,<(libzim_dir)",
 				"-L<(libzim_dir)",
-				"-lzim",
+				"<(libzim_dir)/libzim.so.4",
 			],
 			"include_dirs": [
 				"<(libzim_include)",
