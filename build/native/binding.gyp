@@ -8,7 +8,7 @@
 				"../auto.gypi",
 				"../../sources.gypi"
 			],
-			"libraries": [ "-L<(libzim)", "-llibzim.so" ],
+			"libraries": [ "<(libzim)", "-lzim" ],
 		}
 	],
 	"includes": [
