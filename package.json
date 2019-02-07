@@ -3,6 +3,7 @@
   "version": "0.2.1",
   "description": "Example of compiling C++ to asm.js and Node.js addons",
   "scripts": {
+    "clean": "rm -rf dist build/native/build",
     "autogypi": "autogypi",
     "node-gyp": "node-gyp",
     "emcc-path": "emcc-path",
