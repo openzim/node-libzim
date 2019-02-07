@@ -30,7 +30,7 @@ addons:
       - ccache
       - zlib1g-dev
       - uuid-dev
-matrix:
-  include:
-    - env: PLATFORM="native_dyn"
-      os: osx
+# matrix:
+#   include:
+#     - env: PLATFORM="native_dyn"
+#       os: osx
