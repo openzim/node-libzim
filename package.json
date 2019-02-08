@@ -1,6 +1,6 @@
 {
   "name": "libzim-binding",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Example of compiling C++ to asm.js and Node.js addons",
   "scripts": {
     "clean": "rm -rf dist build/native/build",
