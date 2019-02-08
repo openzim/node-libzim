@@ -15,7 +15,9 @@ const urls = [
     isLinux ? `http://download.openzim.org/nightly/2019-02-07/libzim_linux-x86_64-2019-02-07.tar.gz` : null, // Binary
 ].filter(a => a);
 
-console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
+if (!isLinux) {
+    console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
+}
 
 for (let url of urls) {
     console.info(`Downloading Libzim from: `, url);
