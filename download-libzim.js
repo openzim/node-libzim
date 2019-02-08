@@ -2,15 +2,20 @@ require('dotenv').config();
 const axios = require('axios');
 const mkdirp = require('mkdirp');
 const exec = require('exec-then');
+const os = require('os');
 const fs = require('fs');
 const urlParser = require('url');
 
 mkdirp.sync('./download');
 
+const isLinux = os.type() === 'Linux';
+
 const urls = [
     `http://download.openzim.org/release/libzim/libzim-${process.env.LIBZIM_VERSION}.tar.xz`, // Headers
-    `http://download.openzim.org/nightly/2019-02-07/libzim_linux-x86_64-2019-02-07.tar.gz`, // Binary
-];
+    isLinux ? `http://download.openzim.org/nightly/2019-02-07/libzim_linux-x86_64-2019-02-07.tar.gz` : null, // Binary
+].filter(a => a);
+
+console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
 
 for (let url of urls) {
     console.info(`Downloading Libzim from: `, url);
