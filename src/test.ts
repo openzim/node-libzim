@@ -21,15 +21,15 @@ import { ZimArticle, ZimCreator, ZimReader } from "./";
     console.log('Done Writing');
 
 
-    const zimFile = new ZimReader('test.zim');
+    // const zimFile = new ZimReader('test.zim');
 
-    const suggestResults = await zimFile.suggest('Content');
-    console.info(`Suggest Results:`, suggestResults);
+    // const suggestResults = await zimFile.suggest('Content');
+    // console.info(`Suggest Results:`, suggestResults);
 
-    const searchResults = await zimFile.search('Content');
-    console.info(`Search Results:`, searchResults);
+    // const searchResults = await zimFile.search('Content');
+    // console.info(`Search Results:`, searchResults);
 
-    const article3Content = await zimFile.getArticleByUrl('./file3');
-    console.info(`Article by url (article3):`, article3Content);
+    // const article3Content = await zimFile.getArticleByUrl('./file3');
+    // console.info(`Article by url (article3):`, article3Content);
 
 })();
