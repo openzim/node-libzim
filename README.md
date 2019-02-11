@@ -1,7 +1,7 @@
-libzim-binding
+node-libzim
 =======================
 
-[![Build Status](https://travis-ci.org/ISNIT0/node-libzim.svg?branch=master)](https://travis-ci.org/ISNIT0/node-libzim)
+[![Build Status](https://travis-ci.org/openzim/node-libzim.svg?branch=master)](https://travis-ci.org/openzim/node-libzim)
 
 > This package was build using [nbind](https://github.com/charto/nbind)
 
@@ -12,13 +12,13 @@ Libzim be be included in this library at some point in the future, but for now i
 ## Usage
 
 ```
-npm i libzim-binding
+npm i node-libzim
 ```
 
 ### Building a Zim file
 ```typescript
 // write.ts
-import { ZimArticle, ZimCreator } from "libzim-binding";
+import { ZimArticle, ZimCreator } from "node-libzim";
 
 (async () => {
 
@@ -44,7 +44,7 @@ import { ZimArticle, ZimCreator } from "libzim-binding";
 ```typescript
 // read.ts
 
-import { ZimArticle, ZimReader } from "libzim-binding";
+import { ZimArticle, ZimReader } from "node-libzim";
 
 (async () => {
 
@@ -65,4 +65,4 @@ import { ZimArticle, ZimReader } from "libzim-binding";
 
 License
 =======
-MIT - [./LICENSE](./LICENSE)
+GPLv2 - [./LICENSE](./LICENSE)

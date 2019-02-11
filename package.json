@@ -1,7 +1,7 @@
 {
-  "name": "libzim-binding",
-  "version": "0.2.3",
-  "description": "Example of compiling C++ to asm.js and Node.js addons",
+  "name": "node-libzim",
+  "version": "2.0.0",
+  "description": "Libzim bindings for NodeJS",
   "scripts": {
     "clean": "rm -rf dist build/native/build",
     "autogypi": "autogypi",
@@ -18,15 +18,15 @@
   },
   "main": "dist/index.js",
   "author": "Joseph Reeve",
-  "license": "MIT",
+  "license": "GPLv2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/isnit0/node-libzim.git"
+    "url": "https://github.com/openzim/node-libzim.git"
   },
   "bugs": {
-    "url": "https://github.com/isnit0/node-libzim/issues"
+    "url": "https://github.com/openzim/node-libzim/issues"
   },
-  "homepage": "https://github.com/isnit0/node-libzim#readme",
+  "homepage": "https://github.com/openzim/node-libzim#readme",
   "dependencies": {
     "@types/mime": "^2.0.1",
     "@types/node": "^10.12.21",
