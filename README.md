@@ -4,11 +4,10 @@ node-libzim
 [![Build Status](https://travis-ci.org/openzim/node-libzim.svg?branch=master)](https://travis-ci.org/openzim/node-libzim)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/node-libzim/badge)](https://www.codefactor.io/repository/github/openzim/node-libzim)
 
-> This package was build using [nbind](https://github.com/charto/nbind)
+> This package was built using [nbind](https://github.com/charto/nbind)
 
 ## Dependencies
-You will need a copy of Libzim installed on your machine.
-Libzim be be included in this library at some point in the future, but for now install it ([see here](https://github.com/openzim/libzim/)).
+On Linux, the package will download a `libzim` binary. On MacOS you'll need to install `libzim` separately ([see here](https://github.com/openzim/libzim/)).
 
 ## Usage
 
