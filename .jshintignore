@@ -1,6 +1,0 @@
-build
-clean
-deps
-node_modules
-*-x86
-*-ia32

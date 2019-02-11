@@ -1,3 +1,0 @@
-[submodule "deps/openzim"]
-	path = deps/openzim
-	url = https://gerrit.wikimedia.org/r/p/openzim.git
