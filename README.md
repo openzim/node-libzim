@@ -13,13 +13,13 @@ Libzim be be included in this library at some point in the future, but for now i
 ## Usage
 
 ```
-npm i node-libzim
+npm i libzim
 ```
 
 ### Building a Zim file
 ```typescript
 // write.ts
-import { ZimArticle, ZimCreator } from "node-libzim";
+import { ZimArticle, ZimCreator } from "libzim";
 
 (async () => {
 
@@ -45,7 +45,7 @@ import { ZimArticle, ZimCreator } from "node-libzim";
 ```typescript
 // read.ts
 
-import { ZimArticle, ZimReader } from "node-libzim";
+import { ZimArticle, ZimReader } from "libzim";
 
 (async () => {
 
