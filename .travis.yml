@@ -1,0 +1,36 @@
+language: node_js
+
+node_js:
+  - "10.9.0"
+  # - "stable"
+  # - "latest"
+
+cache: ccache
+before_install:
+- PATH=$PATH:$HOME/bin
+script:
+- npm i
+- npm i -g typescript
+- tsc
+- npm run test
+# install: travis/install_deps.sh
+env:
+  matrix:
+    - PLATFORM="native_static"
+    - PLATFORM="native_dyn"
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.8
+      - g++-4.8
+      - python3-pip
+      - libbz2-dev
+      - ccache
+      - zlib1g-dev
+      - uuid-dev
+# matrix:
+#   include:
+#     - env: PLATFORM="native_dyn"
+#       os: osx
