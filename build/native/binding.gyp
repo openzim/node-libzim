@@ -1,7 +1,7 @@
 {
 	"variables": {
       "libzim_dir": "<(module_root_dir)/../../download",
-	  "libzim_include": "../../download/include",
+	  "libzim_include": "<(module_root_dir)/../../download/include",
   	},
 	"targets": [
 		{
@@ -24,6 +24,7 @@
 				"../auto.gypi",
 				"../../sources.gypi"
 			],
+			'cflags': [ '-D_GLIBCXX_USE_CXX11_ABI=0' ],
 		}
 	],
 	"includes": [
