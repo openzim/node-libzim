@@ -1,5 +1,5 @@
 {
-  "name": "libzim",
+  "name": "@openzim/libzim",
   "version": "2.0.0",
   "description": "Libzim bindings for NodeJS",
   "scripts": {
@@ -18,10 +18,10 @@
   },
   "main": "dist/index.js",
   "author": "Joseph Reeve",
-  "license": "GPLv2",
+  "license": "GPL-2.0-only",
   "repository": {
     "type": "git",
-    "url": "https://github.com/openzim/node-libzim.git"
+    "url": "git+https://github.com/openzim/node-libzim.git"
   },
   "bugs": {
     "url": "https://github.com/openzim/node-libzim/issues"
