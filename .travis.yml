@@ -13,7 +13,6 @@ script:
 - npm i -g typescript
 - tsc
 - npm run test
-# install: travis/install_deps.sh
 env:
   matrix:
     - PLATFORM="native_static"
