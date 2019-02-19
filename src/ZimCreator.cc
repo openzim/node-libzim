@@ -62,6 +62,7 @@ class ZimCreatorManager
 	static void finalise(ZimCreatorWrapper *cw, nbind::cbFunction &callback)
 	{
 		cw->_c->finishZimCreation();
+		delete cw->_c;
 		callback();
 	}
 };
