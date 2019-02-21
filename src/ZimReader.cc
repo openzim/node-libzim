@@ -40,9 +40,6 @@ class ZimReaderManager
 
         zim::Blob data = article.getData();
 
-        std::cout << "zimarticle has size:" << article.getArticleSize() << std::endl;
-        std::cout << "data has size:" << data.size() << std::endl;
-
         Article _article = getArticleFromZimArticle(article);
 
         ExternalBuffer eBuf((unsigned char *)data.data(), data.size());

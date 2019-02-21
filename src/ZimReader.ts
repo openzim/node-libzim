@@ -33,10 +33,11 @@ class ZimReader {
 
     getArticleByUrl(articleId: string) {
         return new Promise<ZimArticle>((resolve, reject) => {
-            lib.ZimReaderManager.getArticleByUrl(this._reader, articleId, (err: any, result: ZimArticle, arrayBufferData: any) => {
+            lib.ZimReaderManager.getArticleByUrl(this._reader, articleId, (err: any, result: ZimArticle, floatArray: Float64Array) => {
                 if (err) reject(err);
                 else {
-                    const bufferData = Buffer.from(arrayBufferData.slice());
+                    const arrayBufferData = (floatArray.buffer as any).slice();
+                    const bufferData = Buffer.from(arrayBufferData);
                     result.bufferData = bufferData;
                     resolve(result);
                 }
