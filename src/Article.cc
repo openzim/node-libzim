@@ -7,6 +7,11 @@
 #include <zim/article.h>
 
 #include "nbind/api.h"
+#include "nbind/v8/External.h"
+
+
+#include <nan.h>
+#include <node_version.h>
 
 class ZimArticle : public zim::writer::Article
 {
@@ -115,6 +120,7 @@ class Article
     std::string mimeType;
     std::string redirectAid;
     std::string fileName;
+    nbind::Buffer buf;
     char *bufferData;
     size_t bufferLength;
 
@@ -130,7 +136,8 @@ class Article
                                  title(title),
                                  mimeType(mimeType),
                                  redirectAid(redirectAid),
-                                 fileName(fileName)
+                                 fileName(fileName),
+                                 buf(buf)
     {
         ns = _ns[0];
         bufferLength = buf.length();
@@ -153,10 +160,8 @@ class Article
 
     void toJS(nbind::cbOutput output)
     {
-        nbind::Buffer buf((unsigned char *)bufferData, bufferLength);
-
         output(url,
-               bufferData,
+               NULL,
                std::string(1, ns),
                mimeType,
                redirectAid,

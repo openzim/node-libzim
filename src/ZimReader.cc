@@ -6,6 +6,8 @@
 #include "Article.cc"
 #include "nbind/api.h"
 
+#include "ExternalBuffer.hpp"
+
 class ZimReaderWrapper
 {
   public:
@@ -28,18 +30,24 @@ class ZimReaderManager
 
     static void getArticleByUrl(ZimReaderWrapper *rw, std::string url, nbind::cbFunction &callback)
     {
-        try
-        {
-            zim::Article article = rw->_reader->getArticleByUrl(url);
-            Article _article = getArticleFromZimArticle(article);
+        zim::Article article = rw->_reader->getArticleByUrl(url);
 
-            callback(NULL, _article);
-        }
-        catch (...)
+        if (!article.good())
         {
             callback("Failed to find article");
-            throw;
+            return;
         }
+
+        zim::Blob data = article.getData();
+
+        std::cout << "zimarticle has size:" << article.getArticleSize() << std::endl;
+        std::cout << "data has size:" << data.size() << std::endl;
+
+        Article _article = getArticleFromZimArticle(article);
+
+        ExternalBuffer eBuf((unsigned char *)data.data(), data.size());
+
+        callback(NULL, _article, eBuf);
     }
 
     static void suggest(ZimReaderWrapper *rw, std::string query, nbind::cbFunction &callback)
@@ -55,7 +63,6 @@ class ZimReaderManager
         catch (...)
         {
             callback("Failed to search");
-            throw;
         }
     }
 
@@ -79,13 +86,11 @@ class ZimReaderManager
     static Article getArticleFromZimArticle(zim::Article _article)
     {
         unsigned char *bufferData = (unsigned char *)_article.getData().data();
-        size_t bufferLength = size_t(_article.getArticleSize());
+        size_t bufferLength = size_t(_article.getData().size());
         nbind::Buffer buf(bufferData, bufferLength);
 
         std::string ns = std::string(1, _article.getNamespace());
 
-        // _article.getData().data
-        // _article.getData().data()
         Article article(
             ns,
             "", // _article.getIndex(),

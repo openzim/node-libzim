@@ -1,6 +1,6 @@
 {
   "name": "@openzim/libzim",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Libzim bindings for NodeJS",
   "scripts": {
     "clean": "rm -rf dist build/native/build",

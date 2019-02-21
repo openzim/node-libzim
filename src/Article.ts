@@ -31,7 +31,7 @@ class ZimArticle {
         this.mimeType = mimeType;
         this.redirectAid = redirectAid;
         this.fileName = fileName;
-        this.bufferData = Buffer.from(data as any);
+        this.bufferData = data && Buffer.from(data as any);
     }
 
     fromJS(output: any) {
