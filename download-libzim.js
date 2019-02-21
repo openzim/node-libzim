@@ -11,8 +11,7 @@ mkdirp.sync('./download');
 const isLinux = os.type() === 'Linux';
 
 const urls = [
-    `http://download.openzim.org/release/libzim/libzim-${process.env.LIBZIM_VERSION}.tar.xz`, // Headers
-    isLinux ? `http://download.openzim.org/nightly/2019-02-07/libzim_linux-x86_64-2019-02-07.tar.gz` : null, // Binary
+    `http://download.openzim.org/release/libzim/libzim_linux-x86_64-${process.env.LIBZIM_VERSION}.tar.gz`,
 ].filter(a => a);
 
 if (!isLinux) {
@@ -57,4 +56,4 @@ for (let url of urls) {
         });
 }
 
-exec(`ln -s libzim.so.4.0.4 download/libzim.so.4`);
+exec(`ln -s lib/x86_64-linux-gnu/libzim.so.4 download/libzim.so.4`);
