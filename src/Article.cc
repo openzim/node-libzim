@@ -164,9 +164,9 @@ class Article
                NULL,
                std::string(1, ns),
                mimeType,
+               title,
                redirectAid,
                aid,
-               title,
                fileName);
     }
 };

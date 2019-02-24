@@ -17,9 +17,9 @@ class ZimArticle {
         data: Buffer | string,
         ns: string = '.',
         mimeType?: string,
+        title: string = '',
         redirectAid: string = '',
         aid: string = `${ns}/${url}`,
-        title: string = '',
         fileName: string = '',
     ) {
         if (!mimeType) mimeType = mime.getType(url) || 'text/plain';
