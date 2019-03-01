@@ -62,7 +62,7 @@ class ZimArticle : public zim::writer::Article
 
     virtual zim::size_type getSize() const { return _data.size(); }
 
-    bool shouldIndex() const { return false; }
+    bool shouldIndex() const { return true; }
 
     std::string getAid() const
     {
