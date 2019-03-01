@@ -9,7 +9,6 @@
 #include "nbind/api.h"
 #include "nbind/v8/External.h"
 
-
 #include <nan.h>
 #include <node_version.h>
 
@@ -24,6 +23,7 @@ class ZimArticle : public zim::writer::Article
                         std::string mimeType,
                         std::string redirectAid,
                         std::string fileName,
+                        bool _shouldIndex,
                         char *bufferData,
                         size_t bufferLength) : ns(ns),
                                                aid(aid),
@@ -32,6 +32,7 @@ class ZimArticle : public zim::writer::Article
                                                mimeType(mimeType),
                                                redirectAid(redirectAid),
                                                fileName(fileName),
+                                               _shouldIndex(_shouldIndex),
                                                bufferData(bufferData),
                                                bufferLength(bufferLength)
     {
@@ -45,6 +46,7 @@ class ZimArticle : public zim::writer::Article
     std::string mimeType;
     std::string redirectAid;
     std::string fileName;
+    bool _shouldIndex;
     char *bufferData;
     size_t bufferLength;
     zim::Blob _data;
@@ -56,17 +58,15 @@ class ZimArticle : public zim::writer::Article
 
     std::string getFilename() const
     {
-        // return fileName;
-        return "";
+        return fileName;
     }
 
     virtual zim::size_type getSize() const { return _data.size(); }
 
-    bool shouldIndex() const { return true; }
+    bool shouldIndex() const { return _shouldIndex; }
 
     std::string getAid() const
     {
-        // return aid;
         return aid;
     }
 
@@ -83,13 +83,11 @@ class ZimArticle : public zim::writer::Article
     std::string getTitle() const
     {
         return title;
-        // return title;
     }
 
     bool isRedirect() const
     {
         return !redirectAid.empty();
-        // return false;
     }
 
     std::string getMimeType() const
@@ -100,13 +98,11 @@ class ZimArticle : public zim::writer::Article
     std::string getRedirectAid() const
     {
         return redirectAid;
-        // return "";
     }
 
     bool shouldCompress() const
     {
         return getMimeType().find("text") == 0 || getMimeType() == "application/javascript" || getMimeType() == "application/json" || getMimeType() == "image/svg+xml";
-        // return true;
     }
 };
 
@@ -120,6 +116,7 @@ class Article
     std::string mimeType;
     std::string redirectAid;
     std::string fileName;
+    bool _shouldIndex;
     nbind::Buffer buf;
     char *bufferData;
     size_t bufferLength;
@@ -131,12 +128,14 @@ class Article
             std::string mimeType,
             std::string redirectAid,
             std::string fileName,
+            bool _shouldIndex,
             nbind::Buffer buf) : aid(aid),
                                  url(url),
                                  title(title),
                                  mimeType(mimeType),
                                  redirectAid(redirectAid),
                                  fileName(fileName),
+                                 _shouldIndex(_shouldIndex),
                                  buf(buf)
     {
         ns = _ns[0];
@@ -153,6 +152,7 @@ class Article
                       mimeType,
                       redirectAid,
                       fileName,
+                      _shouldIndex,
                       bufferData,
                       bufferLength);
         return za;
@@ -167,7 +167,8 @@ class Article
                title,
                redirectAid,
                aid,
-               fileName);
+               fileName,
+               _shouldIndex);
     }
 };
 
@@ -185,6 +186,7 @@ NBIND_CLASS(Article)
               std::string,
               std::string,
               std::string,
+              bool,
               nbind::Buffer>();
 }
 

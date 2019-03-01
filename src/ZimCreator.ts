@@ -78,7 +78,7 @@ class ZimCreator {
     }
 
     async setFaviconMetadata(favicon: string) {
-        const article = new ZimArticle('', '', '-', 'image/png', favicon, '/-/Favicon');
+        const article = new ZimArticle({ url: '', data: '', ns: '-', mimeType: 'image/png', title: favicon, redirectAid: '/-/Favicon' });
         await this.addArticle(article);
     }
 
@@ -90,7 +90,7 @@ class ZimCreator {
             if (key === 'favicon') {
                 await this.setFaviconMetadata(content);
             } else {
-                const article = new ZimArticle(key, content, 'M');
+                const article = new ZimArticle({ url: key, data: content, ns: 'M' });
                 await this.addArticle(article);
             }
         }

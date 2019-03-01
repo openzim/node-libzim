@@ -96,6 +96,7 @@ class ZimReaderManager
             _article.getMimeType(),
             "", // _article.getRedirectIndex(),
             "", // _article.getFilename(),
+            false,
             buf);
 
         return article;

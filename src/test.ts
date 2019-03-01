@@ -12,7 +12,7 @@ import { ZimArticle, ZimCreator, ZimReader } from "./";
     console.info(`Created Zim`);
 
     for (let i = 200; i > 0; i--) {
-        const a = new ZimArticle(`file${i}`, `Content ${i} asdf as dfasd f`);
+        const a = new ZimArticle({ url: `file${i}`, data: `Content ${i} asdf as dfasd f` });
         await creator.addArticle(a);
     }
 
