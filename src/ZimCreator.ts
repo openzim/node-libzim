@@ -36,6 +36,8 @@ class ZimCreator {
     tmpDir: string;
     _c: any;
     fileName: string;
+    articleCounter: number = 0;
+
     constructor(opts: ZimCreatorOpts, metadata: ZimMetadata = {}) {
         const fileName = opts.fileName;
         this.tmpDir = fileName.split('.').slice(0, -1).join('.') + '.tmp';
@@ -69,10 +71,16 @@ class ZimCreator {
     }
 
     addArticle(article: ZimArticle) {
+        const self = this;
         return new Promise((resolve, reject) => {
             lib.ZimCreatorManager.addArticle(this._c, article, (err: any) => {
                 if (err) reject(err);
-                else resolve();
+                else {
+                    if (article.shouldIndex) {
+                        self.articleCounter += 1;
+                    }
+                    resolve();
+                }
             });
         });
     }
@@ -96,7 +104,10 @@ class ZimCreator {
         }
     }
 
-    finalise() {
+    async finalise() {
+        await this.setMetadata({
+            Counter: String(this.articleCounter)
+        });
         return new Promise((resolve, reject) => {
             lib.ZimCreatorManager.finalise(this._c, () => {
                 resolve();
