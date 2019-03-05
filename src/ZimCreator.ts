@@ -36,7 +36,7 @@ class ZimCreator {
     tmpDir: string;
     _c: any;
     fileName: string;
-    articleCounter: number = 0;
+    articleCounter: { [mimeType: string]: number } = {};
 
     constructor(opts: ZimCreatorOpts, metadata: ZimMetadata = {}) {
         const fileName = opts.fileName;
@@ -76,8 +76,9 @@ class ZimCreator {
             lib.ZimCreatorManager.addArticle(this._c, article, (err: any) => {
                 if (err) reject(err);
                 else {
-                    if (article.shouldIndex) {
-                        self.articleCounter += 1;
+                    if (!article.redirectAid) {
+                        self.articleCounter[article.mimeType] = self.articleCounter[article.mimeType] || 0
+                        self.articleCounter[article.mimeType] += 1
                     }
                     resolve();
                 }
@@ -105,11 +106,13 @@ class ZimCreator {
     }
 
     async finalise() {
-        await this.setMetadata({
-            Counter: String(this.articleCounter)
+        const self = this;
+        const counterString = Object.keys(self.articleCounter).map(mimeType => `${mimeType}=${self.articleCounter[mimeType]}`).join(';')
+        await self.setMetadata({
+            Counter: counterString
         });
         return new Promise((resolve, reject) => {
-            lib.ZimCreatorManager.finalise(this._c, () => {
+            lib.ZimCreatorManager.finalise(self._c, () => {
                 resolve();
             });
         });
