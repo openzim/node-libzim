@@ -31,7 +31,7 @@ import { ZimArticle, ZimCreator } from "libzim";
     }
 
     const welcome = new ZimArticle(`index.html`, `<h1>Welcome!</h1>`);
-    await creator.addArticle(a);
+    await creator.addArticle(welcome);
 
     await creator.finalise();
 
