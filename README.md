@@ -1,8 +1,10 @@
 node-libzim
 =======================
 
+![npm](https://img.shields.io/npm/v/@openzim/libzim.svg)
 [![Build Status](https://travis-ci.org/openzim/node-libzim.svg?branch=master)](https://travis-ci.org/openzim/node-libzim)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/node-libzim/badge)](https://www.codefactor.io/repository/github/openzim/node-libzim)
+![NPM](https://img.shields.io/npm/l/@openzim/libzim.svg)
 
 > This package was built using [nbind](https://github.com/charto/nbind)
 
