@@ -65,4 +65,4 @@ import { ZimArticle, ZimReader } from "libzim";
 
 License
 =======
-GPLv2 - [./LICENSE](./LICENSE)
+GPLv3 - [./LICENSE](./LICENSE)
