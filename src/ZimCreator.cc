@@ -49,7 +49,8 @@ class ZimCreatorManager
 	{
 		try
 		{
-			cw->_c->addArticle(article.toZimArticle());
+			ZimArticle a = article.toZimArticle();
+			cw->_c->addArticle(a);
 			callback();
 		}
 		catch (...)

@@ -14,7 +14,8 @@
     "install": "npm run download && (npm run build:native || echo Warning: problems with native build)",
     "download": "node ./download-libzim.js",
     "prepublish": "tsc && npm run build:native",
-    "test": "node dist/test.js"
+    "test": "node dist/test.js",
+    "test-mem-leak": "tsc && node dist/makeLargeZim.js"
   },
   "main": "dist/index.js",
   "author": "Joseph Reeve",
