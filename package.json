@@ -15,7 +15,9 @@
     "download": "node ./download-libzim.js",
     "prepublish": "tsc && npm run build:native",
     "test": "node dist/test.js",
-    "test-mem-leak": "tsc && node dist/makeLargeZim.js"
+    "test-mem-leak": "tsc && node dist/makeLargeZim.js",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "main": "dist/index.js",
   "author": "Joseph Reeve",
@@ -46,9 +48,11 @@
     "rimraf": "^2.6.3",
     "tar": "^4.4.8",
     "ts-node": "^8.1.0",
-    "tsconfig-paths": "^3.8.0"
+    "tsconfig-paths": "^3.8.0",
+    "snyk": "^1.161.1"
   },
   "devDependencies": {
     "typescript": "^2.1.4"
-  }
+  },
+  "snyk": true
 }
