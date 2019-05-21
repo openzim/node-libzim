@@ -71,7 +71,6 @@ class ZimCreator {
     }
 
     addArticle(article: ZimArticle) {
-        console.log(`Adding article [${article.url}]`);
         const self = this;
         return new Promise((resolve, reject) => {
             lib.ZimCreatorManager.addArticle(this._c, article, (err: any) => {
