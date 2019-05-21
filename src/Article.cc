@@ -15,7 +15,7 @@
 class ZimArticle : public zim::writer::Article
 {
 
-  public:
+public:
     explicit ZimArticle(char ns,
                         std::string aid,
                         std::string url,
@@ -65,19 +65,9 @@ class ZimArticle : public zim::writer::Article
 
     bool shouldIndex() const { return _shouldIndex; }
 
-    std::string getAid() const
+    zim::writer::Url getUrl() const
     {
-        return aid;
-    }
-
-    char getNamespace() const
-    {
-        return ns;
-    }
-
-    std::string getUrl() const
-    {
-        return url;
+        return zim::writer::Url(ns, url);
     }
 
     std::string getTitle() const
@@ -95,9 +85,9 @@ class ZimArticle : public zim::writer::Article
         return mimeType;
     }
 
-    std::string getRedirectAid() const
+    zim::writer::Url getRedirectUrl() const
     {
-        return redirectAid;
+        return zim::writer::Url(ns, redirectAid);
     }
 
     bool shouldCompress() const
@@ -108,7 +98,7 @@ class ZimArticle : public zim::writer::Article
 
 class Article
 {
-  public:
+public:
     char ns;
     std::string aid;
     std::string url;

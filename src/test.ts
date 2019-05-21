@@ -50,7 +50,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
         for (let i = 0; i < numRedirects; i++) {
             const articleTitle = faker.lorem.words(faker.random.number({ min: 1, max: 4 }));
             const redirectUrl = articleTitle.replace(/ /g, '_');
-            const a = new ZimArticle({ url: redirectUrl, redirectAid: 'A/' + articleUrl, data: '', title: articleTitle, mimeType: 'text/html', shouldIndex: true, ns: 'A' });
+            const a = new ZimArticle({ url: redirectUrl, redirectAid: articleUrl, data: '', title: articleTitle, mimeType: 'text/html', shouldIndex: true, ns: 'A' });
             await creator.addArticle(a);
             totalArticles += 1;
         }
@@ -69,6 +69,8 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
             prevPercentage = percentage;
         }
     }
+
+    console.log(`Finalising...`);
 
     await creator.finalise();
 

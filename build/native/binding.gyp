@@ -1,6 +1,6 @@
 {
 	"variables": {
-      "libzim_dir": "<(module_root_dir)/../../download",
+      "libzim_dir": "<(module_root_dir)/../../download/lib64",
 	  "libzim_include": "<(module_root_dir)/../../download/include",
   	},
 	"targets": [
