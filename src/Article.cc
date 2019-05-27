@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <zim/writer/zimcreator.h>
+#include <zim/writer/creator.h>
 #include <zim/blob.h>
 #include <zim/article.h>
 

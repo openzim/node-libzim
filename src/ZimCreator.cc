@@ -1,15 +1,15 @@
 #include <string>
 #include <iostream>
-#include <zim/writer/zimcreator.h>
+#include <zim/writer/creator.h>
 
 #include "Article.cc"
 #include "nbind/api.h"
 
-class OverriddenZimCreator : public zim::writer::ZimCreator
+class OverriddenZimCreator : public zim::writer::Creator
 {
   public:
 	OverriddenZimCreator(std::string mainPage)
-		: zim::writer::ZimCreator(true),
+		: zim::writer::Creator(true),
 		  mainPage(mainPage) {}
 
 	virtual std::string getMainPage()
