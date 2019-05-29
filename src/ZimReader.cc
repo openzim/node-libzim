@@ -51,11 +51,11 @@ class ZimReaderManager
     {
         try
         {
-            const zim::Search *search = rw->_reader->suggestions(query, 0, 10);
-            zim::Search::iterator it = search->begin();
-            std::string url = it.get_snippet();
-            int results = search->get_matches_estimated();
-            callback(NULL, results);
+            // const zim::Search *search = rw->_reader->suggestions(query, 0, 10);
+            // zim::Search::iterator it = search->begin();
+            // std::string url = it.get_snippet();
+            // int results = search->get_matches_estimated();
+            // callback(NULL, results);
         }
         catch (...)
         {
@@ -67,11 +67,11 @@ class ZimReaderManager
     {
         try
         {
-            const zim::Search *search = rw->_reader->search(query, 0, 10);
-            zim::Search::iterator it = search->begin();
-            std::string url = it.get_snippet();
-            int results = search->get_matches_estimated();
-            callback(NULL, results);
+            // const zim::Search *search = rw->_reader->search(query, 0, 10);
+            // zim::Search::iterator it = search->begin();
+            // std::string url = it.get_snippet();
+            // int results = search->get_matches_estimated();
+            // callback(NULL, results);
         }
         catch (...)
         {
