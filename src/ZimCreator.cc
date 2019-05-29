@@ -12,9 +12,9 @@ class OverriddenZimCreator : public zim::writer::Creator
 		: zim::writer::Creator(true),
 		  mainPage(mainPage) {}
 
-	virtual std::string getMainPage()
+	virtual zim::writer::Url getMainUrl()
 	{
-		return mainPage;
+		return zim::writer::Url('A', mainPage);
 	}
 
 	std::string mainPage;
