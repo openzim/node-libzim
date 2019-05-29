@@ -1,6 +1,6 @@
 {
 	"variables": {
-      "libzim_dir": "<(module_root_dir)/../../download/lib64",
+      "libzim_dir": "<(module_root_dir)/../../download",
 	  "libzim_include": "<(module_root_dir)/../../download/include",
   	},
 	"targets": [
@@ -10,7 +10,7 @@
 					"libraries": [ 
 						"-Wl,-rpath,<(libzim_dir)",
 						"-L<(libzim_dir)",
-						"<(libzim_dir)/libzim.so.4",
+						"<(libzim_dir)/libzim.so.5",
 					],
 				}],
 				["OS=='mac'", {
