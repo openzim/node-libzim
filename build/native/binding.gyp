@@ -7,7 +7,7 @@
 		{
 			"conditions": [
 				["OS=='linux'", {
-					"libraries": [ 
+					"libraries": [
 						"-Wl,-rpath,<(libzim_dir)",
 						"-L<(libzim_dir)",
 						"<(libzim_dir)/libzim.so.5",
@@ -23,8 +23,7 @@
 			"includes": [
 				"../auto.gypi",
 				"../../sources.gypi"
-			],
-			'cflags': [ '-D_GLIBCXX_USE_CXX11_ABI=0' ],
+			]
 		}
 	],
 	"includes": [
