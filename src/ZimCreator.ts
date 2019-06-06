@@ -87,7 +87,7 @@ class ZimCreator {
     }
 
     async setFaviconMetadata(favicon: string) {
-        const article = new ZimArticle({ url: '', data: '', ns: '-', mimeType: 'image/png', title: favicon, redirectAid: '/-/Favicon' });
+        const article = new ZimArticle({ url: '', data: '', ns: '-', mimeType: 'image/png', title: favicon, redirectAid: 'Favicon' });
         await this.addArticle(article);
     }
 
