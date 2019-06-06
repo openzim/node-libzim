@@ -25,7 +25,7 @@ import { ZimArticle, ZimCreator } from "libzim";
 (async () => {
 
     console.info('Starting');
-    const creator = new ZimCreator('test.zim', { welcome: 'index.html', favicon: './favicon.png' });
+    const creator = new ZimCreator('test.zim', { welcome: 'index.html' });
 
     for (let i = 100; i > 0; i--) {
         const a = new ZimArticle(`file${i}`, `Content ${i}`);
