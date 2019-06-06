@@ -29,7 +29,6 @@ export interface ZimMetadata {
     Publisher?: string,
     Tags?: string,
     Title?: string,
-    favicon?: string
 }
 
 class ZimCreator {
@@ -86,22 +85,13 @@ class ZimCreator {
         });
     }
 
-    async setFaviconMetadata(favicon: string) {
-        const article = new ZimArticle({ url: '', data: '', ns: '-', mimeType: 'image/png', title: favicon, redirectAid: 'Favicon' });
-        await this.addArticle(article);
-    }
-
     async setMetadata(metadata: ZimMetadata) {
         const keys = Object.keys(metadata).filter(key => (metadata as any)[key]);
 
         for (let key of keys) {
             const content = (metadata as any)[key];
-            if (key === 'favicon') {
-                await this.setFaviconMetadata(content);
-            } else {
-                const article = new ZimArticle({ url: key, data: content, ns: 'M' });
-                await this.addArticle(article);
-            }
+            const article = new ZimArticle({ url: key, data: content, ns: 'M' });
+            await this.addArticle(article);
         }
     }
 
