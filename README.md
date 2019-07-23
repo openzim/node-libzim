@@ -17,22 +17,22 @@ On Linux, the package will download a `libzim` binary. On MacOS you'll need to i
 npm i libzim
 ```
 
-### Building a Zim file
-```typescript
-// write.ts
-import { ZimArticle, ZimCreator } from "libzim";
+### Writing a Zim file
+```javascript
+// write.js
+const { ZimArticle, ZimCreator } = require("@openzim/libzim");
 
 (async () => {
 
     console.info('Starting');
-    const creator = new ZimCreator('test.zim', { welcome: 'index.html' });
+    const creator = new ZimCreator({ fileName: 'test.zim' }, { welcome: 'index.html' });
 
     for (let i = 100; i > 0; i--) {
-        const a = new ZimArticle(`file${i}`, `Content ${i}`);
+        const a = new ZimArticle({ url: `file${i}`, data: `Content ${i}` });
         await creator.addArticle(a);
     }
 
-    const welcome = new ZimArticle(`index.html`, `<h1>Welcome!</h1>`);
+    const welcome = new ZimArticle({ url: `index.html`, data: `<h1>Welcome!</h1>` });
     await creator.addArticle(welcome);
 
     await creator.finalise();
@@ -43,14 +43,14 @@ import { ZimArticle, ZimCreator } from "libzim";
 ```
 
 ### Reading a Zim file
-```typescript
-// read.ts
+```javascript
+// read.js
 
-import { ZimArticle, ZimReader } from "libzim";
+const { ZimArticle, ZimReader } = require("@openzim/libzim");
 
 (async () => {
 
-    const zimFile = new ZimReader('test.zim');
+    const zimFile = new ZimReader({ fileName: 'test.zim' });
 
     const suggestResults = await zimFile.suggest('Content');
     console.info(`Suggest Results:`, suggestResults);
