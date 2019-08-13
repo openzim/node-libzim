@@ -5,32 +5,69 @@
 
 #include "Article.cc"
 #include "nbind/api.h"
-
 #include "ExternalBuffer.hpp"
+
+static Article getArticleFromZimArticle(zim::Article _article)
+{
+    unsigned char *bufferData = (unsigned char *)_article.getData().data();
+    size_t bufferLength = size_t(_article.getData().size());
+    nbind::Buffer buf(bufferData, bufferLength);
+
+    std::string ns = std::string(1, _article.getNamespace());
+
+    std::string mimeType = "";
+    std::string redirectUrl = "";
+
+    if (!_article.isRedirect())
+    {
+        mimeType = _article.getMimeType();
+    }
+    else
+    {
+        auto rArticle = _article.getRedirectArticle();
+        redirectUrl = rArticle.getLongUrl();
+    }
+
+    Article article(
+        ns,
+        "", // _article.getIndex(),
+        _article.getUrl(),
+        _article.getTitle(),
+        mimeType,
+        redirectUrl,
+        "", // _article.getFilename(),
+        false,
+        buf);
+
+    return article;
+}
 
 class ZimReaderWrapper
 {
-  public:
-    ZimReaderWrapper()
+public:
+    ZimReaderWrapper(zim::File *file) : _reader(file)
     {
     }
 
-    zim::File *_reader;
-};
+    ~ZimReaderWrapper()
+    {
+        delete _reader;
+    }
 
-class ZimReaderManager
-{
-  public:
     static ZimReaderWrapper *create(std::string fileName)
     {
-        static ZimReaderWrapper rw;
-        rw._reader = new zim::File(fileName);
-        return (&rw);
+        auto file = new zim::File(fileName);
+        return new ZimReaderWrapper(file);
     }
 
-    static void getArticleByUrl(ZimReaderWrapper *rw, std::string url, nbind::cbFunction &callback)
+    void destroy()
     {
-        zim::Article article = rw->_reader->getArticleByUrl(url);
+        delete this;
+    }
+
+    void getArticleByUrl(std::string url, nbind::cbFunction &callback)
+    {
+        zim::Article article = _reader->getArticleByUrl(url);
 
         if (!article.good())
         {
@@ -38,24 +75,33 @@ class ZimReaderManager
             return;
         }
 
-        zim::Blob data = article.getData();
-
         Article _article = getArticleFromZimArticle(article);
 
-        ExternalBuffer eBuf((unsigned char *)data.data(), data.size());
+        if (article.isRedirect())
+        {
+            callback(NULL, _article, NULL);
+        }
+        else
+        {
+            zim::Blob data = article.getData();
 
-        callback(NULL, _article, eBuf);
+            ExternalBuffer eBuf((unsigned char *)data.data(), data.size());
+
+            callback(NULL, _article, eBuf);
+        }
     }
 
-    static void suggest(ZimReaderWrapper *rw, std::string query, nbind::cbFunction &callback)
+    void suggest(std::string query, nbind::cbFunction &callback)
     {
         try
         {
-            // const zim::Search *search = rw->_reader->suggestions(query, 0, 10);
-            // zim::Search::iterator it = search->begin();
-            // std::string url = it.get_snippet();
-            // int results = search->get_matches_estimated();
-            // callback(NULL, results);
+            std::vector<std::string> results;
+            auto search = _reader->suggestions(query, 0, 10);
+            for (auto it = search->begin(); it != search->end(); it++)
+            {
+                results.push_back(it->getLongUrl());
+            }
+            callback(NULL, results);
         }
         catch (...)
         {
@@ -63,15 +109,19 @@ class ZimReaderManager
         }
     }
 
-    static void search(ZimReaderWrapper *rw, std::string query, nbind::cbFunction &callback)
+    void search(std::string query, nbind::cbFunction &callback)
     {
         try
         {
-            // const zim::Search *search = rw->_reader->search(query, 0, 10);
-            // zim::Search::iterator it = search->begin();
+            std::vector<std::string> results;
+            auto search = _reader->search(query, 0, 10);
+            for (auto it = search->begin(); it != search->end(); it++)
+            {
+                results.push_back(it->getLongUrl());
+            }
             // std::string url = it.get_snippet();
-            // int results = search->get_matches_estimated();
-            // callback(NULL, results);
+            int numResults = search->get_matches_estimated();
+            callback(NULL, results);
         }
         catch (...)
         {
@@ -80,27 +130,7 @@ class ZimReaderManager
         }
     }
 
-    static Article getArticleFromZimArticle(zim::Article _article)
-    {
-        unsigned char *bufferData = (unsigned char *)_article.getData().data();
-        size_t bufferLength = size_t(_article.getData().size());
-        nbind::Buffer buf(bufferData, bufferLength);
-
-        std::string ns = std::string(1, _article.getNamespace());
-
-        Article article(
-            ns,
-            "", // _article.getIndex(),
-            _article.getUrl(),
-            _article.getTitle(),
-            _article.getMimeType(),
-            "", // _article.getRedirectIndex(),
-            "", // _article.getFilename(),
-            false,
-            buf);
-
-        return article;
-    }
+    zim::File *_reader;
 };
 
 #include "nbind/nbind.h"
@@ -109,12 +139,9 @@ class ZimReaderManager
 
 NBIND_CLASS(ZimReaderWrapper)
 {
-    construct();
-}
-
-NBIND_CLASS(ZimReaderManager)
-{
+    construct<zim::File *>();
     method(create);
+    method(destroy);
     method(getArticleByUrl);
     method(suggest);
     method(search);

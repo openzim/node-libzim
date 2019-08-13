@@ -7,7 +7,7 @@
 
 class OverriddenZimCreator : public zim::writer::Creator
 {
-  public:
+public:
 	OverriddenZimCreator(std::string mainPage)
 		: zim::writer::Creator(true),
 		  mainPage(mainPage) {}
@@ -22,35 +22,33 @@ class OverriddenZimCreator : public zim::writer::Creator
 
 class ZimCreatorWrapper
 {
-  public:
-	ZimCreatorWrapper()
+public:
+	ZimCreatorWrapper(OverriddenZimCreator *creator) : _creator(creator)
 	{
 	}
 
-	OverriddenZimCreator *_c;
-};
+	~ZimCreatorWrapper()
+	{
+		delete _creator;
+	}
 
-class ZimCreatorManager
-{
-  public:
 	static ZimCreatorWrapper *create(std::string fileName, std::string mainPage, std::string fullTextIndexLanguage, int minChunkSize)
 	{
 		bool shouldIndex = !fullTextIndexLanguage.empty();
 
-		static ZimCreatorWrapper cw;
-		cw._c = new OverriddenZimCreator(mainPage); // TODO: consider when to delete this
-		cw._c->setIndexing(shouldIndex, fullTextIndexLanguage);
-		cw._c->setMinChunkSize(minChunkSize);
-		cw._c->startZimCreation(fileName);
-		return (&cw);
+		OverriddenZimCreator *c = new OverriddenZimCreator(mainPage); // TODO: consider when to delete this
+		c->setIndexing(shouldIndex, fullTextIndexLanguage);
+		c->setMinChunkSize(minChunkSize);
+		c->startZimCreation(fileName);
+		return (new ZimCreatorWrapper(c));
 	}
 
-	static void addArticle(ZimCreatorWrapper *cw, Article article, nbind::cbFunction &callback)
+	void addArticle(Article article, nbind::cbFunction &callback)
 	{
 		try
 		{
 			ZimArticle a = article.toZimArticle();
-			cw->_c->addArticle(a);
+			_creator->addArticle(a);
 			callback();
 		}
 		catch (...)
@@ -60,12 +58,14 @@ class ZimCreatorManager
 		}
 	}
 
-	static void finalise(ZimCreatorWrapper *cw, nbind::cbFunction &callback)
+	void finalise(nbind::cbFunction &callback)
 	{
-		cw->_c->finishZimCreation();
-		delete cw->_c;
+		_creator->finishZimCreation();
 		callback();
+		delete this;
 	}
+
+	OverriddenZimCreator *_creator;
 };
 
 #include "nbind/nbind.h"
@@ -74,12 +74,7 @@ class ZimCreatorManager
 
 NBIND_CLASS(ZimCreatorWrapper)
 {
-
-	construct();
-}
-
-NBIND_CLASS(ZimCreatorManager)
-{
+	construct<OverriddenZimCreator *>();
 	method(create);
 	method(addArticle);
 	method(finalise);

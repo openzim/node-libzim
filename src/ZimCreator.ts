@@ -32,6 +32,7 @@ export interface ZimMetadata {
 }
 
 class ZimCreator {
+    isAlive = true;
     tmpDir: string;
     _c: any;
     fileName: string;
@@ -61,7 +62,7 @@ class ZimCreator {
     }
 
     _createZimCreator(opts: ZimCreatorOpts) {
-        this._c = lib.ZimCreatorManager.create(
+        this._c = lib.ZimCreatorWrapper.create(
             opts.fileName,
             opts.welcome || '',
             opts.fullTextIndexLanguage || '',
@@ -70,12 +71,13 @@ class ZimCreator {
     }
 
     addArticle(article: ZimArticle) {
+        if(!this.isAlive) throw new Error(`This Creator has been destroyed`);
         const self = this;
         return new Promise((resolve, reject) => {
-            lib.ZimCreatorManager.addArticle(this._c, article, (err: any) => {
+            this._c.addArticle(article, (err: any) => {
                 if (err) reject(err);
                 else {
-                    if (!article.redirectAid) {
+                    if (!article.redirectUrl) {
                         self.articleCounter[article.mimeType] = self.articleCounter[article.mimeType] || 0
                         self.articleCounter[article.mimeType] += 1
                     }
@@ -86,6 +88,7 @@ class ZimCreator {
     }
 
     async setMetadata(metadata: ZimMetadata) {
+        if(!this.isAlive) throw new Error(`This Creator has been destroyed`);
         const keys = Object.keys(metadata).filter(key => (metadata as any)[key]);
 
         for (let key of keys) {
@@ -96,13 +99,15 @@ class ZimCreator {
     }
 
     async finalise() {
+        if(!this.isAlive) throw new Error(`This Creator has been destroyed`);
         const self = this;
         const counterString = Object.keys(self.articleCounter).map(mimeType => `${mimeType}=${self.articleCounter[mimeType]}`).join(';')
         await self.setMetadata({
             Counter: counterString
         });
+        this.isAlive = false;
         return new Promise((resolve, reject) => {
-            lib.ZimCreatorManager.finalise(self._c, () => {
+            this._c.finalise(() => {
                 resolve();
             });
         });

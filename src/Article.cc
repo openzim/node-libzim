@@ -104,7 +104,7 @@ public:
     std::string url;
     std::string title;
     std::string mimeType;
-    std::string redirectAid;
+    std::string redirectUrl;
     std::string fileName;
     bool _shouldIndex;
     nbind::Buffer buf;
@@ -116,14 +116,14 @@ public:
             std::string url,
             std::string title,
             std::string mimeType,
-            std::string redirectAid,
+            std::string redirectUrl,
             std::string fileName,
             bool _shouldIndex,
             nbind::Buffer buf) : aid(aid),
                                  url(url),
                                  title(title),
                                  mimeType(mimeType),
-                                 redirectAid(redirectAid),
+                                 redirectUrl(redirectUrl),
                                  fileName(fileName),
                                  _shouldIndex(_shouldIndex),
                                  buf(buf)
@@ -140,7 +140,7 @@ public:
                       url,
                       title,
                       mimeType,
-                      redirectAid,
+                      redirectUrl,
                       fileName,
                       _shouldIndex,
                       bufferData,
@@ -155,7 +155,7 @@ public:
                std::string(1, ns),
                mimeType,
                title,
-               redirectAid,
+               redirectUrl,
                aid,
                fileName,
                _shouldIndex);

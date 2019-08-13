@@ -8,7 +8,7 @@ class ZimArticle {
     url: string;
     title: string;
     mimeType: string;
-    redirectAid: string;
+    redirectUrl: string;
     fileName: string;
     shouldIndex: boolean;
     bufferData: Buffer;
@@ -19,7 +19,7 @@ class ZimArticle {
         ns?: string,
         mimeType?: string,
         title?: string,
-        redirectAid?: string,
+        redirectUrl?: string,
         aid?: string,
         fileName?: string,
         shouldIndex?: boolean
@@ -28,7 +28,7 @@ class ZimArticle {
             // CPP hack
             const url = props
             props = { url } as any
-            const keys = ['data', 'ns', 'mimeType', 'title', 'redirectAid', 'aid', 'fileName', 'shouldIndex']
+            const keys = ['data', 'ns', 'mimeType', 'title', 'redirectUrl', 'aid', 'fileName', 'shouldIndex']
             for (let i in args) {
                 (props as any)[keys[i]] = args[i]
             }
@@ -37,7 +37,7 @@ class ZimArticle {
         props.title = props.title || ''
         props.fileName = props.fileName || ''
         props.shouldIndex = props.shouldIndex || false
-        props.redirectAid = props.redirectAid || ''
+        props.redirectUrl = props.redirectUrl || ''
         props.aid = props.aid || `${props.ns}/${props.url}`
 
         if (!props.mimeType) props.mimeType = mime.getType(props.url) || 'text/plain';
@@ -47,7 +47,7 @@ class ZimArticle {
         this.url = props.url;
         this.title = props.title;
         this.mimeType = props.mimeType;
-        this.redirectAid = props.redirectAid;
+        this.redirectUrl = props.redirectUrl;
         this.fileName = props.fileName;
         this.shouldIndex = props.shouldIndex;
         this.bufferData = props.data && Buffer.from(props.data as any);
@@ -59,7 +59,7 @@ class ZimArticle {
             this.url,
             this.title,
             this.mimeType,
-            this.redirectAid,
+            this.redirectUrl,
             this.fileName,
             this.shouldIndex,
             this.bufferData);

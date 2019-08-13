@@ -50,16 +50,18 @@ const { ZimArticle, ZimReader } = require("@openzim/libzim");
 
 (async () => {
 
-    const zimFile = new ZimReader({ fileName: 'test.zim' });
+    const zimFile = new ZimReader(path.join(__dirname, '../test.zim'));
 
-    const suggestResults = await zimFile.suggest('Content');
+    const suggestResults = await zimFile.suggest('laborum');
     console.info(`Suggest Results:`, suggestResults);
 
-    const searchResults = await zimFile.search('Content');
+    const searchResults = await zimFile.search('rem');
     console.info(`Search Results:`, searchResults);
 
-    const article3Content = await zimFile.getArticleByUrl('./file3');
-    console.info(`Article by url (./file3):`, article3Content);
+    const readArticleContent = await zimFile.getArticleByUrl('A/laborum');
+    console.info(`Article by url (laborum):`, readArticleContent);
+
+    await zimFile.destroy();
 
 })();
 

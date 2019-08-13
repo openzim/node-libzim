@@ -1,4 +1,5 @@
 import { ZimArticle, ZimCreator, ZimReader } from "./";
+import * as path from 'path';
 import * as faker from 'faker';
 
 const argv = require('minimist')(process.argv.slice(2));
@@ -50,7 +51,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
         for (let i = 0; i < numRedirects; i++) {
             const articleTitle = faker.lorem.words(faker.random.number({ min: 1, max: 4 }));
             const redirectUrl = articleTitle.replace(/ /g, '_');
-            const a = new ZimArticle({ url: redirectUrl, redirectAid: articleUrl, data: '', title: articleTitle, mimeType: 'text/html', shouldIndex: true, ns: 'A' });
+            const a = new ZimArticle({ url: redirectUrl, redirectUrl: articleUrl, data: '', title: articleTitle, mimeType: 'text/html', shouldIndex: true, ns: 'A' });
             await creator.addArticle(a);
             totalArticles += 1;
         }
@@ -77,15 +78,17 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
     console.log('Done Writing');
 
 
-    const zimFile = new ZimReader('test.zim');
+    const zimFile = new ZimReader(path.join(__dirname, '../test.zim'));
 
-    // const suggestResults = await zimFile.suggest('Content');
-    // console.info(`Suggest Results:`, suggestResults);
+    const suggestResults = await zimFile.suggest('laborum');
+    console.info(`Suggest Results:`, suggestResults);
 
-    // const searchResults = await zimFile.search('Content');
-    // console.info(`Search Results:`, searchResults);
+    const searchResults = await zimFile.search('rem');
+    console.info(`Search Results:`, searchResults);
 
-    // const article3Content = await zimFile.getArticleByUrl('./file3');
-    // console.info(`Article by url (article3):`, article3Content);
+    const readArticleContent = await zimFile.getArticleByUrl('A/laborum');
+    console.info(`Article by url (laborum):`, readArticleContent);
 
+   
+    await zimFile.destroy();
 })();

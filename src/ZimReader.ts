@@ -14,6 +14,7 @@ class ZimReaderWrapper {
 binding.bind('ZimReaderWrapper', ZimReaderWrapper);
 
 class ZimReader {
+    isAlive = true;
     _reader: any;
     fileName: string;
     constructor(fileName: string) {
@@ -26,19 +27,27 @@ class ZimReader {
             throw err;
         }
 
-        this._reader = lib.ZimReaderManager.create(
+        this._reader = lib.ZimReaderWrapper.create(
             fileName
         );
     }
 
+    destroy() {
+        this.isAlive = false;
+        this._reader.destroy();
+    }
+
     getArticleByUrl(articleId: string) {
+        if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
         return new Promise<ZimArticle>((resolve, reject) => {
-            lib.ZimReaderManager.getArticleByUrl(this._reader, articleId, (err: any, result: ZimArticle, floatArray: Float64Array) => {
+            this._reader.getArticleByUrl(articleId, (err: any, result: ZimArticle, floatArray?: Float64Array) => {
                 if (err) reject(err);
                 else {
-                    const arrayBufferData = (floatArray.buffer as any).slice();
-                    const bufferData = Buffer.from(arrayBufferData);
-                    result.bufferData = bufferData;
+                    if (floatArray) {
+                        const arrayBufferData = (floatArray.buffer as any).slice();
+                        const bufferData = Buffer.from(arrayBufferData);
+                        result.bufferData = bufferData;
+                    }
                     resolve(result);
                 }
             });
@@ -46,8 +55,9 @@ class ZimReader {
     }
 
     suggest(query: string) {
+        if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
         return new Promise((resolve, reject) => {
-            lib.ZimReaderManager.suggest(this._reader, query, (err: any, result: any) => {
+            this._reader.suggest(query, (err: any, result: any) => {
                 if (err) reject(err);
                 else {
                     resolve(result);
@@ -57,8 +67,9 @@ class ZimReader {
     }
 
     search(query: string) {
+        if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
         return new Promise((resolve, reject) => {
-            lib.ZimReaderManager.search(this._reader, query, (err: any, result: any) => {
+            this._reader.search(query, (err: any, result: any) => {
                 if (err) reject(err);
                 else {
                     resolve(result);
