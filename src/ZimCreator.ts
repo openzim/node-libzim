@@ -24,6 +24,7 @@ export interface ZimMetadata {
     Creator?: string,
     Date?: string,
     Description?: string,
+    Flavour?: string,
     Language?: string,
     Name?: string,
     Publisher?: string,
