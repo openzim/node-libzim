@@ -1,4 +1,4 @@
-import { ZimArticle, ZimCreator, ZimReader } from "../";
+import { ZimArticle, ZimCreator, ZimReader } from "./";
 import * as path from 'path';
 import * as faker from 'faker';
 
