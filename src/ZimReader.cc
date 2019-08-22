@@ -65,6 +65,37 @@ public:
         delete this;
     }
 
+    void getCountArticles(nbind::cbFunction &callback)
+    {
+        callback(NULL, _reader->getCountArticles());
+    }
+
+    void getArticleById(uint32_t id, nbind::cbFunction &callback)
+    {
+        zim::Article article = _reader->getArticle(id);
+
+        if (!article.good())
+        {
+            callback("Failed to find article");
+            return;
+        }
+
+        Article _article = getArticleFromZimArticle(article);
+
+        if (article.isRedirect())
+        {
+            callback(NULL, _article, NULL);
+        }
+        else
+        {
+            zim::Blob data = article.getData();
+
+            ExternalBuffer eBuf((unsigned char *)data.data(), data.size());
+
+            callback(NULL, _article, eBuf);
+        }
+    }
+
     void getArticleByUrl(std::string url, nbind::cbFunction &callback)
     {
         zim::Article article = _reader->getArticleByUrl(url);
@@ -143,6 +174,8 @@ NBIND_CLASS(ZimReaderWrapper)
     method(create);
     method(destroy);
     method(getArticleByUrl);
+    method(getArticleById);
+    method(getCountArticles);
     method(suggest);
     method(search);
 }

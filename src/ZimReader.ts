@@ -37,10 +37,38 @@ class ZimReader {
         this._reader.destroy();
     }
 
+    getCountArticles() {
+
+        if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
+        return new Promise<number>((resolve, reject) => {
+            this._reader.getCountArticles((err: any, count: number) => {
+                if (err) reject(err);
+                else resolve(count);
+            });
+        });
+    }
+
     getArticleByUrl(articleId: string) {
         if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
         return new Promise<ZimArticle>((resolve, reject) => {
             this._reader.getArticleByUrl(articleId, (err: any, result: ZimArticle, floatArray?: Float64Array) => {
+                if (err) reject(err);
+                else {
+                    if (floatArray) {
+                        const arrayBufferData = (floatArray.buffer as any).slice();
+                        const bufferData = Buffer.from(arrayBufferData);
+                        result.bufferData = bufferData;
+                    }
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    getArticleById(articleId: number) {
+        if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
+        return new Promise<ZimArticle>((resolve, reject) => {
+            this._reader.getArticleById(articleId, (err: any, result: ZimArticle, floatArray?: Float64Array) => {
                 if (err) reject(err);
                 else {
                     if (floatArray) {
