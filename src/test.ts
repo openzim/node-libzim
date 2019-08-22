@@ -1,10 +1,10 @@
-import { ZimArticle, ZimCreator, ZimReader } from "./";
+import { ZimArticle, ZimCreator, ZimReader } from "../";
 import * as path from 'path';
 import * as faker from 'faker';
 
 const argv = require('minimist')(process.argv.slice(2));
 
-const numArticles = argv.numArticles || 100;
+const numArticles = argv.numArticles || 1000;
 
 if (!argv.numArticles) {
     console.info(`No [--numArticles=] present, defaulting to 100`);
@@ -47,22 +47,22 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
         //     totalArticles += 1;
         // }
 
-        const numRedirects = faker.random.number({ min: 0, max: 10 });
-        for (let i = 0; i < numRedirects; i++) {
-            const articleTitle = faker.lorem.words(faker.random.number({ min: 1, max: 4 }));
-            const redirectUrl = articleTitle.replace(/ /g, '_');
-            const a = new ZimArticle({ url: redirectUrl, redirectUrl: articleUrl, data: '', title: articleTitle, mimeType: 'text/html', shouldIndex: true, ns: 'A' });
-            await creator.addArticle(a);
-            totalArticles += 1;
-        }
+        // const numRedirects = faker.random.number({ min: 0, max: 10 });
+        // for (let i = 0; i < numRedirects; i++) {
+        //     const articleTitle = faker.lorem.words(faker.random.number({ min: 1, max: 4 }));
+        //     const redirectUrl = articleTitle.replace(/ /g, '_');
+        //     const a = new ZimArticle({ url: redirectUrl, redirectUrl: articleUrl, data: '', title: articleTitle, mimeType: 'text/html', shouldIndex: true, ns: 'A' });
+        //     await creator.addArticle(a);
+        //     totalArticles += 1;
+        // }
 
-        const numImgs = faker.random.number({ min: 0, max: 5 });
-        for (let i = 0; i < numImgs; i++) {
-            const imgUrl = faker.random.alphaNumeric(faker.random.number({ min: 10, max: 25 }));
-            const a = new ZimArticle({ url: imgUrl, data: imageContent, mimeType: 'image/png', ns: 'I' });
-            await creator.addArticle(a);
-            totalArticles += 1;
-        }
+        // const numImgs = faker.random.number({ min: 0, max: 5 });
+        // for (let i = 0; i < numImgs; i++) {
+        //     const imgUrl = faker.random.alphaNumeric(faker.random.number({ min: 10, max: 25 }));
+        //     const a = new ZimArticle({ url: imgUrl, data: imageContent, mimeType: 'image/png', ns: 'I' });
+        //     await creator.addArticle(a);
+        //     totalArticles += 1;
+        // }
 
         const percentage = Math.floor(i / numArticles * 1000) / 10;
         if (percentage !== prevPercentage) {
@@ -79,6 +79,12 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
 
 
     const zimFile = new ZimReader(path.join(__dirname, '../test.zim'));
+
+    const numberOfArticles = await zimFile.getCountArticles();
+    console.info(`Count Articles:`, numberOfArticles);
+
+    const firstArticle = await zimFile.getArticleById(0);
+    console.info(`First Article:`, firstArticle);
 
     const suggestResults = await zimFile.suggest('laborum');
     console.info(`Suggest Results:`, suggestResults);
