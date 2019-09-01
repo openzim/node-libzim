@@ -14,7 +14,6 @@
 
 class ZimArticle : public zim::writer::Article
 {
-
 public:
     explicit ZimArticle(char ns,
                         std::string aid,
@@ -168,7 +167,6 @@ public:
 
 NBIND_CLASS(Article)
 {
-
     construct<std::string,
               std::string,
               std::string,
