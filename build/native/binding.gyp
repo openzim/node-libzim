@@ -10,7 +10,7 @@
 					"libraries": [
 						"-Wl,-rpath,<(libzim_dir)",
 						"-L<(libzim_dir)",
-						"<(libzim_dir)/libzim.so.5",
+						"<(libzim_dir)/libzim.so.6",
 					],
 				}],
 				["OS=='mac'", {

@@ -47,7 +47,7 @@ public:
 	{
 		try
 		{
-			ZimArticle a = article.toZimArticle();
+			auto a = std::make_shared<ZimArticle>(article.toZimArticle());
 			_creator->addArticle(a);
 			callback();
 		}
