@@ -151,7 +151,7 @@ public:
                 results.push_back(it->getLongUrl());
             }
             // std::string url = it.get_snippet();
-            int numResults = search->get_matches_estimated();
+            // int numResults = search->get_matches_estimated();
             callback(NULL, results);
         }
         catch (...)

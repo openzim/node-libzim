@@ -56,4 +56,4 @@ for (let url of urls) {
         });
 }
 
-exec(`ln -s lib/x86_64-linux-gnu/libzim.so.5 download/libzim.so.5`);
+exec(`ln -s lib/x86_64-linux-gnu/libzim.so.6 download/libzim.so.6`);
