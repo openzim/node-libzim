@@ -9,3 +9,4 @@ auto*.gypi
 *.log
 *.tgz
 download
+*.zim
