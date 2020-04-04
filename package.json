@@ -4,18 +4,11 @@
   "description": "Libzim bindings for NodeJS",
   "scripts": {
     "clean": "rm -rf dist build/native/build",
-    "autogypi": "autogypi",
-    "node-gyp": "node-gyp",
-    "emcc-path": "emcc-path",
-    "copyasm": "copyasm",
-    "ndts": "ndts",
     "tsc": "tsc",
-    "build:native": "autogypi -r build && node-gyp -C build/native configure build && copyasm build/native dist",
-    "install": "npm run download && (npm run build:native || echo Warning: problems with native build)",
+    "install": "npm run download && node-gyp rebuild",
     "download": "node ./download-libzim.js",
-    "prepublish": "tsc && npm run build:native",
-    "test": "node dist/test.js",
-    "test-mem-leak": "tsc && node dist/makeLargeZim.js"
+    "prepublish": "tsc && node-gyp rebuild",
+    "test": "node dist/test.js"
   },
   "main": "dist/index.js",
   "author": "Joseph Reeve",
@@ -28,27 +21,29 @@
     "url": "https://github.com/openzim/node-libzim/issues"
   },
   "homepage": "https://github.com/openzim/node-libzim#readme",
+  "gypfile": true,
   "dependencies": {
-    "@types/faker": "^4.1.5",
+    "@types/bindings": "^1.3.0",
+    "@types/faker": "^4.1.11",
     "@types/mime": "^2.0.1",
-    "@types/node": "^10.12.21",
-    "@types/rimraf": "^2.0.2",
-    "autogypi": "^0.2.2",
-    "axios": "^0.18.0",
-    "dotenv": "^6.2.0",
+    "@types/node": "^13.11.0",
+    "@types/rimraf": "^3.0.0",
+    "axios": "^0.19.2",
+    "bindings": "^1.5.0",
+    "dotenv": "^8.2.0",
     "exec-then": "^1.3.1",
     "faker": "^4.1.0",
-    "mime": "^2.4.0",
-    "minimist": "^1.2.0",
-    "mkdirp": "^0.5.1",
-    "nbind": "^0.3.15",
-    "node-gyp": "^3.3.1",
-    "rimraf": "^2.6.3",
-    "tar": "^4.4.8",
-    "ts-node": "^8.1.0",
-    "tsconfig-paths": "^3.8.0"
+    "mime": "^2.4.4",
+    "minimist": "^1.2.5",
+    "mkdirp": "^1.0.4",
+    "node-addon-api": "^2.0.0",
+    "node-gyp": "^6.1.0",
+    "rimraf": "^3.0.2",
+    "tar": "^6.0.1",
+    "ts-node": "^8.8.1",
+    "tsconfig-paths": "^3.9.0"
   },
   "devDependencies": {
-    "typescript": "^2.1.4"
+    "typescript": "^3.8.3"
   }
 }

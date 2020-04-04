@@ -9,7 +9,8 @@
 		"noImplicitAny": true,
 		"outDir": "dist",
 		"removeComments": false,
-		"target": "es5"
+		"target": "es5",
+                "esModuleInterop": true
 	},
 	"files": [
 		"src/index.ts",
