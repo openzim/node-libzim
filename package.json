@@ -5,9 +5,8 @@
   "scripts": {
     "clean": "rm -rf dist build/native/build",
     "tsc": "tsc",
-    "install": "npm run download && node-gyp rebuild",
+    "install": "npm run download && node-gyp rebuild && tsc",
     "download": "node ./download-libzim.js",
-    "prepublish": "tsc && node-gyp rebuild",
     "test": "node dist/test.js"
   },
   "main": "dist/index.js",
