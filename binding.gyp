@@ -31,6 +31,7 @@
                 "cflags+": ["-fvisibility=hidden"],
                 "xcode_settings": {
                   "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
+                  "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
                 },
                 "libraries": [ "-lzim" ]
               }],
