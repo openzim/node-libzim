@@ -12,7 +12,7 @@ This is the Node.js binding to the
 
 ## Dependencies
 
-This package relies on [nbind](https://github.com/charto/nbind).
+This package relies on [node-addon-api](https://github.com/nodejs/node-addon-api) / n-api.
 
 On Linux, the package will download a `libzim` binary. On MacOS you'll need to install `libzim` separately ([see here](https://github.com/openzim/libzim/)).
 
