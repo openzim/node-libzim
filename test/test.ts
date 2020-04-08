@@ -1,8 +1,9 @@
-import { ZimArticle, ZimCreator, ZimReader } from "./";
+import { ZimArticle, ZimCreator, ZimReader } from "../src";
 import * as path from 'path';
 import * as faker from 'faker';
 
 const argv = require('minimist')(process.argv.slice(2));
+const outFile = path.join(__dirname, '../../test.zim');
 
 const numArticles = argv.numArticles || 1000;
 
@@ -16,7 +17,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
 
     console.info('Starting');
     const creator = new ZimCreator({
-        fileName: 'test.zim',
+        fileName: outFile,
         welcome: 'welcome',
         fullTextIndexLanguage: 'eng',
         minChunkSize: 2048,
@@ -27,7 +28,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
 
     let totalArticles = 0;
 
-    const imageContent = Buffer.from(faker.image.image());
+    // const imageContent = Buffer.from(faker.image.image());
     const articleContent = faker.lorem.paragraphs(3);
 
     for (let i = 0; i < numArticles; i++) {
@@ -78,7 +79,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
     console.log('Done Writing');
 
 
-    const zimFile = new ZimReader(path.join(__dirname, '../test.zim'));
+    const zimFile = new ZimReader(outFile);
 
     const numberOfArticles = await zimFile.getCountArticles();
     console.info(`Count Articles:`, numberOfArticles);
@@ -95,6 +96,6 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
     const readArticleContent = await zimFile.getArticleByUrl('A/laborum');
     console.info(`Article by url (laborum):`, readArticleContent);
 
-   
+
     await zimFile.destroy();
 })();

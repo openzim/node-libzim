@@ -7,9 +7,10 @@
     "tsc": "tsc",
     "install": "npm run download && node-gyp rebuild && tsc",
     "download": "node ./download-libzim.js",
-    "test": "node dist/test.js"
+    "test": "node dist/test/test.js",
+    "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts"
   },
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "author": "Joseph Reeve",
   "license": "GPL-3.0",
   "repository": {
