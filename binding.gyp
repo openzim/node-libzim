@@ -39,8 +39,8 @@
             "target_name": "zim_binding",
             "cflags!": [ "-fno-exceptions" ],
             "cflags_cc!": [ "-fno-exceptions" ],
-            "cflags": ["-g"],
-            "cflags_cc": [ "-std=c++17", "-fexceptions", "-g" ],
+            "cflags": [],
+            "cflags_cc": [ "-std=c++17", "-fexceptions" ],
             "sources": [ 
                 "src/module.cc", 
                 "src/article.cc", 
