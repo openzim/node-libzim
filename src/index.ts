@@ -1,6 +1,6 @@
-import {ZimArticle, ZimReaderWrapper} from './zim';
-import {ZimCreator} from './ZimCreator';
+import {ZimArticle} from './zim';
 import {ZimReader} from './ZimReader';
+import {ZimCreator} from './ZimCreator';
 
 export {
   ZimArticle,

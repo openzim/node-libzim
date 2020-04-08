@@ -11,9 +11,16 @@ export interface ZimCreatorOpts {
 }
 
 export interface ZimMetadata {
-  Counter?: string, Creator?: string, Date?: string, Description?: string,
-      Flavour?: string, Language?: string, Name?: string, Publisher?: string,
-      Tags?: string, Title?: string,
+  Counter?: string,
+  Creator?: string,
+  Date?: string,
+  Description?: string,
+  Flavour?: string,
+  Language?: string,
+  Name?: string,
+  Publisher?: string,
+  Tags?: string,
+  Title?: string,
 }
 
 
@@ -24,8 +31,6 @@ class ZimCreator {
   articleCounter: {[mimeType: string]: number} = {};
 
   constructor(opts: ZimCreatorOpts, metadata: ZimMetadata = {}) {
-    // {fileName, welcome = '', fullTextIndexLanguage = '', minChunkSize =
-    // 2048}, metadata = {}) {
     this.fileName = opts.fileName;
     this.articleCounter = {};
     this.tmpDir = this.fileName.split('.').slice(0, -1).join('.') + '.tmp';
@@ -52,7 +57,7 @@ class ZimCreator {
       fileName: this.fileName,
       mainPage: welcome,
       fullTextIndexLanguage,
-      minChunkSize: minChunkSize,
+      minChunkSize
     });
 
     this.setMetadata(metadata);
@@ -64,10 +69,10 @@ class ZimCreator {
 
   async addArticle(article: any) {
     if (!this.isAlive) throw new Error(`This Creator has been destroyed`);
-    this._creator.addArticle(article);
+    await this._creator.addArticle(article);
     if (!article.redirectUrl) {
       this.articleCounter[article.mimeType] =
-          this.articleCounter[article.mimeType] || 0;
+          this.articleCounter[article.mimeType] ?? 0;
       this.articleCounter[article.mimeType] += 1
     }
     return article;
@@ -86,13 +91,13 @@ class ZimCreator {
   async finalise() {
     if (!this.isAlive) throw new Error(`This Creator has been destroyed`);
     const counterString = Object.keys(this.articleCounter)
-                              .map(mimeType => `${mimeType} =
-                                $ { this.articleCounter[mimeType] }`)
-                              .join(';');
+      .map(mimeType => `${mimeType} = ${this.articleCounter[mimeType]}`)
+      .join(';');
     await this.setMetadata({Counter: counterString});
-    this._creator.finalise();
+    await this._creator.finalise();
     this._creator = null;
   }
-};
+}
 
 export {ZimCreator};
+
