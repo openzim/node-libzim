@@ -45,7 +45,7 @@ class ZimCreator {
       console.info(`Tmp directory already exists, deleting [${this.tmpDir}]`);
       rimraf.sync(this.tmpDir);
     } catch (err) {
-      console.error(err);
+      // noop
     }
 
     const {
