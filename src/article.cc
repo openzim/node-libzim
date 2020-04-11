@@ -7,8 +7,9 @@
 #include <zim/writer/creator.h>
 
 #include <cstring>
-#include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 Napi::FunctionReference Article::constructor;
@@ -83,9 +84,10 @@ Article::Article(const Napi::CallbackInfo& info)
   std::string fileName = props.Has("fileName")
                              ? std::string(props.Get("fileName").ToString())
                              : "";
-  bool shouldIndex = props.Has("shouldIndex")
-                         ? bool(props.Get("shouldIndex").ToBoolean())
-                         : false;
+  bool shouldIndex =
+      props.Has("shouldIndex")
+          ? static_cast<bool>(props.Get("shouldIndex").ToBoolean())
+          : false;
 
   // `${props.ns}/${props.url}`
   std::string aid = props.Has("aid") ? props.Get("aid").ToString()

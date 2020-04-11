@@ -2,6 +2,7 @@
 #include "reader.h"
 
 #include <napi.h>
+#include <string>
 
 Napi::FunctionReference ZimReaderWrapper::constructor;
 
