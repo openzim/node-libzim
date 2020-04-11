@@ -4,6 +4,7 @@
 #include <zim/search.h>
 
 #include <memory>
+#include <string>
 
 #include "article.h"
 

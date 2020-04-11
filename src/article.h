@@ -6,6 +6,7 @@
 #include <zim/writer/creator.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 /**
