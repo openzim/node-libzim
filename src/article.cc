@@ -14,25 +14,14 @@
 
 Napi::FunctionReference Article::constructor;
 
-Napi::Object Article::New(Napi::Env env, const zim::Article& article) {
+Napi::Object Article::New(Napi::Env env, zim::Article& article) {
   Napi::HandleScope scope(env);
   if (!article.good()) {
     throw Napi::Error::New(env, "article is not good");
   }
-  Napi::Object obj = Napi::Object::New(env);
-  obj.Set("ns", std::string(1, article.getNamespace()));
-  obj.Set("url", article.getUrl());
-  obj.Set("title", article.getTitle());
-  obj.Set("mimeType", !article.isRedirect() ? article.getMimeType() : "");
-  obj.Set("redirectUrl", article.isRedirect()
-                             ? article.getRedirectArticle().getLongUrl()
-                             : "");
-  obj.Set("shouldIndex", false);
 
-  auto blob = article.getData();
-  obj.Set("data", Napi::Buffer<char>::Copy(env, blob.data(), blob.size()));
-
-  return constructor.New({obj});
+  auto external = Napi::External<zim::Article>::New(env, &article);
+  return constructor.New({external});
 }
 
 Article::Article(const Napi::CallbackInfo& info)
@@ -40,62 +29,68 @@ Article::Article(const Napi::CallbackInfo& info)
   Napi::Env env = info.Env();
   Napi::HandleScope scope(env);
 
-  if (!info[0].IsObject()) {
+  if (!(info[0].IsObject() || info[0].IsExternal())) {
     throw Napi::Error::New(
         env, "1st argument must be an object with properies for Article");
   }
-  auto props = info[0].ToObject();
 
-  std::string url = props.Get("url").ToString();
-  std::vector<uint8_t> buffer;
-  {
-    auto data = props.Get("data");
-    if (data.IsString()) {
-      std::string nbuf = data.ToString();
-      buffer.resize(nbuf.size());
-      std::memcpy(buffer.data(), nbuf.data(), nbuf.size());
-    } else if (data.IsBuffer()) {
-      auto nbuf = data.As<Napi::Buffer<uint8_t>>();
-      buffer.resize(nbuf.Length());
-      std::memcpy(buffer.data(), nbuf.Data(), nbuf.Length());
-    } else {
-      throw Napi::Error::New(env, "data must be a string or buffer");
+  if (info[0].IsExternal()) {
+    // parse from external
+    auto article = reinterpret_cast<zim::Article*>(
+        info[0].As<Napi::External<zim::Article>>().Data());
+    if (!article->good()) {
+      throw Napi::Error::New(info.Env(),
+                             "Invalid article, article is not 'good'.");
     }
-  }
+    auto url = article->getUrl();
+    auto ns = std::string(1, article->getNamespace())[0];
+    auto aid = std::string(1, ns) + "/" + url;
+    auto mimeType = !article->isRedirect() ? article->getMimeType() : "";
+    auto redirectUrl =
+        article->isRedirect() ? article->getRedirectArticle().getLongUrl() : "";
+    article_ = std::make_shared<ZimArticle>(ns, aid, url, article->getTitle(),
+                                            mimeType, redirectUrl, "", false);
+    setData(article->getData());
+  } else {
+    // parse from object
+    auto props = info[0].ToObject();
 
-  char ns = '.';
-  if (props.Has("ns")) {
-    std::string str = props.Get("ns").ToString();
-    if (str.length() != 1) {
-      throw Napi::Error::New(env, "ns must be exactly one character");
+    std::string url = props.Get("url").ToString();
+
+    char ns = '.';
+    if (props.Has("ns")) {
+      std::string str = props.Get("ns").ToString();
+      if (str.length() != 1) {
+        throw Napi::Error::New(env, "ns must be exactly one character");
+      }
+      ns = str[0];
     }
-    ns = str[0];
+
+    std::string mimeType = props.Has("mimeType")
+                               ? std::string(props.Get("mimeType").ToString())
+                               : "text/plain";
+    std::string title =
+        props.Has("title") ? std::string(props.Get("title").ToString()) : "";
+    std::string redirectUrl =
+        props.Has("redirectUrl")
+            ? std::string(props.Get("redirectUrl").ToString())
+            : "";
+    std::string fileName = props.Has("fileName")
+                               ? std::string(props.Get("fileName").ToString())
+                               : "";
+    bool shouldIndex =
+        props.Has("shouldIndex")
+            ? static_cast<bool>(props.Get("shouldIndex").ToBoolean())
+            : false;
+
+    // `${props.ns}/${props.url}`
+    std::string aid = props.Has("aid") ? props.Get("aid").ToString()
+                                       : (std::string(1, ns) + "/" + url);
+
+    article_ = std::make_shared<ZimArticle>(ns, aid, url, title, mimeType,
+                                            redirectUrl, fileName, shouldIndex);
+    setData(info, props.Get("data"));
   }
-
-  std::string mimeType = props.Has("mimeType")
-                             ? std::string(props.Get("mimeType").ToString())
-                             : "text/plain";
-  std::string title =
-      props.Has("title") ? std::string(props.Get("title").ToString()) : "";
-  std::string redirectUrl =
-      props.Has("redirectUrl")
-          ? std::string(props.Get("redirectUrl").ToString())
-          : "";
-  std::string fileName = props.Has("fileName")
-                             ? std::string(props.Get("fileName").ToString())
-                             : "";
-  bool shouldIndex =
-      props.Has("shouldIndex")
-          ? static_cast<bool>(props.Get("shouldIndex").ToBoolean())
-          : false;
-
-  // `${props.ns}/${props.url}`
-  std::string aid = props.Has("aid") ? props.Get("aid").ToString()
-                                     : (std::string(1, ns) + "/" + url);
-
-  article_ =
-      std::make_shared<ZimArticle>(ns, aid, url, title, mimeType, redirectUrl,
-                                   fileName, shouldIndex, std::move(buffer));
 }
 
 Napi::Value Article::getNs(const Napi::CallbackInfo& info) {
@@ -173,21 +168,19 @@ Napi::Value Article::getData(const Napi::CallbackInfo& info) {
                                     article_->bufferData.size());
 }
 void Article::setData(const Napi::CallbackInfo& info, const Napi::Value& data) {
-  std::vector<uint8_t> buffer;
-  {
-    if (data.IsString()) {
-      std::string nbuf = data.ToString();
-      buffer.resize(nbuf.size());
-      std::memcpy(buffer.data(), nbuf.data(), nbuf.size());
-    } else if (data.IsBuffer()) {
-      auto nbuf = data.As<Napi::Buffer<uint8_t>>();
-      buffer.resize(nbuf.Length());
-      std::memcpy(buffer.data(), nbuf.Data(), nbuf.Length());
-    } else {
-      throw Napi::Error::New(info.Env(), "data must be a string or buffer");
-    }
+  if (data.IsString()) {
+    std::string nbuf = data.ToString();
+    article_->setData(nbuf.begin(), nbuf.end());
+  } else if (data.IsBuffer()) {
+    auto nbuf = data.As<Napi::Buffer<uint8_t>>();
+    article_->setData(nbuf.Data(), nbuf.Data() + nbuf.Length());
+  } else {
+    throw Napi::Error::New(info.Env(), "data must be a string or buffer");
   }
-  article_->setData(buffer);
+}
+
+void Article::setData(const zim::Blob& blob) {
+  article_->setData(blob.data(), blob.end());
 }
 
 Napi::Value Article::IsRedirect(const Napi::CallbackInfo& info) {

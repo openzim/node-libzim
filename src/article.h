@@ -16,8 +16,7 @@ class ZimArticle : public zim::writer::Article {
  public:
   ZimArticle(char ns, std::string aid, std::string url, std::string title,
              std::string mimeType, std::string redirectAid,
-             std::string fileName, bool _shouldIndex,
-             std::vector<uint8_t> bufferData)
+             std::string fileName, bool _shouldIndex)
       : ns(ns),
         aid(aid),
         url(url),
@@ -25,9 +24,8 @@ class ZimArticle : public zim::writer::Article {
         mimeType(mimeType),
         redirectAid(redirectAid),
         fileName(fileName),
-        _shouldIndex(_shouldIndex) {
-    setData(bufferData);
-  }
+        _shouldIndex(_shouldIndex),
+        bufferData{} {}
 
   char ns;
   std::string aid;
@@ -42,6 +40,13 @@ class ZimArticle : public zim::writer::Article {
 
   void setData(const std::vector<uint8_t> &data) {
     bufferData = data;
+    _data = zim::Blob(reinterpret_cast<char *>(bufferData.data()),
+                      bufferData.size());
+  }
+
+  template <class InputIt>
+  void setData(InputIt first, InputIt last) {
+    bufferData = std::vector<uint8_t>(first, last);
     _data = zim::Blob(reinterpret_cast<char *>(bufferData.data()),
                       bufferData.size());
   }
@@ -73,7 +78,7 @@ class ZimArticle : public zim::writer::Article {
 class Article : public Napi::ObjectWrap<Article> {
  public:
   static void Init(Napi::Env env, Napi::Object exports);
-  static Napi::Object New(Napi::Env env, const zim::Article &article);
+  static Napi::Object New(Napi::Env env, zim::Article &article);
   explicit Article(const Napi::CallbackInfo &info);
 
   Napi::Value getNs(const Napi::CallbackInfo &info);
@@ -94,6 +99,8 @@ class Article : public Napi::ObjectWrap<Article> {
   void setShouldIndex(const Napi::CallbackInfo &info, const Napi::Value &value);
   Napi::Value getData(const Napi::CallbackInfo &info);
   void setData(const Napi::CallbackInfo &info, const Napi::Value &value);
+
+  void setData(const zim::Blob &blob);
 
   Napi::Value IsRedirect(const Napi::CallbackInfo &info);
   Napi::Value getShouldCompress(const Napi::CallbackInfo &info);
