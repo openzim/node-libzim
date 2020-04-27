@@ -78,7 +78,7 @@ class ZimArticle : public zim::writer::Article {
 class Article : public Napi::ObjectWrap<Article> {
  public:
   static void Init(Napi::Env env, Napi::Object exports);
-  static Napi::Object New(Napi::Env env, zim::Article &article);
+  static Napi::Object New(Napi::Env env, zim::Article *article);
   explicit Article(const Napi::CallbackInfo &info);
 
   Napi::Value getNs(const Napi::CallbackInfo &info);

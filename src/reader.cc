@@ -35,7 +35,7 @@ Napi::Value ZimReaderWrapper::getArticleById(const Napi::CallbackInfo& info) {
     throw Napi::Error::New(info.Env(), "Failed to find article");
   }
 
-  return Article::New(info.Env(), zarticle);
+  return Article::New(info.Env(), &zarticle);
 }
 
 Napi::Value ZimReaderWrapper::getArticleByUrl(const Napi::CallbackInfo& info) {
@@ -44,7 +44,7 @@ Napi::Value ZimReaderWrapper::getArticleByUrl(const Napi::CallbackInfo& info) {
     throw Napi::Error::New(info.Env(), "Failed to find article");
   }
 
-  return Article::New(info.Env(), zarticle);
+  return Article::New(info.Env(), &zarticle);
 }
 
 Napi::Value ZimReaderWrapper::suggest(const Napi::CallbackInfo& info) {

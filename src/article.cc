@@ -14,13 +14,16 @@
 
 Napi::FunctionReference Article::constructor;
 
-Napi::Object Article::New(Napi::Env env, zim::Article& article) {
+Napi::Object Article::New(Napi::Env env, zim::Article* article) {
   Napi::HandleScope scope(env);
-  if (!article.good()) {
+  if (article == nullptr) {
+    throw Napi::Error::New(env, "article is null");
+  }
+  if (!article->good()) {
     throw Napi::Error::New(env, "article is not good");
   }
 
-  auto external = Napi::External<zim::Article>::New(env, &article);
+  auto external = Napi::External<zim::Article>::New(env, article);
   return constructor.New({external});
 }
 
