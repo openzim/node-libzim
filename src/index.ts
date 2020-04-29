@@ -1,9 +1,9 @@
-import { ZimArticle } from "./Article";
-import { ZimCreator } from "./ZimCreator";
-import { ZimReader } from "./ZimReader";
+import {ZimArticle} from './zim';
+import {ZimReader} from './ZimReader';
+import {ZimCreator} from './ZimCreator';
 
 export {
-    ZimArticle,
-    ZimCreator,
-    ZimReader,
+  ZimArticle,
+  ZimCreator,
+  ZimReader,
 }
