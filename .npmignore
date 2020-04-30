@@ -1,7 +1,6 @@
 node_modules/
 build/*/build/
 dist/*.node
-!dist/*.js
 auto*.gypi
 *.ts
 !*.d.ts
@@ -10,3 +9,13 @@ auto*.gypi
 *.tgz
 download
 *.zim
+.idea
+.vscode
+*.tmp
+*.idx
+.editorconfig
+.travis.yml
+node-libzim.iml
+release.sh
+_misc
+dev
