@@ -6,4 +6,6 @@ auto*.gypi
 *.log
 *.tgz
 *.zim
+*.idx
+dev/out
 download
