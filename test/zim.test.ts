@@ -54,8 +54,8 @@ describe('ZimCreator', () => {
     }
 
     await creator.addArticle(new ZimArticle({ns: 'M', data: `meta test`, url: 'meta_test'}));
-    await creator.addArticle(new ZimArticle({ns: 'I', data: 'image test', url: 'image test', mimeType: 'image/png'}));
-    await creator.addArticle(new ZimArticle({ns: '-', data: 'common namespace test', url: 'common namespace test'}));
+    await creator.addArticle(new ZimArticle({ns: 'I', data: 'image test', url: 'image_test', mimeType: 'image/png'}));
+    await creator.addArticle(new ZimArticle({ns: '-', data: 'common namespace test', url: 'common_namespace_test'}));
 
     await creator.finalise();
   });
@@ -102,6 +102,24 @@ describe('ZimReader', () => {
   test(`Get article by url`, async () => {
     const article = await zimFile.getArticleByUrl(`A/${nthArticleUrl}`);
     expect(article).toBeDefined();
+  });
+
+  test(`Get meta record`, async () => {
+    const article = await zimFile.getArticleByUrl(`M/meta_test`);
+    expect(article).toBeDefined();
+    expect(article.mimeType).toEqual('text/plain');
+  });
+
+  test(`Get common record`, async () => {
+    const article = await zimFile.getArticleByUrl(`-/common_namespace_test`);
+    expect(article).toBeDefined();
+    expect(article.mimeType).toEqual('text/plain');
+  });
+
+  test(`Get image`, async () => {
+    const article = await zimFile.getArticleByUrl(`I/image_test`);
+    expect(article).toBeDefined();
+    expect(article.mimeType).toEqual('image/png');
   });
 
   test(`Suggest`, async () => {
