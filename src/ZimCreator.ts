@@ -91,7 +91,7 @@ class ZimCreator {
   async finalise() {
     if (!this.isAlive) throw new Error(`This Creator has been destroyed`);
     const counterString = Object.keys(this.articleCounter)
-      .map(mimeType => `${mimeType} = ${this.articleCounter[mimeType]}`)
+      .map(mimeType => `${mimeType}=${this.articleCounter[mimeType]}`)
       .join(';');
     await this.setMetadata({Counter: counterString});
     await this._creator.finalise();
