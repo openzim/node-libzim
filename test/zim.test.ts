@@ -14,6 +14,8 @@ const nthArticleId = 77;
 let nthArticleUrl: string;
 
 const targetNumberOfArticles = 100;
+const targetNumberOfRecords = targetNumberOfArticles + 6;
+const targetNumberOfRecordsWithMeta = targetNumberOfRecords + 2;
 
 const outFile = path.join(__dirname, '../../test.zim');
 
@@ -35,7 +37,7 @@ describe('ZimCreator', () => {
     const articleContent = faker.lorem.paragraphs(1);
     for (let i = 0; i < targetNumberOfArticles; i++) {
       const articleTitle = faker.lorem.words(faker.random.number({min: 1, max: 3}));
-      const articleUrl = articleTitle.replace(/ /g, '_');
+      const articleUrl = `${articleTitle.replace(/ /g, '_')}_${i}`;
 
       if (i == nthArticleId) nthArticleUrl = articleUrl;
 
@@ -50,6 +52,11 @@ describe('ZimCreator', () => {
       await creator.addArticle(a);
       actualNumberOfArticles++;
     }
+
+    await creator.addArticle(new ZimArticle({ns: 'M', data: `meta test`, url: 'meta_test'}));
+    await creator.addArticle(new ZimArticle({ns: 'I', data: 'image test', url: 'image test', mimeType: 'image/png'}));
+    await creator.addArticle(new ZimArticle({ns: '-', data: 'common namespace test', url: 'common namespace test'}));
+
     await creator.finalise();
   });
 
@@ -60,8 +67,16 @@ describe('ZimCreator', () => {
   });
 
   test(`Created ${targetNumberOfArticles} articles`, () => {
-    expect(creator.articleCounter['text/html']).toEqual(targetNumberOfArticles);
+    const count = creator.articleCounter['text/html'];
+    expect(count).toEqual(targetNumberOfArticles);
   });
+
+  test(`Created ${targetNumberOfArticles} records`, () => {
+    const count = Object.values(creator.articleCounter).reduce((a, c) => a + c, 0);
+    expect(count).toEqual(targetNumberOfRecords);
+  });
+
+
 });
 
 
@@ -74,9 +89,9 @@ describe('ZimReader', () => {
   });
 
 
-  test(`Count articles`, async () => {
+  test(`Count records`, async () => {
     const articlesCount = await zimFile.getCountArticles();
-    expect(articlesCount).toEqual(targetNumberOfArticles);
+    expect(articlesCount).toEqual(targetNumberOfRecordsWithMeta);
   });
 
   test(`Get Nth (${nthArticleId}) article`, async () => {
