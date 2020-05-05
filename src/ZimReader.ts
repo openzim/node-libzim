@@ -45,7 +45,7 @@ class ZimReader {
     if (!this.isAlive) throw new Error(`This Reader has been destroyed`);
     return this._reader.search(query);
   }
-};
+}
 
 export {ZimReader}
 
