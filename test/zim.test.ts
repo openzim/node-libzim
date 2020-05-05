@@ -74,7 +74,7 @@ describe('ZimReader', () => {
   });
 
 
-  test.skip(`Count articles`, async () => {
+  test(`Count articles`, async () => {
     const articlesCount = await zimFile.getCountArticles();
     expect(articlesCount).toEqual(targetNumberOfArticles);
   });
