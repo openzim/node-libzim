@@ -14,10 +14,10 @@ const nthArticleId = 77;
 let nthArticleUrl: string;
 
 const targetNumberOfArticles = 100;
-const targetNumberOfRecords = targetNumberOfArticles + 6;
+const targetNumberOfRecords = targetNumberOfArticles + 7;
 const targetNumberOfRecordsWithMeta = targetNumberOfRecords + 2;
 
-const outFile = path.join(__dirname, '../../test.zim');
+const outFile = path.join(__dirname, '../test.zim');
 
 
 beforeAll(() => {
@@ -52,6 +52,8 @@ describe('ZimCreator', () => {
       await creator.addArticle(a);
       actualNumberOfArticles++;
     }
+
+    await creator.addArticle(new ZimArticle({ns: 'A', data: `this is home`, url: 'welcome'}));
 
     await creator.addArticle(new ZimArticle({ns: 'M', data: `meta test`, url: 'meta_test'}));
     await creator.addArticle(new ZimArticle({ns: 'I', data: 'image test', url: 'image_test', mimeType: 'image/png'}));
@@ -120,6 +122,13 @@ describe('ZimReader', () => {
     const article = await zimFile.getArticleByUrl(`I/image_test`);
     expect(article).toBeDefined();
     expect(article.mimeType).toEqual('image/png');
+  });
+
+  // TODO
+  test.skip(`Get main page`, async () => {
+    // const article = await zimFile.getArticleByUrl(`A/welcome`);
+    // expect(article).toBeDefined();
+    // expect(article.mimeType).toEqual('text/html');
   });
 
   test(`Suggest`, async () => {
