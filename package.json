@@ -10,7 +10,7 @@
     "test": "jest",
     "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts"
   },
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "author": "Joseph Reeve",
   "license": "GPL-3.0",
   "repository": {
