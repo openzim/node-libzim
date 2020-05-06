@@ -1,10 +1,9 @@
 // noinspection ES6UnusedImports
 import {} from 'ts-jest';
-import path from "path";
+import path from 'path';
+import * as fs from 'fs';
 import * as faker from 'faker';
-
-import {ZimArticle, ZimCreator, ZimReader} from "../src";
-import * as fs from "fs";
+import {ZimArticle, ZimCreator, ZimReader} from '../src';
 
 
 let creator: ZimCreator;
@@ -39,7 +38,7 @@ describe('ZimCreator', () => {
       const articleTitle = faker.lorem.words(faker.random.number({min: 1, max: 3}));
       const articleUrl = `${articleTitle.replace(/ /g, '_')}_${i}`;
 
-      if (i == nthArticleId) nthArticleUrl = articleUrl;
+      if (i === nthArticleId) nthArticleUrl = articleUrl;
 
       const a = new ZimArticle({
         url: articleUrl,
@@ -144,7 +143,7 @@ describe('ZimReader', () => {
 
   afterAll(async () => {
     await zimFile.destroy();
-  })
+  });
 });
 
 
@@ -156,5 +155,7 @@ afterAll(() => {
 const removeOutFile = () => {
   try {
     fs.unlinkSync(outFile);
-  } catch (e) {}
-}
+  } catch (e) {
+    // noop
+  }
+};
