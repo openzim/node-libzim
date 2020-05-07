@@ -1,4 +1,5 @@
 import {statSync} from 'fs';
+import * as mime from 'mime';
 import * as rimraf from 'rimraf';
 
 import {ZimArticle, ZimCreatorWrapper} from './zim';
@@ -69,6 +70,7 @@ class ZimCreator {
 
   async addArticle(article: any) {
     if (!this.isAlive) throw new Error(`This Creator has been destroyed`);
+    if (!article.mimeType) article.mimeType = mime.getType(article.url) || 'text/plain';
     await this._creator.addArticle(article);
     if (!article.redirectUrl) {
       this.articleCounter[article.mimeType] =
