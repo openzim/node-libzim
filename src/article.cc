@@ -71,7 +71,7 @@ Article::Article(const Napi::CallbackInfo& info)
 
     std::string mimeType = props.Has("mimeType")
                                ? std::string(props.Get("mimeType").ToString())
-                               : "text/plain";
+                               : "";
     std::string title =
         props.Has("title") ? std::string(props.Get("title").ToString()) : "";
     std::string redirectUrl =
