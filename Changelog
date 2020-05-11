@@ -1,3 +1,9 @@
+2.2.1:
+* NEW: Use libzim v6.1.2
+
+2.2.0
+* FIX: Few problems around mime-types
+
 2.1.1
 * NEW: Ported to N-API
 
