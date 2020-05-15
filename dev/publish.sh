@@ -1,5 +1,5 @@
 # This should only be run by Travis
-if [ -n "$CI" ]; then
+if [ -n "$CI" ] && [ "PLATFORM" == "native_dyn" ]; then
     if [[ "$(node --version)" = *"v12."* ]]; then
         npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN -q
 
