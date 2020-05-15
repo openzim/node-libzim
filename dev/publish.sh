@@ -1,5 +1,5 @@
 # This should only be run by Travis
-if [ -n "$CI" ] && [ "PLATFORM" == "native_dyn" ]; then
+if [ -n "$CI" ] && [ "$PLATFORM" == "native_dyn" ]; then
     if [[ "$(node --version)" = *"v12."* ]]; then
         npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN -q
 
@@ -23,5 +23,5 @@ if [ -n "$CI" ] && [ "PLATFORM" == "native_dyn" ]; then
         fi
     fi
 else
-    echo "dev/publish.sh should only be executed by Travis"
+    echo "dev/publish.sh should only be executed by Travis (native_dyn platform)"
 fi
