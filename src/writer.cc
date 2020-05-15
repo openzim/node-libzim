@@ -42,6 +42,7 @@ void ZimCreatorWrapper::addArticle(const Napi::CallbackInfo& info) {
 
 void ZimCreatorWrapper::finalise(const Napi::CallbackInfo& info) {
   creator_->finishZimCreation();
+  creator_ = nullptr;
 }
 
 void ZimCreatorWrapper::Init(Napi::Env env, Napi::Object exports) {
