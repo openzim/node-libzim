@@ -1,6 +1,7 @@
 {
     "variables": {
       "libzim_dir": "<(module_root_dir)/download",
+      "libzim_mac_dir": "<(module_root_dir)/download/lib",
       "libzim_include": "<(module_root_dir)/download/include",
       "libzim_local": "<!(pkg-config --exists libzim && echo true || echo false)",
     },
@@ -28,13 +29,16 @@
                 ],
               }],
               ["OS=='mac'", {
-                "cflags+": ["-fvisibility=hidden"],
-                "xcode_settings": {
-                  "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
-                  "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
-                },
-                "libraries": [ "-lzim" ]
-              }],
+                    "include_dirs": [
+                        "<(libzim_include)",
+                    ],
+                    "cflags+": ["-fvisibility=hidden"],
+                    "xcode_settings": {
+                        "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
+                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                    },
+                    "libraries": ["-L<(libzim_mac_dir)", "-lzim"]
+                }],
             ],
             "target_name": "zim_binding",
             "cflags!": [ "-fno-exceptions" ],
