@@ -8,15 +8,17 @@ const urlParser = require('url');
 
 mkdirp.sync('./download');
 
-const isLinux = os.type() === 'Linux';
+const isMacOS = os.type() === 'Darwin'
+const isLinux = os.type() === 'Linux'
 
-const urls = [
-    `http://download.openzim.org/release/libzim/libzim_linux-x86_64-${process.env.LIBZIM_VERSION}.tar.gz`,
-].filter(a => a);
-
-if (!isLinux) {
-    console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
+if (!isMacOS && !isLinux) {
+    console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux and MacOS for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
 }
+
+let osPrefix = (isMacOS) ? 'macos' : 'linux';
+const urls = [
+    `http://download.openzim.org/release/libzim/libzim_${osPrefix}-x86_64-${process.env.LIBZIM_VERSION}.tar.gz`,
+].filter(a => a);
 
 for (let url of urls) {
     console.info(`Downloading Libzim from: `, url);
@@ -55,5 +57,3 @@ for (let url of urls) {
             console.error(`Failed to download and extract file:`, err);
         });
 }
-
-exec(`ln -s lib/x86_64-linux-gnu/libzim.so.6 download/libzim.so.6`);
