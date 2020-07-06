@@ -6,8 +6,9 @@
     "clean": "rm -rf dist build/native/build",
     "tsc": "tsc",
     "prepare": "npm run tsc",
-    "install": "npm run download && node-gyp rebuild",
+    "install": "npm run download && node-gyp rebuild -v && npm run bundle",
     "download": "node ./download-libzim.js",
+    "bundle": "node ./bundle-libzim.js",
     "test": "jest",
     "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts"
   },

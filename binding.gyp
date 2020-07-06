@@ -1,9 +1,8 @@
 {
     "variables": {
       "libzim_dir": "<(module_root_dir)/download",
-      "libzim_mac_dir": "<(module_root_dir)/download/lib",
       "libzim_include": "<(module_root_dir)/download/include",
-      "libzim_local": "<!(pkg-config --exists libzim && echo true || echo false)",
+      "libzim_local": "false",  # change this to use system-installed libzim
     },
     "targets": [
         {
@@ -20,35 +19,34 @@
               }],
               ["libzim_local!='true' and OS=='linux'", {
                 "include_dirs": [
-                  "<(libzim_include)", 
+                  "<(libzim_include)",
                 ],
                 "libraries": [
-                  "-Wl,-rpath,<(libzim_dir)",
-                  "-L<(libzim_dir)",
-                  "<(libzim_dir)/libzim.so.6",
+                  "-Wl,-rpath,'$$ORIGIN'",
+                  "-L<(libzim_dir)/lib/x86_64-linux-gnu",
+                  "<(libzim_dir)/lib/x86_64-linux-gnu/libzim.so.6",
                 ],
               }],
-              ["OS=='mac'", {
-                    "include_dirs": [
-                        "<(libzim_include)",
-                    ],
-                    "cflags+": ["-fvisibility=hidden"],
-                    "xcode_settings": {
-                        "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
-                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
-                    },
-                    "libraries": ["-L<(libzim_mac_dir)", "-lzim"]
-                }],
+              ["libzim_local!='true' and OS=='mac'", {
+                  "include_dirs": ["<(libzim_include)"],
+                  "cflags+": ["-fvisibility=hidden"],
+                  "xcode_settings": {
+                      "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
+                      "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                      "LD_RUNPATH_SEARCH_PATHS": "@loader_path/"
+                  },
+                  "libraries": ["-Wl,-rpath,@loader_path/", "-L<(libzim_dir)/lib", "-lzim"],
+              }],
             ],
             "target_name": "zim_binding",
             "cflags!": [ "-fno-exceptions" ],
             "cflags_cc!": [ "-fno-exceptions" ],
             "cflags": [],
             "cflags_cc": [ "-std=c++17", "-fexceptions" ],
-            "sources": [ 
-                "src/module.cc", 
-                "src/article.cc", 
-                "src/reader.cc", 
+            "sources": [
+                "src/module.cc",
+                "src/article.cc",
+                "src/reader.cc",
                 "src/writer.cc",
             ],
             "include_dirs": [
