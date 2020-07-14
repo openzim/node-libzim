@@ -19,8 +19,7 @@ node-libzim.iml
 release.sh
 _misc
 dev
-.github/FUNDING.yml
+.github/*
 .clang-format
 CPPLINT.cfg
 tslint.json
-.env
