@@ -1,5 +1,5 @@
 node_modules/
-build/*/build/
+build/*
 dist/*.node
 auto*.gypi
 *.ts
@@ -19,3 +19,7 @@ node-libzim.iml
 release.sh
 _misc
 dev
+.github/*
+.clang-format
+CPPLINT.cfg
+tslint.json
