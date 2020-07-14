@@ -1,3 +1,7 @@
+2.3.0:
+* NEW: Add support of macOS
+* FIX: Remove useless files from the npm package
+
 2.2.5:
 * NEW: Use libzim v6.1.7
 
