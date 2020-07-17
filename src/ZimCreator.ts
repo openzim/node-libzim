@@ -7,6 +7,7 @@ import {ZimArticle, ZimCreatorWrapper} from './zim';
 export interface ZimCreatorOpts {
   fileName: string;
   welcome?: string;
+  compression?: string;
   fullTextIndexLanguage?: string;
   minChunkSize?: number;
 }
@@ -24,15 +25,16 @@ export interface ZimMetadata {
   Title?: string,
 }
 
-
 class ZimCreator {
   tmpDir: string;
   _creator: any;
   fileName: string;
+  compression: string;
   articleCounter: {[mimeType: string]: number} = {};
 
   constructor(opts: ZimCreatorOpts, metadata: ZimMetadata = {}) {
     this.fileName = opts.fileName;
+    this.compression = opts.compression || 'lzma';
     this.articleCounter = {};
     this.tmpDir = this.fileName.split('.').slice(0, -1).join('.') + '.tmp';
     const metadataDefaults = {
@@ -57,6 +59,7 @@ class ZimCreator {
     this._creator = new ZimCreatorWrapper({
       fileName: this.fileName,
       mainPage: welcome,
+      compression: this.compression,
       fullTextIndexLanguage,
       minChunkSize
     });

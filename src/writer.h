@@ -10,8 +10,9 @@
 
 class OverriddenZimCreator : public zim::writer::Creator {
  public:
-  explicit OverriddenZimCreator(std::string mainPage)
-      : zim::writer::Creator(true), mainPage(mainPage) {}
+  explicit OverriddenZimCreator(std::string mainPage,
+                                zim::CompressionType comp = zim::zimcompLzma)
+    : zim::writer::Creator(true, comp), mainPage(mainPage) {}
 
   virtual zim::writer::Url getMainUrl() const {
     return zim::writer::Url('A', mainPage);
