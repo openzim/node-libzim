@@ -1,5 +1,3 @@
-
-
 #include "writer.h"
 
 #include <napi.h>
@@ -28,7 +26,14 @@ ZimCreatorWrapper::ZimCreatorWrapper(const Napi::CallbackInfo& info)
                          ? opts.Get("minChunkSize").ToNumber().Int32Value()
                          : 2048;
 
-  creator_ = std::make_shared<OverriddenZimCreator>(mainPage);
+  zim::CompressionType comp = zim::zimcompLzma;
+  if (opts.Has("compression")) {
+      std::string comp_str = std::string(opts.Get("compression").ToString());
+      if (comp_str == "lzma") { comp = zim::zimcompLzma; }
+      if (comp_str == "zstd") { comp = zim::zimcompZstd; }
+  }
+
+  creator_ = std::make_shared<OverriddenZimCreator>(mainPage, comp);
   creator_->setIndexing(!fullTextIndexLanguage.empty(), fullTextIndexLanguage);
   creator_->setMinChunkSize(minChunkSize);
   creator_->startZimCreation(fileName);
