@@ -1,3 +1,7 @@
+2.4.0:
+* NEW: Allow to specify compression (with zstd)
+* NEW: Use libzim v6.1.8
+
 2.3.0:
 * NEW: Add support of macOS
 * FIX: Remove useless files from the npm package
