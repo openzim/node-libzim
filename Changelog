@@ -1,3 +1,6 @@
+2.4.1:
+* NEW: Use libzim v6.2.1
+
 2.4.0:
 * NEW: Allow to specify compression (with zstd)
 * NEW: Use libzim v6.1.8
