@@ -14,7 +14,9 @@ This is the Node.js binding to the
 
 This package relies on [node-addon-api](https://github.com/nodejs/node-addon-api) / n-api.
 
-On Linux, the package will download a `libzim` binary. On MacOS you'll need to install `libzim` separately ([see here](https://github.com/openzim/libzim/)).
+On GNU/Linux & macOS, the package will download a `libzim` binary. On
+other OSes you will need to install `libzim` separately ([see
+here](https://github.com/openzim/libzim/)).
 
 ## Usage
 
