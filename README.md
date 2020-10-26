@@ -2,7 +2,7 @@ node-libzim
 ===========
 
 This is the Node.js binding to the
-[libzim](https://github.com/openzim/libzim/issues/264). Read and write
+[libzim](https://github.com/openzim/libzim/). Read and write
 [ZIM](https://openzim.org) files easily in Javascript.
 
 [![npm](https://img.shields.io/npm/v/@openzim/libzim.svg)](https://www.npmjs.com/package/@openzim/libzim)
@@ -21,7 +21,7 @@ here](https://github.com/openzim/libzim/)).
 ## Usage
 
 ```bash
-npm i libzim
+npm i openzim/libzim
 ```
 
 ### Writing a Zim file
