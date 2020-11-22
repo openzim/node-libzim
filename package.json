@@ -6,11 +6,21 @@
     "clean": "rm -rf dist build/native/build",
     "tsc": "tsc",
     "prepare": "npm run tsc",
+    "codecov": "nyc --reporter=lcov npm t",
     "install": "npm run download && node-gyp rebuild -v && npm run bundle",
     "download": "node ./download-libzim.js",
     "bundle": "node ./bundle-libzim.js",
     "test": "jest",
     "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "test/*",
+      "node_modules"
+    ]
   },
   "main": "dist/index.js",
   "author": "Joseph Reeve",
@@ -49,6 +59,7 @@
     "tsconfig-paths": "^3.9.0"
   },
   "devDependencies": {
+    "nyc": "^15.1.0",
     "typescript": "^3.8.3"
   },
   "jest": {

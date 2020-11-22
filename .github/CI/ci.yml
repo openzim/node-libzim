@@ -1,0 +1,121 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  Macos:
+
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+
+    - name: Setup python 3.6
+      uses: actions/setup-python@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: installing add on packages
+      run: brew install ossp-uuid
+
+    - name: setting path
+      run: PATH=$PATH:$HOME/bin
+
+    - name: installing dependencies
+      run: npm i
+
+    - name: installing typescript
+      run: npm i -g typescript
+
+    - name: running tsc
+      run: tsc
+
+    - name: running test
+      run: npm run test
+
+  Ubuntu-20:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: installing add on packages
+      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
+
+    - name: setting path
+      run: PATH=$PATH:$HOME/bin
+
+    - name: installing dependencies
+      run: npm i
+
+    - name: installing typescript
+      run: npm i -g typescript
+
+    - name: installing codecov
+      run: npm i codecov
+
+    - name: running tsc
+      run: tsc
+
+    - name: running test
+      run: npm run test
+
+    - name: running codecov
+      run: npm run codecov
+
+    - name: codecov action
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  Xenial:
+    runs-on: ubuntu-16.04
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: installing add on packages
+      run: sudo apt install gcc-4.9 g++-4.9 python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
+
+    - name: setting path
+      run: PATH=$PATH:$HOME/bin
+
+    - name: installing dependencies
+      run: npm i
+
+    - name: installing typescript
+      run: npm i -g typescript
+
+    - name: running tsc
+      run: tsc
+
+    - name: running test
+      run: npm run test
