@@ -6,7 +6,7 @@ This is the Node.js binding to the
 [ZIM](https://openzim.org) files easily in Javascript.
 
 [![npm](https://img.shields.io/npm/v/@openzim/libzim.svg)](https://www.npmjs.com/package/@openzim/libzim)
-[![Build Status](https://github.com/openzim/node-libzim/CI/CI/badge.svg?query=branch%3Amaster)](https://github.com/openzim/node-libzim/actions?query=branch%3Amaster)
+[![Build Status](https://github.com/openzim/node-libzim/CI/badge.svg?query=branch%3Amaster)](https://github.com/openzim/node-libzim/actions?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/openzim/node-libzim/branch/master/graph/badge.svg)](https://codecov.io/gh/openzim/node-libzim)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/node-libzim/badge)](https://www.codefactor.io/repository/github/openzim/node-libzim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
