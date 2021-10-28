@@ -9,7 +9,7 @@ on:
   pull_request:
 
 jobs:
-  Macos:
+  macOS:
 
     runs-on: macos-latest
 
@@ -45,7 +45,7 @@ jobs:
     - name: running test
       run: npm run test
 
-  Ubuntu-20:
+  Ubuntu-20.04:
     runs-on: ubuntu-20.04
 
     strategy:
