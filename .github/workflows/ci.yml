@@ -9,13 +9,13 @@ on:
   pull_request:
 
 jobs:
-  Macos:
 
+  macOS:
     runs-on: macos-latest
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 16.x]
+        node-version: [12.x, 14.x, 16.x, 17.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -45,12 +45,44 @@ jobs:
     - name: running test
       run: npm run test
 
-  Ubuntu-20:
+  Ubuntu-Bionic:
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x, 17.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: installing add on packages
+      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
+
+    - name: setting path
+      run: PATH=$PATH:$HOME/bin
+
+    - name: installing dependencies
+      run: npm i
+
+    - name: installing typescript
+      run: npm i -g typescript
+
+    - name: running tsc
+      run: tsc
+
+    - name: running test
+      run: npm run test
+
+  Ubuntu-Focal:
     runs-on: ubuntu-20.04
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 16.x]
+        node-version: [12.x, 14.x, 16.x, 17.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -87,35 +119,3 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-
-  Xenial:
-    runs-on: ubuntu-16.04
-
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x, 14.x, 16.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: installing add on packages
-      run: sudo apt install gcc-4.9 g++-4.9 python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
-
-    - name: setting path
-      run: PATH=$PATH:$HOME/bin
-
-    - name: installing dependencies
-      run: npm i
-
-    - name: installing typescript
-      run: npm i -g typescript
-
-    - name: running tsc
-      run: tsc
-
-    - name: running test
-      run: npm run test
