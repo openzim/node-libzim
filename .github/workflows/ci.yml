@@ -9,8 +9,8 @@ on:
   pull_request:
 
 jobs:
-  macOS:
 
+  macOS:
     runs-on: macos-latest
 
     strategy:
@@ -45,7 +45,7 @@ jobs:
     - name: running test
       run: npm run test
 
-  Ubuntu-18.04:
+  Ubuntu-Bionic:
     runs-on: ubuntu-18.04
 
     strategy:
@@ -77,7 +77,7 @@ jobs:
     - name: running test
       run: npm run test
 
-  Ubuntu-20.04:
+  Ubuntu-Focal:
     runs-on: ubuntu-20.04
 
     strategy:
