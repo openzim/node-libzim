@@ -8,6 +8,7 @@
     "prepare": "npm run tsc",
     "codecov": "nyc --reporter=lcov npm t",
     "install": "npm run download && node-gyp rebuild -v && npm run bundle",
+    "build": "node-gyp rebuild -v && npm run bundle && npm run tsc",
     "download": "node ./download-libzim.js",
     "bundle": "node ./bundle-libzim.js",
     "test": "jest",
@@ -36,31 +37,31 @@
   "gypfile": true,
   "dependencies": {
     "@types/bindings": "^1.5.0",
-    "@types/faker": "^4.1.12",
-    "@types/jest": "^25.2.3",
+    "@types/faker": "^5.5.9",
+    "@types/jest": "^27.0.2",
     "@types/mime": "^2.0.3",
-    "@types/node": "^13.13.52",
+    "@types/node": "^16.11.7",
     "@types/rimraf": "^3.0.2",
     "axios": "^0.21.1",
     "bindings": "^1.5.0",
     "dotenv": "^8.6.0",
     "exec-then": "^1.3.1",
     "faker": "^4.1.0",
-    "jest": "^25.5.4",
+    "jest": "^27.3.1",
     "mime": "^2.5.2",
     "minimist": "^1.2.5",
     "mkdirp": "^1.0.4",
-    "node-addon-api": "^2.0.2",
-    "node-gyp": "^6.1.0",
+    "node-addon-api": "^4.2.0",
+    "node-gyp": "^8.4.0",
     "rimraf": "^3.0.2",
     "tar": "^6.1.0",
-    "ts-jest": "^25.4.0",
-    "ts-node": "^8.10.2",
+    "ts-jest": "^27.0.7",
+    "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.11.0"
   },
   "devDependencies": {
     "nyc": "^15.1.0",
-    "typescript": "^3.9.10"
+    "typescript": "^4.4.4"
   },
   "jest": {
     "preset": "ts-jest/presets/js-with-ts"
