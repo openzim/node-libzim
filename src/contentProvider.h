@@ -5,6 +5,7 @@
 
 #include <exception>
 #include <functional>
+#include <future>
 #include <memory>
 #include <string_view>
 
@@ -18,11 +19,20 @@
 class ContentProviderWrapper : public zim::writer::ContentProvider {
  public:
   ContentProviderWrapper(const Napi::Object &provider) : provider_{} {
-    provider_ = Napi::Reference<Napi::Object>::New(provider, 1);
+    provider_ = Napi::Persistent(provider);
+    size_ = parseSize(provider_.Get("size"));
+
+    auto &&feedFunc = provider_.Get("feed").As<Napi::Function>();
+    tsfn_ = Napi::ThreadSafeFunction::New(provider_.Env(), feedFunc,
+                                          "getContentProvider.feed", 0, 1);
   }
 
-  zim::size_type getSize() const override {
-    auto size = provider_.Get("size");
+  ~ContentProviderWrapper() { tsfn_.Release(); }
+
+  zim::size_type getSize() const override { return size_; }
+
+  /** Parse the size, supports BigInt */
+  static zim::size_type parseSize(const Napi::Value size) {
     if (size.IsBigInt()) {
       bool lossless;
       auto &&val = size.As<Napi::BigInt>().Uint64Value(&lossless);
@@ -41,19 +51,31 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
   }
 
   zim::Blob feed() override {
-    auto feedFunc = provider_.Get("feed").As<Napi::Function>();
-    auto blobObj = feedFunc.Call(provider_.Value(), {});
-    if (!blobObj.IsObject()) {
-      throw std::runtime_error("ContentProvider.feed must return a blob");
+    std::promise<zim::Blob> promise;
+    auto future = promise.get_future();
+
+    auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
+      auto blobObj = jsCallback.Call(provider_.Value(), {});
+      if (!blobObj.IsObject()) {
+        throw std::runtime_error("ContentProvider.feed must return a blob");
+      }
+      auto blob = Napi::ObjectWrap<Blob>::Unwrap(blobObj.ToObject());
+      promise.set_value(*(blob->blob()));
+    };
+
+    auto status = tsfn_.BlockingCall(callback);
+    if (status != napi_ok) {
+      throw std::runtime_error("Error calling ThreadSafeFunction");
     }
-    auto blob = Napi::ObjectWrap<Blob>::Unwrap(blobObj.ToObject());
-    // blob is a Blob wrapper which returns a shared_ptr
-    return *(blob->blob());
+
+    return future.get();
   }
 
  private:
   // js world reference, could be an ObjectWrap provider or custom js object
   Napi::ObjectReference provider_;
+  Napi::ThreadSafeFunction tsfn_;
+  zim::size_type size_;
 };
 
 class StringProvider : public Napi::ObjectWrap<StringProvider> {

@@ -198,7 +198,7 @@ console.log("\n=====================");
 })();
 
 console.log("\n=====================");
-(() => {
+(async () => {
     console.log("Compression", Compression);
     console.log("Compression.Zstd", Compression.Zstd);
     console.log("Creator", Creator);
@@ -214,7 +214,7 @@ console.log("\n=====================");
     })();
 
     const sp = new StringProvider("hello");
-    console.log("testFunc:", testFunc(sp));
+    //console.log("testFunc:", testFunc(sp));
 
     // Does my custom provider work? Yes
     (() => {
@@ -230,7 +230,7 @@ console.log("\n=====================");
                 return new Blob();
             },
         };
-        console.log("testFunc:", testFunc(customProvier));
+        //console.log("testFunc:", testFunc(customProvier));
     })();
 
     // can I override class bindings? Yes.
@@ -257,8 +257,15 @@ console.log("\n=====================");
     const creator = (new Creator()).configVerbose(true).configIndexing(true, "en").startZimCreation("./test.zim");
     console.log("creator:", creator);
     for(let i = 0; i < 10; i++) {
+        console.log(`add item ${i}`);
         const item = new StringItem(`A/test${i}`, "text/plain", `Hello world ${i}`, {}, `Hello world ${i}!`);;
         creator.addItem(item);
     }
-    creator.finishZimCreation();
+
+    const promise = creator.finishZimCreation();
+    console.log("creator worker promise:", promise);
+    await promise
+        .then(() => { console.log("worker is done"); })
+        .catch(() => { console.log("worker failed"); });
+    console.log("here");
 })();

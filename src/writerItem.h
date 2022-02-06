@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <functional>
+#include <future>
 #include <memory>
 #include <string_view>
 
@@ -27,83 +28,48 @@ zim::writer::Hints Object2Hints(const Napi::Object &obj) {
   return hints;
 }
 
-// This was way more complicated than expected. Cannot call back into JS context
-// easily.
-using Context = Napi::ObjectReference;
-using DataType = std::unique_ptr<ContentProviderWrapper>;
-void Callback(Napi::Env env, Napi::Function jsCallback, Context *ctx,
-              DataType *data) {
-  std::cout << "Hello world" << std::endl;
-  if (env != nullptr) {
-    if (ctx != nullptr) {
-      auto &item_ = *ctx;
-      *data = std::make_unique<ContentProviderWrapper>(
-          item_.Get("contentProvider").ToObject());
-      std::cout << "data == nullptr: " << (*data == nullptr) << std::endl;
-    }
-  }
-}
-using TSFN = Napi::TypedThreadSafeFunction<Context, DataType, Callback>;
-
 /**
  * Wraps a JS World Item to a zim::writer::Item
  */
 class ItemWrapper : public zim::writer::Item {
  public:
-  ItemWrapper(Napi::Env env, const Napi::Object &item) : item_{}, tsfn_{} {
-    item_ = Napi::Reference<Napi::Object>::New(item, 1);
-    tsfn_ = TSFN::New(env, Napi::Function(), "ItemWrapper.getContentProvider",
-                      0, 1, &item_);
+  ItemWrapper(Napi::Env env, const Napi::Object &item) : item_{} {
+    item_ = Napi::Persistent(item);
+
+    path_ = item_.Get("path").ToString();
+    title_ = item_.Get("title").ToString();
+    mimeType_ = item_.Get("mimeType").ToString();
+    auto hasHints = item_.Value().ToObject().Has("hints");
+    hints_ = hasHints ? Object2Hints(item_.Get("hints").ToObject())
+                      : zim::writer::Item::getHints();
   }
 
-  std::string getPath() const override { return item_.Get("path").ToString(); }
+  std::string getPath() const override { return path_; }
 
-  std::string getTitle() const override {
-    return item_.Get("title").ToString();
-  }
+  std::string getTitle() const override { return title_; }
 
-  std::string getMimeType() const override {
-    return "plain/text";
-    // return item_.Get("mimeType").ToString();
-  }
+  std::string getMimeType() const override { return mimeType_; }
 
+  zim::writer::Hints getHints() const override { return hints_; }
+
+  /**
+   * ContentProvider is dynamic and must be created on the main javascript
+   * thread.
+   */
   std::unique_ptr<zim::writer::ContentProvider> getContentProvider()
       const override {
-    // return std::make_unique<zim::writer::StringProvider>("hello world");
-
-    std::unique_ptr<ContentProviderWrapper> ptr;
-
-    auto status = tsfn_.BlockingCall(&ptr);
-    if (status != napi_ok) {
-      throw std::runtime_error("Failed to call to nodejs");
-    }
-    std::cout << "ptr == nullptr: " << (ptr == nullptr) << std::endl;
-    // return ptr;
-    /*
-    return std::make_unique<ContentProviderWrapper>(
-        item_.Get("getContentProvider")
-            .As<Napi::Function>()
-            .MakeCallback(item_.Value(), {})
-            .ToObject());
-            */
-
     return std::make_unique<ContentProviderWrapper>(
         item_.Get("contentProvider").ToObject());
-  }
-
-  zim::writer::Hints getHints() const override {
-    /*
-  if (item_.Value().ToObject().Has("hints")) {
-    return Object2Hints(item_.Get("hints").ToObject());
-  }
-  */
-    return zim::writer::Item::getHints();
   }
 
  private:
   // js world reference, could be an ObjectWrap provider or custom js object
   Napi::ObjectReference item_;
-  TSFN tsfn_;
+
+  std::string path_;
+  std::string title_;
+  std::string mimeType_;
+  zim::writer::Hints hints_;
 };
 
 class StringItem : public Napi::ObjectWrap<StringItem> {

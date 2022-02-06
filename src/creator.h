@@ -10,6 +10,32 @@
 #include "common.h"
 #include "writerItem.h"
 
+// Handles creator_->finishZimCreation() operations in the background off the
+// main thread.
+class CreatorAsyncWorker : public Napi::AsyncWorker {
+ public:
+  CreatorAsyncWorker(std::shared_ptr<zim::writer::Creator> creator,
+                     Napi::Promise::Deferred promise)
+      : Napi::AsyncWorker(promise.Env()),
+        creator_{creator},
+        promise_{promise} {}
+
+  void Execute() override { creator_->finishZimCreation(); }
+
+  void OnOK() override {
+    auto env = Env();
+    promise_.Resolve(env.Undefined());
+  }
+
+  void OnError(const Napi::Error &error) override {
+    promise_.Reject(error.Value());
+  }
+
+ private:
+  std::shared_ptr<zim::writer::Creator> creator_;
+  Napi::Promise::Deferred promise_;
+};
+
 class Creator : public Napi::ObjectWrap<Creator> {
  public:
   explicit Creator(const Napi::CallbackInfo &info)
@@ -107,9 +133,17 @@ class Creator : public Napi::ObjectWrap<Creator> {
     }
   }
 
-  void finishZimCreation(const Napi::CallbackInfo &info) {
+  Napi::Value finishZimCreation(const Napi::CallbackInfo &info) {
     try {
-      creator_->finishZimCreation();
+      // Start this in a thread using Napi::AsyncWorker
+      // pass a promise to the async worker and return it here
+      Napi::Promise::Deferred deferred =
+          Napi::Promise::Deferred::New(info.Env());
+
+      auto wk = new CreatorAsyncWorker(creator_, deferred);
+      wk->Queue();
+      return deferred.Promise();
+
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
