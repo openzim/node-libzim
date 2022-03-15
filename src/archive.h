@@ -16,14 +16,13 @@ class Archive : public Napi::ObjectWrap<Archive> {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    auto opts = info[0].ToObject();
-    if (!opts.Has("fileName")) {
-      throw Napi::Error::New(env, "fileName required");
+    if (info.Length() < 1) {
+      throw Napi::Error::New(info.Env(), "Archive requires arguments filepath");
     }
 
-    std::string filename = opts.Get("fileName").ToString();
     try {
-      archive_ = std::make_shared<zim::Archive>(filename);
+      std::string filepath = info[0].ToString();
+      archive_ = std::make_shared<zim::Archive>(filepath);
     } catch (const std::exception &e) {
       throw Napi::Error::New(env, e.what());
     }
@@ -87,7 +86,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
     }
   }
 
-  /* TODO: enable on next release
   Napi::Value getMetadataItem(const Napi::CallbackInfo &info) {
     try {
       auto name = info[0].ToString();
@@ -96,7 +94,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
       throw Napi::Error::New(info.Env(), err.what());
     }
   }
-  */
 
   Napi::Value getMetadataKeys(const Napi::CallbackInfo &info) {
     try {
@@ -445,8 +442,7 @@ class Archive : public Napi::ObjectWrap<Archive> {
             InstanceAccessor<&Archive::getArticleCount>("articleCount"),
             InstanceAccessor<&Archive::getUuid>("uuid"),
             InstanceMethod<&Archive::getMetadata>("getMetadata"),
-            // TODO: is included in next version
-            // InstanceMethod<&Archive::getMetadataItem>("getMetadataItem"),
+            InstanceMethod<&Archive::getMetadataItem>("getMetadataItem"),
             InstanceAccessor<&Archive::getMetadataKeys>("metadataKeys"),
             InstanceMethod<&Archive::getIllustrationItem>(
                 "getIllustrationItem"),

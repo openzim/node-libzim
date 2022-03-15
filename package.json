@@ -1,11 +1,13 @@
 {
   "name": "@openzim/libzim",
+  "main": "dist/index.js",
+  "types": "dist/index.d.js",
   "version": "2.4.4",
   "description": "Libzim bindings for NodeJS",
   "scripts": {
     "clean": "rm -rf dist build/native/build",
     "tsc": "tsc",
-    "prepare": "npm run tsc",
+    "prepare": "cp -v src/index.{js,d.ts} dist/",
     "codecov": "nyc --reporter=lcov npm t",
     "install": "npm run download && node-gyp rebuild -v && npm run bundle",
     "build": "node-gyp rebuild -v && npm run bundle && npm run tsc",
@@ -23,7 +25,6 @@
       "node_modules"
     ]
   },
-  "main": "dist/index.js",
   "author": "Joseph Reeve",
   "license": "GPL-3.0",
   "repository": {

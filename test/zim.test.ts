@@ -3,159 +3,174 @@ import {} from 'ts-jest';
 import path from 'path';
 import * as fs from 'fs';
 import * as faker from 'faker';
-import {ZimArticle, ZimCreator, ZimReader} from '../src';
+import {
+  Archive,
+  IntegrityCheck,
+  Compression,
+  Blob,
+  StringItem,
+  FileItem,
+  Creator,
+} from '../src';
 
-
-let creator: ZimCreator;
-let actualNumberOfArticles = 0;
-
-const nthArticleId = 77;
-let nthArticleUrl: string;
-
-const targetNumberOfArticles = 100;
-const targetNumberOfRecords = targetNumberOfArticles + 7;
-const targetNumberOfRecordsWithMeta = targetNumberOfRecords + 2;
-
-const outFile = path.join(__dirname, '../test.zim');
 
 
 beforeAll(() => {
-  removeOutFile();
-  creator = new ZimCreator({
-    fileName: outFile,
-    welcome: 'welcome',
-    fullTextIndexLanguage: 'eng',
-    minChunkSize: 2048,
-  }, {});
 });
 
-
-describe('ZimCreator', () => {
-
-  beforeAll(async () => {
-    const articleContent = faker.lorem.paragraphs(1);
-    for (let i = 0; i < targetNumberOfArticles; i++) {
-      const articleTitle = faker.lorem.words(faker.random.number({min: 1, max: 3}));
-      const articleUrl = `${articleTitle.replace(/ /g, '_')}_${i}`;
-
-      if (i === nthArticleId) nthArticleUrl = articleUrl;
-
-      const a = new ZimArticle({
-        url: articleUrl,
-        data: articleContent,
-        title: articleTitle,
-        mimeType: 'text/html',
-        shouldIndex: true,
-        ns: 'A'
-      });
-      await creator.addArticle(a);
-      actualNumberOfArticles++;
+describe('IntegrityCheck', () => {
+  it('is exported with symbols', () => {
+    expect(Object.keys(IntegrityCheck)).toHaveLength(7);
+    for(const key of Object.keys(IntegrityCheck)) {
+      const keyTyped = key as keyof typeof IntegrityCheck;
+      const sym = IntegrityCheck[keyTyped];
+      expect(typeof sym).toBe('symbol');
     }
-
-    await creator.addArticle(new ZimArticle({ns: 'A', data: `this is home`, url: 'welcome'}));
-
-    await creator.addArticle(new ZimArticle({ns: 'M', data: `meta test`, url: 'meta_test'}));
-    await creator.addArticle(new ZimArticle({ns: 'I', data: 'image test', url: 'image_test', mimeType: 'image/png'}));
-    await creator.addArticle(new ZimArticle({ns: '-', data: 'common namespace test', url: 'common_namespace_test'}));
-
-    await creator.finalise();
   });
-
-
-  test('Zim file exists', () => {
-    const isExists = fs.existsSync(outFile);
-    expect(isExists).toBeTruthy();
-  });
-
-  test(`Created ${targetNumberOfArticles} articles`, () => {
-    const count = creator.articleCounter['text/html'];
-    expect(count).toEqual(targetNumberOfArticles);
-  });
-
-  test(`Created ${targetNumberOfArticles} records`, () => {
-    const count = Object.values(creator.articleCounter).reduce((a, c) => a + c, 0);
-    expect(count).toEqual(targetNumberOfRecords);
-  });
-
-
 });
 
+describe('Compression', () => {
+  it('is exported with symbols', () => {
+    expect(Object.keys(Compression)).toHaveLength(3);
+    for(const key of Object.keys(Compression)) {
+      const keyTyped = key as keyof typeof Compression;
+      const sym = Compression[keyTyped];
+      expect(typeof sym).toBe('symbol');
+    }
+  });
+});
 
-describe('ZimReader', () => {
+describe('Blob', () => {
+  it('constructs a blob', () => {
+    const blob = new Blob();
+    expect(blob).toBeDefined();
+  });
 
-  let zimFile: ZimReader;
+  it('returns proper data', () => {
+    const str = "hello world";
+    const blob = new Blob(str);
+    expect(blob).toBeDefined();
+    expect(blob.size).toBe(str.length);
+    expect(blob.data.length).toBe(str.length);
+    expect(blob.data.toString()).toBe(str);
+  });
+});
+
+describe('StringItem', () => {
+  const path = "A/test";
+  const mimeType = "text/plain";
+  const title = "Hello world";
+  const hints = {COMPRESS: 0, FRONT_ARTICLE: 10};
+  const content = "Hello world 1!";
+
+  it('constructs a StringItem with proper data', () => {
+    const item = new StringItem(path, mimeType, title, hints, content);
+    expect(item).toBeDefined();
+    expect(item.path).toBe(path);
+    expect(item.mimeType).toBe(mimeType);
+    expect(item.title).toBe(title);
+    expect(item.hints).toEqual(hints);
+
+    const contentProvider = item.contentProvider;
+    expect(contentProvider).toBeDefined();
+    expect(contentProvider.size).toBe(content.length);
+
+    let feed = contentProvider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(content.length);
+    expect(feed.data.toString()).toBe(content);
+
+    feed = contentProvider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(0);
+    expect(feed.data.toString()).toBe('');
+  });
+});
+
+describe('Creator', () => {
+  const outFile = "./test.zim";
+
+  const removeOutFile = () => {
+    try {
+      fs.unlinkSync(outFile);
+    } catch (e) {
+      // noop
+    }
+  };
+
+  beforeEach(() => {
+    removeOutFile();
+  });
+
+  afterEach(() => {
+    removeOutFile();
+  });
+
+  it('Configures', () => {
+    const creator = new Creator();
+    expect(creator.configVerbose(true)).toEqual(creator);
+    expect(creator.configCompression(Compression.Zstd)).toEqual(creator);
+    expect(creator.configClusterSize(100)).toEqual(creator);
+    expect(creator.configIndexing(true, "english")).toEqual(creator);
+    expect(creator.configNbWorkers(10)).toEqual(creator);
+  });
+
+  it('Creates a zim file', async () => {
+    const creator = new Creator();
+    expect(creator.startZimCreation(outFile)).toEqual(creator);
+    for(let i = 0; i < 10; i++) {
+      const item = new StringItem(
+        `A/test${i}`,
+        "text/plain",
+        `Hello world ${i}`,
+        {},
+        `Hello world ${i}!`
+      );
+      expect(creator.addItem(item)).toEqual(undefined);
+    }
+    await creator.finishZimCreation();
+  });
+});
+
+describe('Archive', () => {
+  const outFile = './test-read.zim';
+  const items = Array.from(Array(10).keys()).map(i => new StringItem(
+    `A/test${i}`,
+    "text/plain",
+    `Hello world ${i}`,
+    {},
+    `Hello world ${i}!`
+  ));
+
+  // TODO: DRY
+  const removeOutFile = () => {
+    try {
+      fs.unlinkSync(outFile);
+    } catch (e) {
+      // noop
+    }
+  };
 
   beforeAll(async () => {
-    zimFile = new ZimReader(outFile);
+    removeOutFile();
+
+    const creator = new Creator().startZimCreation(outFile);
+    items.forEach(item => creator.addItem(item));
+    await creator.finishZimCreation();
   });
 
-
-  test(`Count records`, async () => {
-    const articlesCount = await zimFile.getCountArticles();
-    expect(articlesCount).toEqual(targetNumberOfRecordsWithMeta);
+  afterEach(() => {
+    removeOutFile();
   });
 
-  test(`Get Nth (${nthArticleId}) article`, async () => {
-    const article = await zimFile.getArticleById(nthArticleId);
-    expect(article).toBeDefined();
-  });
-
-  test(`Get article by url`, async () => {
-    const article = await zimFile.getArticleByUrl(`A/${nthArticleUrl}`);
-    expect(article).toBeDefined();
-  });
-
-  test(`Get meta record`, async () => {
-    const article = await zimFile.getArticleByUrl(`M/meta_test`);
-    expect(article).toBeDefined();
-    expect(article.mimeType).toEqual('text/plain');
-  });
-
-  test(`Get common record`, async () => {
-    const article = await zimFile.getArticleByUrl(`-/common_namespace_test`);
-    expect(article).toBeDefined();
-    expect(article.mimeType).toEqual('text/plain');
-  });
-
-  test(`Get image`, async () => {
-    const article = await zimFile.getArticleByUrl(`I/image_test`);
-    expect(article).toBeDefined();
-    expect(article.mimeType).toEqual('image/png');
-  });
-
-  // TODO
-  test.skip(`Get main page`, async () => {
-    // const article = await zimFile.getArticleByUrl(`A/welcome`);
-    // expect(article).toBeDefined();
-    // expect(article.mimeType).toEqual('text/html');
-  });
-
-  test(`Suggest`, async () => {
-    const article = await zimFile.suggest('laborum');
-    expect(article).toBeDefined();
-  });
-
-  test(`Search`, async () => {
-    const article = await zimFile.suggest('rem');
-    expect(article).toBeDefined();
-  });
-
-
-  afterAll(async () => {
-    await zimFile.destroy();
+  it('Reads items from an archive', () => {
+    const archive = new Archive(outFile);
+    expect(archive).toBeDefined();
+    expect(archive.filename).toBe(outFile);
+    expect(archive.filesize).toBeGreaterThan(items.length);
+    expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
+    expect(archive.entryCount).toBe(items.length);
+    expect(archive.articleCount).toBe(items.length);
   });
 });
 
-
-afterAll(() => {
-  removeOutFile();
-});
-
-
-const removeOutFile = () => {
-  try {
-    fs.unlinkSync(outFile);
-  } catch (e) {
-    // noop
-  }
-};
