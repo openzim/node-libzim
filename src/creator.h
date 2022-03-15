@@ -149,6 +149,41 @@ class Creator : public Napi::ObjectWrap<Creator> {
     }
   }
 
+  Napi::Value addMetadata(const Napi::CallbackInfo &info) {
+    try {
+      auto env = info.Env();
+      if (info.Length() < 2) {
+        throw Napi::Error::New(env,
+                               "addMetadata requests arguments (name, "
+                               "content|provider, [mimetype]).");
+      }
+
+     auto name = info[0].ToString().Utf8Value();
+      if (info[0].IsObject()) {  // content provider
+        std::unique_ptr<zim::writer::ContentProvider> provider =
+            std::make_unique<ContentProviderWrapper>(info[1].ToObject());
+        if (info.Length() > 2) {  // preserves default argument
+          auto mimetype = info[2].ToString().Utf8Value();
+          creator_->addMetadata(name, std::move(provider), mimetype);
+        } else {
+          const std::string mimetype = "text/plain;charset=utf-8";
+          creator_->addMetadata(name, std::move(provider), mimetype);
+        }
+      } else {  // string version
+        auto content = info[1].ToString().Utf8Value();
+        if (info.Length() > 2) {
+          auto mimetype = info[2].ToString().Utf8Value();
+          creator_->addMetadata(name, content, mimetype);
+        } else {
+          creator_->addMetadata(name, content);
+        }
+      }
+      return env.Undefined();
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
     Napi::HandleScope scope(env);
@@ -162,6 +197,7 @@ class Creator : public Napi::ObjectWrap<Creator> {
             InstanceMethod<&Creator::configNbWorkers>("configNbWorkers"),
             InstanceMethod<&Creator::startZimCreation>("startZimCreation"),
             InstanceMethod<&Creator::addItem>("addItem"),
+            InstanceMethod<&Creator::addMetadata>("addMetadata"),
 
             InstanceMethod<&Creator::finishZimCreation>("finishZimCreation"),
         });
