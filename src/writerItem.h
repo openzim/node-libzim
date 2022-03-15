@@ -159,13 +159,6 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
             InstanceAccessor<&StringItem::getContentProvider>(
                 "contentProvider"),
             InstanceAccessor<&StringItem::getHints>("hints"),
-
-            // used by ItemWrapper for MakeCallback function references
-            InstanceMethod<&StringItem::getPath>("getPath"),
-            InstanceMethod<&StringItem::getTitle>("getTitle"),
-            InstanceMethod<&StringItem::getMimeType>("getMimeType"),
-            InstanceMethod<&StringItem::getContentProvider>(
-                "getContentProvider"),
         });
 
     exports.Set("StringItem", func);
@@ -271,68 +264,4 @@ class FileItem : public Napi::ObjectWrap<FileItem> {
  private:
   std::shared_ptr<zim::writer::FileItem> item_;
 };
-
-/*
-class WriterItem : public Napi::ObjectWrap<WriterItem> {
- public:
-  explicit WriterItem(const Napi::CallbackInfo &info)
-      : Napi::ObjectWrap<WriterItem>(info), provider_{nullptr} {
-    auto env = info.Env();
-    if (info.Length() < 1) {
-      throw Napi::Error::New(
-          env, "StringProvider requires an argument for a string.");
-    }
-
-    try {
-      auto str = info[0].ToString();  // value is coerced to a js string.
-      provider_ = std::make_shared<zim::writer::StringProvider>(str);
-    } catch (const std::exception &e) {
-      throw Napi::Error::New(env, e.what());
-    }
-  }
-
-  static Napi::Object New(Napi::Env env, const std::string_view value) {
-    auto &constructor =
-        env.GetInstanceData<ModuleConstructors>()->stringProvider;
-    auto str = Napi::String::New(env, value.data(), value.size());
-    return constructor.New({str});
-  }
-
-  Napi::Value getSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(), provider_->getSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  Napi::Value feed(const Napi::CallbackInfo &info) {
-    try {
-      // TODO: need a way to move this to avoid copying
-      auto blob = provider_->feed();
-      return Blob::New(info.Env(), blob);
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  static void Init(Napi::Env env, Napi::Object exports,
-                   ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
-    Napi::Function func =
-        DefineClass(env, "StringProvider",
-                    {
-                        InstanceAccessor<&StringProvider::getSize>("size"),
-                        InstanceMethod<&StringProvider::getSize>("getSize"),
-                        InstanceMethod<&StringProvider::feed>("feed"),
-                    });
-
-    exports.Set("StringProvider", func);
-    constructors.stringProvider = Napi::Persistent(func);
-  }
-
- private:
-  std::shared_ptr<zim::writer::StringProvider> provider_;
-};
-*/
 

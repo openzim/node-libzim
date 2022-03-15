@@ -150,23 +150,6 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
 
     exports.Set("StringProvider", func);
     constructors.stringProvider = Napi::Persistent(func);
-
-    auto testFunc = [](const Napi::CallbackInfo &info) -> Napi::Value {
-      auto env = info.Env();
-      auto provider = info[0].ToObject();
-      std::unique_ptr<zim::writer::ContentProvider> pw =
-          std::make_unique<ContentProviderWrapper>(provider);
-      std::cout << "size: " << pw->getSize() << std::endl;
-      {
-        auto feed = pw->feed();
-        std::cout << "feed.size: " << feed.size() << std::endl;
-        std::cout << "feed.data: " << feed.data() << std::endl;
-      }
-      std::cout << "feed.size: " << pw->feed().size() << std::endl;
-      std::cout << "feed.size: " << pw->feed().size() << std::endl;
-      return env.Null();
-    };
-    exports.Set("testFunc", Napi::Function::New(env, testFunc));
   }
 
  private:
@@ -248,35 +231,4 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
  private:
   std::unique_ptr<zim::writer::FileProvider> provider_;
 };
-
-/*
-class ContentProvider : public Napi::ObjectWrap<ContentProvider> {
- public:
-  explicit ContentProvider(const Napi::CallbackInfo &info)
-      : Napi::ObjectWrap<ContentProvider>(info) {
-  }
-
-  static Napi::Object New(Napi::Env env) {
-    auto &constructor =
-        env.GetInstanceData<ModuleConstructors>()->contentprovider;
-    return constructor.New({});
-  }
-
-  static void Init(Napi::Env env, Napi::Object exports,
-                   ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
-    Napi::Function func = DefineClass(
-        env, "ContentProvider",
-        {
-            InstanceMethod<&Creator::configVerbose>("configVerbose"),
-        });
-
-    exports.Set("ContentProvider", func);
-    constructors.contentprovider = Napi::Persistent(func);
-  }
-
- private:
-  Napi::ObjectReference providerRef_;
-};
-*/
 
