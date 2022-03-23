@@ -149,7 +149,7 @@ class Creator : public Napi::ObjectWrap<Creator> {
     }
   }
 
-  Napi::Value addMetadata(const Napi::CallbackInfo &info) {
+  void addMetadata(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
       if (info.Length() < 2) {
@@ -158,10 +158,11 @@ class Creator : public Napi::ObjectWrap<Creator> {
                                "content|provider, [mimetype]).");
       }
 
-     auto name = info[0].ToString().Utf8Value();
-      if (info[0].IsObject()) {  // content provider
+      auto name = info[0].ToString().Utf8Value();
+      auto content = info[1];
+      if (content.IsObject()) {  // content provider
         std::unique_ptr<zim::writer::ContentProvider> provider =
-            std::make_unique<ContentProviderWrapper>(info[1].ToObject());
+            std::make_unique<ContentProviderWrapper>(content.ToObject());
         if (info.Length() > 2) {  // preserves default argument
           auto mimetype = info[2].ToString().Utf8Value();
           creator_->addMetadata(name, std::move(provider), mimetype);
@@ -170,15 +171,84 @@ class Creator : public Napi::ObjectWrap<Creator> {
           creator_->addMetadata(name, std::move(provider), mimetype);
         }
       } else {  // string version
-        auto content = info[1].ToString().Utf8Value();
+        auto str = content.ToString().Utf8Value();
         if (info.Length() > 2) {
           auto mimetype = info[2].ToString().Utf8Value();
-          creator_->addMetadata(name, content, mimetype);
+          creator_->addMetadata(name, str, mimetype);
         } else {
-          creator_->addMetadata(name, content);
+          creator_->addMetadata(name, str);
         }
       }
-      return env.Undefined();
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
+  void addIllustration(const Napi::CallbackInfo &info) {
+    try {
+      auto size = info[0].ToNumber().Uint32Value();
+      auto content = info[1];
+      if (content.IsObject()) {
+        std::unique_ptr<zim::writer::ContentProvider> provider =
+            std::make_unique<ContentProviderWrapper>(content.ToObject());
+        creator_->addIllustration(size, std::move(provider));
+      } else {
+        auto str = content.ToString().Utf8Value();
+        creator_->addIllustration(size, str);
+      }
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
+  void addRedirection(const Napi::CallbackInfo &info) {
+    try {
+      auto env = info.Env();
+      if (info.Length() < 3) {
+        throw Napi::Error::New(env,
+                               "addRedirection requires arguments: path, "
+                               "title, targetPath, [hints]");
+      }
+
+      auto path = info[0].As<Napi::String>().Utf8Value();
+      auto title = info[1].As<Napi::String>().Utf8Value();
+      auto targetPath = info[2].As<Napi::String>().Utf8Value();
+      if (info[3].IsObject()) {
+        auto hints = Object2Hints(info[3].ToObject());
+        creator_->addRedirection(path, title, targetPath, hints);
+      } else {
+        creator_->addRedirection(path, title, targetPath);
+      }
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
+  void setMainPath(const Napi::CallbackInfo &info) {
+    try {
+      auto env = info.Env();
+      if (!info[0].IsString()) {
+        throw Napi::Error::New(
+            env, "setMainPath requires a string argument: mainPath");
+      }
+      auto mainPath = info[0].ToString().Utf8Value();
+      creator_->setMainPath(mainPath);
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
+  void setUuid(const Napi::CallbackInfo &info) {
+    try {
+      auto env = info.Env();
+      if (!info[0].IsString()) {
+        throw Napi::Error::New(env, "setUuid requires a string argument: uuid");
+      }
+      auto uuid = info[0].ToString().Utf8Value();
+      if (uuid.size() != 16) {
+        throw Napi::Error::New(env, "uuid must be 16 characters long");
+      }
+      creator_->setUuid(uuid.c_str());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -198,6 +268,10 @@ class Creator : public Napi::ObjectWrap<Creator> {
             InstanceMethod<&Creator::startZimCreation>("startZimCreation"),
             InstanceMethod<&Creator::addItem>("addItem"),
             InstanceMethod<&Creator::addMetadata>("addMetadata"),
+            InstanceMethod<&Creator::addIllustration>("addIllustration"),
+            InstanceMethod<&Creator::addRedirection>("addRedirection"),
+            InstanceMethod<&Creator::setMainPath>("setMainPath"),
+            InstanceMethod<&Creator::setUuid>("setUuid"),
 
             InstanceMethod<&Creator::finishZimCreation>("finishZimCreation"),
         });
