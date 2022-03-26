@@ -2,16 +2,16 @@
   "compilerOptions": {
     "module": "commonjs",
     "lib": [
-      "es2015"
+      "es6"
     ],
     "declaration": true,
     "noImplicitAny": true,
     "outDir": "dist",
     "removeComments": false,
-    "target": "es5",
+    "target": "es6",
     "esModuleInterop": true
   },
   "files": [
-    "src/index.ts"
+    "test/zim.test.ts"
   ]
 }
