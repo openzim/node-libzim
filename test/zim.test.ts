@@ -214,8 +214,15 @@ describe('Archive', () => {
     await creator.finishZimCreation();
   });
 
-  afterEach(() => {
+  afterAll(() => {
     removeOutFile();
+  });
+
+  it('Validates an archive', () => {
+    const checks = [
+      IntegrityCheck.CHECKSUM,
+    ];
+    expect(Archive.validate(outFile, checks)).toBe(true);
   });
 
   it('Reads items from an archive', () => {
@@ -295,6 +302,29 @@ describe('Archive', () => {
       itSpy();
     }
     expect(itSpy).toHaveBeenCalledTimes(items.length);
+
+    // NOTE: expects items to be stored by path still
+    expect(Array.from(archive.iterByPath().offset(3, 1)).length).toEqual(1);
+    expect(Array.from(archive.iterByPath().offset(3, 1))[0].title).toEqual(items[3].title);
+
+    expect(Array.from(archive.iterByTitle()).length).toEqual(items.length);
+    expect(Array.from(archive.iterEfficient()).length).toEqual(items.length);
+
+    expect(Array.from(archive.findByTitle(items[2].title)).length).toEqual(1);
+    expect(Array.from(archive.findByTitle(items[3].title))[0].title).toEqual(items[3].title);
+
+    expect(Array.from(archive.findByPath(items[2].path)).length).toEqual(1);
+    expect(Array.from(archive.findByPath(items[3].path))[0].path).toEqual(items[3].path);
+
+    expect(archive.hasChecksum).toBe(true);
+    expect(archive.checksum).toBeDefined();
+
+    expect(archive.check()).toBe(true);
+    //expect(archive.checkIntegrity(IntegrityCheck.COUNT)).toBe(true);
+    expect(archive.checkIntegrity(IntegrityCheck.CHECKSUM)).toBe(true);
+
+    expect(archive.isMultiPart).toBe(false);
+    expect(archive.hasNewNamespaceScheme).toBe(true);
   });
 });
 

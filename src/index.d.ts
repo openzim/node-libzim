@@ -141,5 +141,17 @@ export class Archive {
   hasFulltextIndex() : boolean;
   hasTitleIndex(): boolean;
   iterByPath() : EntryRange;
+  iterByTitle() : EntryRange;
+  iterEfficient() : EntryRange;
+  findByPath(path: string) : EntryRange;
+  findByTitle(title: string) : EntryRange;
+  hasChecksum: boolean;
+  checksum: string;
+  check() : boolean;
+  checkIntegrity(checkType: symbol) : boolean;  // one of IntegrityCheck
+  isMultiPart: boolean;
+  hasNewNamespaceScheme: boolean;
+
+  static validate(zimPath: string, checksToRun: symbol[]) : boolean; // list of IntegrityCheck
 }
 
