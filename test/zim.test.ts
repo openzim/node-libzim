@@ -274,6 +274,27 @@ describe('Archive', () => {
 
     expect(archive.hasFulltextIndex()).toBe(false);
     expect(archive.hasTitleIndex()).toBe(false);
+
+    items.sort((x, y) => x.path.localeCompare(y.path));
+    const iter = archive.iterByPath();
+    expect(iter).toBeDefined();
+    expect(iter.size).toEqual(items.length);
+
+    expect(Array.from(iter).length).toEqual(items.length);
+    expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
+    expect(iter[Symbol.iterator]().next().value.title).toBe(items[0].title);
+    expect(iter[Symbol.iterator]().next().done).toBe(false);
+
+    const itSpy = jest.fn();
+    let i = 0;
+    for(const entry of iter) {
+      expect(entry).toBeDefined();
+      expect(entry.path).toEqual(items[i].path);
+      expect(entry.title).toEqual(items[i].title);
+      i++;
+      itSpy();
+    }
+    expect(itSpy).toHaveBeenCalledTimes(items.length);
   });
 });
 

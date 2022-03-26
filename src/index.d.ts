@@ -22,8 +22,7 @@ export class Blob {
   toString(): string;
 }
 
-
-export type ContentProvider {
+export type ContentProvider = {
   size: number | bigint;
   feed() : Blob;
 }
@@ -40,12 +39,12 @@ export class FileProvider {
   feed() : Blob;
 }
 
-export type Hint {
+export type Hint = {
   COMPRESS?: number;
   FRONT_ARTICLE?: number;
 }
 
-export type WriterItem {
+export type WriterItem = {
   readonly path: string;
   readonly title: string;
   readonly mimeType: string;
@@ -77,14 +76,14 @@ export class Creator {
   configClusterSize(size: number) : this;
   configIndexing(indexing: boolean, language: string) : this;
   configNbWorkers(num: number) : this;
-  startZimCreation(filepath: string) : this;
-  addItem(item: WriterItem);
-  addMetadata(name: string, content: string | ContentProvider, mimetype?: string);
-  addIllustration(size: number, content: string | ContentProvider);
-  addRedirection(path: string, title: string, targetPath: string, hints?: Hint);
-  setMainPath(mainPath: string);
-  setUuid(uuid: string);
-  finishZimCreation() : Promise;
+  startZimCreation(filepath: string): this;
+  addItem(item: WriterItem): void;
+  addMetadata(name: string, content: string | ContentProvider, mimetype?: string): void;
+  addIllustration(size: number, content: string | ContentProvider): void;
+  addRedirection(path: string, title: string, targetPath: string, hints?: Hint): void;
+  setMainPath(mainPath: string): void;
+  setUuid(uuid: string): void;
+  finishZimCreation() : Promise<void>;
 }
 
 export class Item {
@@ -106,10 +105,15 @@ export class Entry {
   title: string;
   path: string;
   item: Item;
-  getItem(followRedirect?: boolean=false) : Item;
+  getItem(followRedirect?: boolean) : Item;
   redirect: Item;
   redirectEntry: Entry;
   index: number;
+}
+
+export interface EntryRange extends Iterable<Entry> {
+  size: number;
+  offset(start: number, maxResults: number) : EntryRange;
 }
 
 export class Archive {
@@ -136,5 +140,6 @@ export class Archive {
   hasIllustration(size: number) : boolean;
   hasFulltextIndex() : boolean;
   hasTitleIndex(): boolean;
+  iterByPath() : EntryRange;
 }
 
