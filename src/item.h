@@ -19,10 +19,8 @@ class Item : public Napi::ObjectWrap<Item> {
           env, "Item must be constructed internally by another class.");
     }
 
-    if (info[0].IsExternal()) {
-      item_ = std::make_shared<zim::Item>(
-          *info[0].As<Napi::External<zim::Item>>().Data());
-    }
+    item_ = std::make_shared<zim::Item>(
+        *info[0].As<Napi::External<zim::Item>>().Data());
   }
 
   static Napi::Object New(Napi::Env env, zim::Item &&item) {
