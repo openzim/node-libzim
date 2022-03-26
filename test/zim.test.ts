@@ -10,6 +10,8 @@ import {
   Blob,
   StringItem,
   FileItem,
+  StringProvider,
+  FileProvider,
   Creator,
 } from '../src';
 
@@ -117,23 +119,58 @@ describe('Creator', () => {
 
   it('Creates a zim file', async () => {
     const creator = new Creator();
-    expect(creator.startZimCreation(outFile)).toEqual(creator);
-    for(let i = 0; i < 10; i++) {
-      const item = new StringItem(
-        `A/test${i}`,
-        "text/plain",
-        `Hello world ${i}`,
-        {},
-        `Hello world ${i}!`
-      );
-      expect(creator.addItem(item)).toEqual(undefined);
+    try {
+      expect(creator.startZimCreation(outFile)).toEqual(creator);
+      for(let i = 0; i < 10; i++) {
+        const item = new StringItem(
+          `A/test${i}`,
+          "text/plain",
+          `Hello world ${i}`,
+          {},
+          `Hello world ${i}!`
+        );
+        expect(creator.addItem(item)).toEqual(undefined);
+      }
+
+      let content = 'ABCDEFG';
+      let dataSent = false;
+      creator.addItem({ // custom item
+        path: "A/customContentProvider",
+        mimeType: "text/plain",
+        title: "Custom content provider",
+        hints: {},
+        contentProvider: { // custom content provider
+          size: content.length,
+          feed() {
+            if(!dataSent) {
+              dataSent = true;
+              return new Blob(content);
+            }
+            return new Blob();
+          },
+        },
+      });
+
+      creator.addMetadata("test string", "A test string");
+      creator.addMetadata(
+        "test provider",
+        new StringProvider("A string provider"));
+
+      const png = Buffer.from('789c626001000000ffff030000060005', 'hex')
+        .toString('utf8');
+      creator.addIllustration(1, png);
+      creator.addRedirection("A/redirect/test1", "Redirect to test 1", "A/test1", {COMPRESS: 1});
+      creator.setMainPath("A/redirect/test1");
+      creator.setUuid("1234567890ABCDEF");
+    } finally {
+      await creator.finishZimCreation();
     }
-    await creator.finishZimCreation();
   });
 });
 
 describe('Archive', () => {
   const outFile = './test-read.zim';
+
   const items = Array.from(Array(10).keys()).map(i => new StringItem(
     `A/test${i}`,
     "text/plain",
@@ -141,6 +178,15 @@ describe('Archive', () => {
     {},
     `Hello world ${i}!`
   ));
+
+  const meta = {
+    test1: 'test string 1',
+    test2: 'string string 2',
+  };
+
+  const png_size = 1;
+  const png = Buffer.from('789c626001000000ffff030000060005', 'hex')
+    .toString('utf8');
 
   // TODO: DRY
   const removeOutFile = () => {
@@ -156,6 +202,15 @@ describe('Archive', () => {
 
     const creator = new Creator().startZimCreation(outFile);
     items.forEach(item => creator.addItem(item));
+
+    let i = 0;
+    for(const [k, v] of Object.entries(meta)) {
+      creator.addMetadata(k, (++i %2 == 0) ? v : new StringProvider(v));
+    }
+
+    creator.addIllustration(png_size, png);
+    creator.setMainPath(items[0].path);
+
     await creator.finishZimCreation();
   });
 
@@ -171,6 +226,54 @@ describe('Archive', () => {
     expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
     expect(archive.entryCount).toBe(items.length);
     expect(archive.articleCount).toBe(items.length);
+    expect(archive.uuid).toBeDefined();
+
+    // test metadata
+    expect(archive.metadataKeys).toEqual(expect.arrayContaining(Object.keys(meta)));
+    for(const [k, v] of Object.entries(meta)) {
+      expect(archive.getMetadata(k)).toEqual(v);
+
+      const item = archive.getMetadataItem(k);
+      expect(item.title).toEqual(k);
+      expect(item.data.data.toString()).toEqual(v);
+      expect(item.size).toEqual(v.length);
+      expect(item.mimetype.length).toBeGreaterThan(3);
+    }
+
+    expect(archive.hasIllustration(png_size)).toBe(true);
+    const illustration = archive.getIllustrationItem(png_size);
+    expect(illustration.data.data.toString().startsWith(png)).toBe(true);
+    expect(illustration.data.data.toString()).toEqual(png);
+    expect(illustration.size).toBeGreaterThanOrEqual(png.length);
+    expect(archive.illustrationSizes).toContain(png_size);
+
+    for(const item of items) {
+      const bypath = archive.getEntryByPath(item.path);
+      expect(bypath).toBeDefined();
+
+      const byidx = archive.getEntryByPath(bypath.index);
+      const bytitle = archive.getEntryByTitle(item.title);
+      const byCluster = archive.getEntryByClusterOrder(bypath.index);
+
+      for(const entry of [bypath, byidx, bytitle, byCluster]) {
+        expect(entry).toBeDefined();
+        expect(entry.path).toEqual(item.path);
+        expect(entry.isRedirect).toBe(false);
+        expect(entry.index).toEqual(bypath.index);
+      }
+
+      expect(archive.hasEntryByPath(item.path)).toBe(true);
+      expect(archive.hasEntryByTitle(item.title)).toBe(true);
+    }
+
+    expect(archive.hasMainEntry()).toBe(true);
+    expect(archive.mainEntry).toBeDefined();
+    expect(archive.mainEntry.isRedirect).toBe(true);
+    expect(archive.mainEntry.redirect.path).toEqual(items[0].path);
+    expect(archive.randomEntry.path).toBeDefined();
+
+    expect(archive.hasFulltextIndex()).toBe(false);
+    expect(archive.hasTitleIndex()).toBe(false);
   });
 });
 
