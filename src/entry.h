@@ -18,13 +18,11 @@ class Entry : public Napi::ObjectWrap<Entry> {
           env, "Entry must be constructed internally by another class.");
     }
 
-    if (info[0].IsExternal()) {
-      try {
-        entry_ = std::make_shared<zim::Entry>(
-            *info[0].As<Napi::External<zim::Entry>>().Data());
-      } catch (const std::exception &err) {
-        throw Napi::Error::New(env, err.what());
-      }
+    try {
+      entry_ = std::make_shared<zim::Entry>(
+          *info[0].As<Napi::External<zim::Entry>>().Data());
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(env, err.what());
     }
   }
 
@@ -93,10 +91,6 @@ class Entry : public Napi::ObjectWrap<Entry> {
     }
   }
 
-  Napi::Value isValid(const Napi::CallbackInfo &info) {
-    return Napi::Value::From(info.Env(), entry_ != nullptr);
-  }
-
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
     Napi::HandleScope scope(env);
@@ -111,7 +105,6 @@ class Entry : public Napi::ObjectWrap<Entry> {
             InstanceAccessor<&Entry::getRedirect>("redirect"),
             InstanceAccessor<&Entry::getRedirectEntry>("redirectEntry"),
             InstanceAccessor<&Entry::getIndex>("index"),
-            InstanceAccessor<&Entry::isValid>("valid"),
         });
 
     exports.Set("Entry", func);
