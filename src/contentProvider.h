@@ -8,6 +8,7 @@
 #include <future>
 #include <memory>
 #include <string_view>
+#include <thread>
 
 #include "blob.h"
 #include "common.h"
@@ -18,7 +19,9 @@
  */
 class ContentProviderWrapper : public zim::writer::ContentProvider {
  public:
-  ContentProviderWrapper(const Napi::Object &provider) : provider_{} {
+  ContentProviderWrapper(const Napi::Object &provider)
+      : MAIN_THREAD_ID{}, provider_{} {
+    MAIN_THREAD_ID = std::this_thread::get_id();
     provider_ = Napi::Persistent(provider);
     size_ = parseSize(provider_.Get("size"));
 
@@ -51,6 +54,18 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
   }
 
   zim::Blob feed() override {
+    if (MAIN_THREAD_ID == std::this_thread::get_id()) {
+      // on main thread for some reason, do it here
+      auto feedFunc = provider_.Get("feed").As<Napi::Function>();
+      auto blobObj = feedFunc.Call(provider_.Value(), {});
+      if (!blobObj.IsObject()) {
+        throw std::runtime_error("ContentProvider.feed must return a blob");
+      }
+      auto blob = Napi::ObjectWrap<Blob>::Unwrap(blobObj.ToObject());
+      return *(blob->blob());
+    }
+
+    // called from a thread
     std::promise<zim::Blob> promise;
     auto future = promise.get_future();
 
@@ -72,6 +87,8 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
   }
 
  private:
+  // track the main thread
+  std::thread::id MAIN_THREAD_ID;
   // js world reference, could be an ObjectWrap provider or custom js object
   Napi::ObjectReference provider_;
   Napi::ThreadSafeFunction tsfn_;
