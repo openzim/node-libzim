@@ -8,6 +8,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include "blob.h"
@@ -29,19 +30,81 @@ zim::writer::Hints Object2Hints(const Napi::Object &obj) {
 }
 
 /**
+ * Wraps a JS World Object to IndexData and implements IndexData
+ */
+class IndexDataWrapper : public zim::writer::IndexData {
+ public:
+  IndexDataWrapper(const Napi::Object &indexData)
+      : hasIndexData_{true},
+        title_{},
+        content_{},
+        keywords_{},
+        wordcount_{},
+        position_{std::nullopt} {
+    if (indexData.Has("hasIndexData"))
+      hasIndexData_ = indexData.Get("hasIndexData").ToBoolean();
+
+    if (!hasIndexData_) return;
+
+    if (indexData.Has("title")) title_ = indexData.Get("title").ToString();
+    if (indexData.Has("content"))
+      content_ = indexData.Get("content").ToString();
+    if (indexData.Has("keywords"))
+      keywords_ = indexData.Get("keywords").ToString();
+    if (indexData.Has("wordcount"))
+      wordcount_ = indexData.Get("wordcount").ToNumber();
+
+    if (indexData.Has("position") && indexData.Get("position").IsArray()) {
+      auto pos = indexData.Get("position").As<Napi::Array>();
+      if (pos.Length() < 3) {
+        throw Napi::Error::New(indexData.Env(),
+                               "position must have a length of 3");
+      }
+      position_ =
+          std::make_tuple(pos.Get((uint32_t)0).ToBoolean().Value(),
+                          pos.Get((uint32_t)1).ToNumber().DoubleValue(),
+                          pos.Get((uint32_t)2).ToNumber().DoubleValue());
+    }
+
+    hasIndexData_ = !(title_.empty() && content_.empty() && keywords_.empty() &&
+                      wordcount_ > 0 && !position_.has_value());
+  }
+
+  bool hasIndexData() const override { return hasIndexData_; }
+
+  std::string getTitle() const override { return title_; }
+  std::string getContent() const override { return content_; }
+  std::string getKeywords() const override { return keywords_; }
+  uint32_t getWordCount() const override { return wordcount_; }
+  GeoPosition getGeoPosition() const override { return *position_; }
+
+ private:
+  bool hasIndexData_;
+  std::string title_;
+  std::string content_;
+  std::string keywords_;
+  uint32_t wordcount_;
+  std::optional<GeoPosition> position_;
+};
+
+/**
  * Wraps a JS World Item to a zim::writer::Item
  */
 class ItemWrapper : public zim::writer::Item {
  public:
-  ItemWrapper(Napi::Env env, const Napi::Object &item) : item_{} {
+  ItemWrapper(Napi::Env env, const Napi::Object &item)
+      : item_{}, hasIndexDataImpl_{false} {
     item_ = Napi::Persistent(item);
 
     path_ = item_.Get("path").ToString();
     title_ = item_.Get("title").ToString();
     mimeType_ = item_.Get("mimeType").ToString();
-    auto hasHints = item_.Value().ToObject().Has("hints");
+
+    const auto hasHints = item_.Value().ToObject().Has("hints");
     hints_ = hasHints ? Object2Hints(item_.Get("hints").ToObject())
                       : zim::writer::Item::getHints();
+
+    hasIndexDataImpl_ = item_.Value().ToObject().Has("indexData");
   }
 
   std::string getPath() const override { return path_; }
@@ -51,6 +114,19 @@ class ItemWrapper : public zim::writer::Item {
   std::string getMimeType() const override { return mimeType_; }
 
   zim::writer::Hints getHints() const override { return hints_; }
+
+  std::shared_ptr<zim::writer::IndexData> getIndexData() const override {
+    if (hasIndexDataImpl_) {
+      auto data = item_.Get("indexData");
+      if (data.IsObject()) {  // allows for setting indexData to null
+        return std::make_shared<IndexDataWrapper>(data.ToObject());
+      }
+      return nullptr;
+    }
+
+    // use default implementation
+    return zim::writer::Item::getIndexData();
+  }
 
   /**
    * ContentProvider is dynamic and must be created on the main javascript
@@ -70,6 +146,7 @@ class ItemWrapper : public zim::writer::Item {
   std::string title_;
   std::string mimeType_;
   zim::writer::Hints hints_;
+  bool hasIndexDataImpl_;
 };
 
 class StringItem : public Napi::ObjectWrap<StringItem> {
@@ -147,19 +224,21 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
     }
   }
 
+  // TODO: implement getIndexData for StringItem and FileItem
+
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
     Napi::HandleScope scope(env);
-    Napi::Function func = DefineClass(
-        env, "StringItem",
-        {
-            InstanceAccessor<&StringItem::getPath>("path"),
-            InstanceAccessor<&StringItem::getTitle>("title"),
-            InstanceAccessor<&StringItem::getMimeType>("mimeType"),
-            InstanceAccessor<&StringItem::getContentProvider>(
-                "contentProvider"),
-            InstanceAccessor<&StringItem::getHints>("hints"),
-        });
+    Napi::Function func =
+        DefineClass(env, "StringItem",
+                    {
+                        InstanceAccessor<&StringItem::getPath>("path"),
+                        InstanceAccessor<&StringItem::getTitle>("title"),
+                        InstanceAccessor<&StringItem::getMimeType>("mimeType"),
+                        InstanceAccessor<&StringItem::getContentProvider>(
+                            "contentProvider"),
+                        InstanceAccessor<&StringItem::getHints>("hints"),
+                    });
 
     exports.Set("StringItem", func);
     constructors.stringItem = Napi::Persistent(func);

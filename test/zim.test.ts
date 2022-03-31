@@ -13,12 +13,10 @@ import {
   StringProvider,
   FileProvider,
   Creator,
+  Query,
+  Searcher,
 } from '../src';
 
-
-
-beforeAll(() => {
-});
 
 describe('IntegrityCheck', () => {
   it('is exported with symbols', () => {
@@ -59,7 +57,7 @@ describe('Blob', () => {
 });
 
 describe('StringItem', () => {
-  const path = "A/test";
+  const path = "test";
   const mimeType = "text/plain";
   const title = "Hello world";
   const hints = {COMPRESS: 0, FRONT_ARTICLE: 10};
@@ -113,20 +111,21 @@ describe('Creator', () => {
     expect(creator.configVerbose(true)).toEqual(creator);
     expect(creator.configCompression(Compression.Zstd)).toEqual(creator);
     expect(creator.configClusterSize(100)).toEqual(creator);
-    expect(creator.configIndexing(true, "english")).toEqual(creator);
+    expect(creator.configIndexing(true, "en")).toEqual(creator);
     expect(creator.configNbWorkers(10)).toEqual(creator);
   });
 
   it('Creates a zim file', async () => {
     const creator = new Creator();
     try {
+      expect(creator.configIndexing(true, "en")).toEqual(creator);
       expect(creator.startZimCreation(outFile)).toEqual(creator);
       for(let i = 0; i < 10; i++) {
         const item = new StringItem(
-          `A/test${i}`,
+          `test${i}`,
           "text/plain",
           `Hello world ${i}`,
-          {},
+          {FRONT_ARTICLE: 1, COMPRESS: 1},
           `Hello world ${i}!`
         );
         expect(creator.addItem(item)).toEqual(undefined);
@@ -135,7 +134,7 @@ describe('Creator', () => {
       let content = 'ABCDEFG';
       let dataSent = false;
       creator.addItem({ // custom item
-        path: "A/customContentProvider",
+        path: "customContentProvider",
         mimeType: "text/plain",
         title: "Custom content provider",
         hints: {},
@@ -159,8 +158,8 @@ describe('Creator', () => {
       const png = Buffer.from('789c626001000000ffff030000060005', 'hex')
         .toString('utf8');
       creator.addIllustration(1, png);
-      creator.addRedirection("A/redirect/test1", "Redirect to test 1", "A/test1", {COMPRESS: 1});
-      creator.setMainPath("A/redirect/test1");
+      creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {COMPRESS: 1});
+      creator.setMainPath("redirect/test1");
       creator.setUuid("1234567890ABCDEF");
     } finally {
       await creator.finishZimCreation();
@@ -172,10 +171,10 @@ describe('Archive', () => {
   const outFile = './test-read.zim';
 
   const items = Array.from(Array(10).keys()).map(i => new StringItem(
-    `A/test${i}`,
-    "text/plain",
+    `test${i}`,
+    "text/html",
     `Hello world ${i}`,
-    {},
+    {FRONT_ARTICLE: 1},
     `Hello world ${i}!`
   ));
 
@@ -200,7 +199,9 @@ describe('Archive', () => {
   beforeAll(async () => {
     removeOutFile();
 
-    const creator = new Creator().startZimCreation(outFile);
+    const creator = new Creator()
+      .configIndexing(true, "en")
+      .startZimCreation(outFile);
     items.forEach(item => creator.addItem(item));
 
     let i = 0;
@@ -279,8 +280,8 @@ describe('Archive', () => {
     expect(archive.mainEntry.redirect.path).toEqual(items[0].path);
     expect(archive.randomEntry.path).toBeDefined();
 
-    expect(archive.hasFulltextIndex()).toBe(false);
-    expect(archive.hasTitleIndex()).toBe(false);
+    expect(archive.hasFulltextIndex()).toBe(true);
+    expect(archive.hasTitleIndex()).toBe(true);
 
     items.sort((x, y) => x.path.localeCompare(y.path));
     const iter = archive.iterByPath();
@@ -320,11 +321,38 @@ describe('Archive', () => {
     expect(archive.checksum).toBeDefined();
 
     expect(archive.check()).toBe(true);
-    //expect(archive.checkIntegrity(IntegrityCheck.COUNT)).toBe(true);
     expect(archive.checkIntegrity(IntegrityCheck.CHECKSUM)).toBe(true);
 
     expect(archive.isMultiPart).toBe(false);
     expect(archive.hasNewNamespaceScheme).toBe(true);
+  });
+
+  describe("Searcher", () => {
+    it("searches the archive", () => {
+      const archive = new Archive(outFile);
+      const searcher = new Searcher(archive);
+      const query = new Query("hello world");
+      const search = searcher.search(query);
+    });
+  });
+
+});
+
+describe("Query", () => {
+  it('constructs a query', () => {
+    const query = new Query("hello world");
+    expect(query).toBeDefined();
+    expect(query.query).toEqual("hello world");
+    expect(query.toString()).toEqual("hello world");
+    expect(query.georange).toBe(null);
+
+    const range = { latitude: 1, longitude: 2, distance: 3 };
+    query.georange = range;
+    expect(query.georange).toEqual(range);
+
+    range.latitude = 10;
+    query.setGeorange(10, 2, 3);
+    expect(query.georange).toEqual(range);
   });
 });
 

@@ -22,12 +22,16 @@ class Query : public Napi::ObjectWrap<Query> {
   }
 
   Napi::Value setQuery(const Napi::CallbackInfo &info) {
+    setQuery(info, info[0]);
+    return info.This();
+  }
+
+  void setQuery(const Napi::CallbackInfo &info, const Napi::Value &value) {
     try {
-      if (!info[0].IsString()) {
+      if (!value.IsString()) {
         throw Napi::Error::New(info.Env(), "Query must be a string.");
       }
-      query_->setQuery(info[0].ToString());
-      return info.This();
+      query_->setQuery(value.ToString());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -79,7 +83,6 @@ class Query : public Napi::ObjectWrap<Query> {
       auto distance = info[2].ToNumber();
       query_->setGeorange(latitude, longitude, distance);
       return info.This();
-
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -118,11 +121,11 @@ class Query : public Napi::ObjectWrap<Query> {
         env, "Query",
         {
             InstanceMethod<&Query::setQuery>("setQuery"),
+            InstanceAccessor<&Query::getQuery, &Query::setQuery>("query"),
             InstanceMethod<&Query::setGeorange>("setGeorange"),
-            InstanceAccessor<&Query::getQuery>("query"),
-            InstanceMethod<&Query::getQuery>("toString"),
             InstanceAccessor<&Query::getGeorange, &Query::setGeorangeObject>(
                 "georange"),
+            InstanceMethod<&Query::getQuery>("toString"),
         });
 
     exports.Set("Query", func);
@@ -494,7 +497,7 @@ class Searcher : public Napi::ObjectWrap<Searcher> {
   Napi::Value setVerbose(const Napi::CallbackInfo &info) {
     try {
       searcher_->setVerbose(info[0].ToBoolean());
-      return info.Env().Undefined();
+      return info.This();
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }

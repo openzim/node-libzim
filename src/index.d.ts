@@ -6,7 +6,7 @@ export class IntegrityCheck {
   static TITLE_INDEX: symbol;
   static CLUSTER_PTRS: symbol;
   static DIRENT_MIMETYPES: symbol;
-  static COUNT: symbol;
+  static COUNT: symbol;  // DO NOT USE THIS. See libzim docs.
 }
 
 export class Compression {
@@ -17,8 +17,8 @@ export class Compression {
 
 export class Blob {
   constructor(buf?: ArrayBuffer | Buffer | string);
-  data: Buffer;
-  size: number | bigint;
+  get data(): Buffer;
+  get size(): number | bigint;
   toString(): string;
 }
 
@@ -29,13 +29,13 @@ export type ContentProvider = {
 
 export class StringProvider {
   constructor(content: string);
-  size: number;
+  get size(): number;
   feed() : Blob;
 }
 
 export class FileProvider {
   constructor(filepath: string);
-  size: number | bigint;
+  get size(): number | bigint;
   feed() : Blob;
 }
 
@@ -44,29 +44,39 @@ export type Hint = {
   FRONT_ARTICLE?: number;
 }
 
-export type WriterItem = {
-  readonly path: string;
-  readonly title: string;
-  readonly mimeType: string;
-  readonly contentProvider : ContentProvider;
-  readonly hints: Hint;
+export interface IndexData {
+  hasIndexData?: boolean;
+  title?: string;
+  content?: string;
+  keywords?: string;
+  wordcount?: number;
+  position?: [boolean, number, number];
+}
+
+export interface WriterItem {
+  path: string;
+  title: string;
+  mimeType: string;
+  contentProvider : ContentProvider;
+  hints: Hint;
+  indexData?: IndexData;
 }
 
 export class StringItem {
   constructor(path: string, mimetype: string, title: string, hint: Hint, content: string);
-  readonly path: string;
-  readonly title: string;
-  readonly mimeType: string;
-  readonly contentProvider : StringProvider;
-  readonly hints: Hint;
+  get path(): string;
+  get title(): string;
+  get mimeType(): string;
+  get contentProvider() : StringProvider;
+  get hints(): Hint;
 }
 
 export class FileItem {
-  readonly path: string;
-  readonly title: string;
-  readonly mimeType: string;
-  readonly contentProvider : FileProvider;
-  readonly hints: Hint;
+  get path(): string;
+  get title(): string;
+  get mimeType(): string;
+  get contentProvider() : StringProvider;
+  get hints(): Hint;
 }
 
 export class Creator {
@@ -87,28 +97,28 @@ export class Creator {
 }
 
 export class Item {
-  title: string;
-  path: string;
-  mimetype: string;
-  data: Blob;
+  get title(): string;
+  get path(): string;
+  get mimetype(): string;
+  get data(): Blob;
   getData(offset?: number | bigint, limit?: number | bigint) : Blob;
-  size: number | bigint;
-  directAccessInformation: {
+  get size(): number | bigint;
+  get directAccessInformation(): {
     filename: string,
       offset: number,
   };
-  index: number | bigint;
+  get index(): number | bigint;
 }
 
 export class Entry {
-  isRedirect: boolean;
-  title: string;
-  path: string;
-  item: Item;
+  get isRedirect(): boolean;
+  get title(): string;
+  get path(): string;
+  get item(): Item;
   getItem(followRedirect?: boolean) : Item;
-  redirect: Item;
-  redirectEntry: Entry;
-  index: number;
+  get redirect(): Item;
+  get redirectEntry(): Entry;
+  get index(): number;
 }
 
 export interface EntryRange extends Iterable<Entry> {
@@ -118,22 +128,22 @@ export interface EntryRange extends Iterable<Entry> {
 
 export class Archive {
   constructor(filepath: string);
-  filename: string;
-  filesize: number | bigint;
-  allEntryCount: number;
-  entryCount: number;
-  articleCount: number;
-  uuid: string;
+  get filename(): string;
+  get filesize(): number | bigint;
+  get allEntryCount(): number;
+  get entryCount(): number;
+  get articleCount(): number;
+  get uuid(): string;
   getMetadata(name: string) : string;
   getMetadataItem(name: string) : Item;
-  metadataKeys: string[];
+  get metadataKeys(): string[];
   getIllustrationItem(size: number) : Item;
-  illustrationSizes : Set<number>;
+  get illustrationSizes() : Set<number>;
   getEntryByPath(path_or_idx: string | number) : Entry;
   getEntryByTitle(title_or_idx: string | number) : Entry;
   getEntryByClusterOrder(idx: number) : Entry;
-  mainEntry: Entry;
-  randomEntry: Entry;
+  get mainEntry(): Entry;
+  get randomEntry(): Entry;
   hasEntryByPath(path: string) : boolean;
   hasEntryByTitle(title: string) : boolean;
   hasMainEntry(): boolean;
@@ -145,13 +155,57 @@ export class Archive {
   iterEfficient() : EntryRange;
   findByPath(path: string) : EntryRange;
   findByTitle(title: string) : EntryRange;
-  hasChecksum: boolean;
-  checksum: string;
+  get hasChecksum(): boolean;
+  get checksum(): string;
   check() : boolean;
   checkIntegrity(checkType: symbol) : boolean;  // one of IntegrityCheck
-  isMultiPart: boolean;
-  hasNewNamespaceScheme: boolean;
+  get isMultiPart(): boolean;
+  get hasNewNamespaceScheme(): boolean;
 
   static validate(zimPath: string, checksToRun: symbol[]) : boolean; // list of IntegrityCheck
 }
 
+interface Georange {
+  latitude: number;
+  longitude: number;
+  distance: number;
+}
+
+export class Query {
+  constructor(query: string);
+  setQuery(query: string): this;
+  setGeorange(latitude: number, longitude: number, distance: number): this;
+  get query() : string;
+  set query(query: string);
+  toString(): string;
+  get georange() : Georange;
+  set georange(range: Georange);
+}
+
+export class SearchIterator {
+  get path(): string;
+  get title(): string;
+  get score(): number;
+  get snippet(): string;
+  get wordCount(): number;
+  get size() : number;
+  get fileIndex(): number;
+  get zimId(): string;
+  get entry(): Entry;
+}
+
+export class SearchResultSet extends Iterable<SearchIterator> {
+  get size(): number;
+}
+
+export class Search {
+  getResults(start: number, maxResults: number) : SearchResultSet;
+  get estimatedMatches(): number;
+}
+
+export class Searcher {
+  constructor(archives: Archive | Archive[]);
+  addArchive(archive: Archive): this;
+  search(query: string | Query) : Search;
+  setVerbose(verbose: boolean) : this;
+}
