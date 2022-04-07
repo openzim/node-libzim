@@ -63,7 +63,7 @@ export interface WriterItem {
 }
 
 export class StringItem {
-  constructor(path: string, mimetype: string, title: string, hint: Hint, content: string);
+  constructor(path: string, mimeType: string, title: string, hint: Hint, content: string);
   get path(): string;
   get title(): string;
   get mimeType(): string;
