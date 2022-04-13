@@ -17,7 +17,7 @@ class Query : public Napi::ObjectWrap<Query> {
   explicit Query(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Query>(info), query_{std::make_shared<zim::Query>()} {
     if (info.Length() > 0) {
-      query_->setQuery(info[0].ToString());
+      query_->setQuery(info[0].ToString().Utf8Value());
     }
   }
 
@@ -31,7 +31,7 @@ class Query : public Napi::ObjectWrap<Query> {
       if (!value.IsString()) {
         throw Napi::Error::New(info.Env(), "Query must be a string.");
       }
-      query_->setQuery(value.ToString());
+      query_->setQuery(value.ToString().Utf8Value());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -478,11 +478,11 @@ class Searcher : public Napi::ObjectWrap<Searcher> {
       auto env = info.Env();
       if (info[0].IsString()) {
         // coerce to query
-        auto &&query = zim::Query(info[0].ToString());
+        auto &&query = zim::Query(info[0].ToString().Utf8Value());
         auto &&search = searcher_->search(query);
         return Search::New(env, std::move(search));
       } else if (info[0].IsObject()) {
-        auto query = Napi::ObjectWrap<Query>::Unwrap(info[0].As<Napi::Object>())
+        auto &&query = Napi::ObjectWrap<Query>::Unwrap(info[0].As<Napi::Object>())
                          ->query();
         auto &&search = searcher_->search(*query);
         return Search::New(env, std::move(search));
