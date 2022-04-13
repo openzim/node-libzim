@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "rm -rf dist build/native/build",
     "tsc": "tsc",
-    "prepare": "mkdir -p dist/ && cp -v src/index.{js,d.ts} dist/",
+    "prepare": "mkdir -p dist/ && cp -v src/index.js src/index.d.ts dist/",
     "codecov": "nyc --reporter=lcov npm t",
     "install": "npm run download && node-gyp rebuild -v && npm run bundle",
     "build": "node-gyp rebuild -v && npm run bundle && npm run tsc",
