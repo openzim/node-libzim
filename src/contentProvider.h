@@ -9,6 +9,7 @@
 #include <memory>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 #include "blob.h"
 #include "common.h"
@@ -19,7 +20,7 @@
  */
 class ContentProviderWrapper : public zim::writer::ContentProvider {
  public:
-  ContentProviderWrapper(const Napi::Object &provider)
+  explicit ContentProviderWrapper(const Napi::Object &provider)
       : MAIN_THREAD_ID{}, provider_{} {
     MAIN_THREAD_ID = std::this_thread::get_id();
     provider_ = Napi::Persistent(provider);
@@ -146,7 +147,7 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
 
   Napi::Value feed(const Napi::CallbackInfo &info) {
     try {
-      // TODO: need a way to move this to avoid copying
+      // TODO(kelvinhammond): need a way to move this to avoid copying
       auto blob = provider_->feed();
       return Blob::New(info.Env(), blob);
     } catch (const std::exception &err) {
@@ -222,7 +223,7 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
 
   Napi::Value feed(const Napi::CallbackInfo &info) {
     try {
-      // TODO: need a way to move this to avoid copying
+      // TODO(kelvinhammond): need a way to move this to avoid copying
       auto blob = provider_->feed();
       return Blob::New(info.Env(), blob);
     } catch (const std::exception &err) {

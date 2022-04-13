@@ -67,7 +67,7 @@ class Item : public Napi::ObjectWrap<Item> {
           throw Napi::Error::New(env,
                                  "Offset must be greater than or equal to 0");
         }
-        offset = (size_t)val;
+        offset = static_cast<size_t>(val);
       }
 
       // load size if defined and is Number or BigInt
@@ -81,7 +81,7 @@ class Item : public Napi::ObjectWrap<Item> {
             throw Napi::Error::New(env,
                                    "Size must be greater than or equal to 0");
           }
-          size = (size_t)val;
+          size = static_cast<size_t>(val);
         } else {  // fail here because the wrong type defaults to 0
           throw Napi::Error::New(env, "Size must be an Number or BigInt");
         }

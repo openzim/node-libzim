@@ -9,6 +9,7 @@
 #include <future>
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 
 #include "blob.h"
@@ -34,7 +35,7 @@ zim::writer::Hints Object2Hints(const Napi::Object &obj) {
  */
 class IndexDataWrapper : public zim::writer::IndexData {
  public:
-  IndexDataWrapper(const Napi::Object &indexData)
+  explicit IndexDataWrapper(const Napi::Object &indexData)
       : hasIndexData_{true},
         title_{},
         content_{},
@@ -224,7 +225,7 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
     }
   }
 
-  // TODO: implement getIndexData for StringItem and FileItem
+  // TODO(kelvinhammond): implement getIndexData for StringItem and FileItem
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {

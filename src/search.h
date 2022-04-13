@@ -7,6 +7,8 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+#include <utility>
+#include <vector>
 
 #include "archive.h"
 #include "common.h"
@@ -216,9 +218,9 @@ class SearchIterator : public Napi::ObjectWrap<SearchIterator> {
 
   Napi::Value getZimId(const Napi::CallbackInfo &info) {
     try {
-      // TODO: convert this to static_cast<std::string>(archive_->getUuid())
-      // This didn't work when building because of the below error
-      // undefined symbol:
+      // TODO(kelvinhammond): convert this to
+      // static_cast<std::string>(archive_->getUuid()) This didn't work when
+      // building because of the below error undefined symbol:
       // _ZNK3zim4UuidcvNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEv
       std::ostringstream out;
       out << searchIterator_.getZimId();
@@ -374,7 +376,7 @@ class Search : public Napi::ObjectWrap<Search> {
 
   Napi::Value getResults(const Napi::CallbackInfo &info) {
     try {
-      // TODO: construct SearchResultSet and return
+      // TODO(kelvinhammond): construct SearchResultSet and return
       auto env = info.Env();
       if (!(info[0].IsNumber() && info[1].IsNumber())) {
         throw Napi::Error::New(env,
@@ -482,8 +484,9 @@ class Searcher : public Napi::ObjectWrap<Searcher> {
         auto &&search = searcher_->search(query);
         return Search::New(env, std::move(search));
       } else if (info[0].IsObject()) {
-        auto &&query = Napi::ObjectWrap<Query>::Unwrap(info[0].As<Napi::Object>())
-                         ->query();
+        auto &&query =
+            Napi::ObjectWrap<Query>::Unwrap(info[0].As<Napi::Object>())
+                ->query();
         auto &&search = searcher_->search(*query);
         return Search::New(env, std::move(search));
       }

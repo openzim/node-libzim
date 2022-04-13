@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include "archive.h"
 #include "common.h"
@@ -204,7 +205,7 @@ class SuggestionSearch : public Napi::ObjectWrap<SuggestionSearch> {
 
   Napi::Value getResults(const Napi::CallbackInfo &info) {
     try {
-      // TODO: construct SearchResultSet and return
+      // TODO(kelvinhammond): construct SearchResultSet and return
       auto env = info.Env();
       if (!(info[0].IsNumber() && info[1].IsNumber())) {
         throw Napi::Error::New(env,
@@ -256,7 +257,8 @@ class SuggestionSearcher : public Napi::ObjectWrap<SuggestionSearcher> {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    // TODO: Ask about support for suggestions from multiple archives
+    // TODO(kelvinhammond): Ask about support for suggestions from multiple
+    // archives
     /*
     if (info[0].IsArray()) {
       auto array = info[0].As<Napi::Array>();

@@ -22,9 +22,9 @@ class Blob : public Napi::ObjectWrap<Blob> {
       blob_ = std::make_shared<zim::Blob>(
           *info[0].As<Napi::External<zim::Blob>>().Data());
     } else if (info.Length() > 0) {  // use refcontent_ and copy content
-      // TODO: avoid copying content somehow in certain scenarios if possible
-      // Maybe use a reference object??? What is the lifecycle of that and what
-      // if it's changed?
+      // TODO(kelvinhammond): avoid copying content somehow in certain scenarios
+      // if possible Maybe use a reference object??? What is the lifecycle of
+      // that and what if it's changed?
       if (info[0].IsArrayBuffer()) {  // handle ArrayBuffer
         auto buf = info[0].As<Napi::ArrayBuffer>();
         auto refcontent_ =
@@ -49,7 +49,7 @@ class Blob : public Napi::ObjectWrap<Blob> {
 
   Napi::Value getData(const Napi::CallbackInfo &info) {
     try {
-      // TODO: find a way to have a readonly buffer in NodeJS
+      // TODO(kelvinhammond): find a way to have a readonly buffer in NodeJS
       return Napi::Buffer<char>::Copy(info.Env(), blob_->data(), blob_->size());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());

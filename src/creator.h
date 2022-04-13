@@ -6,6 +6,8 @@
 #include <exception>
 #include <functional>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "common.h"
 #include "writerItem.h"
@@ -143,7 +145,6 @@ class Creator : public Napi::ObjectWrap<Creator> {
       auto wk = new CreatorAsyncWorker(creator_, deferred);
       wk->Queue();
       return deferred.Promise();
-
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
