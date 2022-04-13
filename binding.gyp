@@ -33,7 +33,8 @@
                   "xcode_settings": {
                       "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
                       "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
-                      "LD_RUNPATH_SEARCH_PATHS": "@loader_path/"
+                      "LD_RUNPATH_SEARCH_PATHS": "@loader_path/",
+                      "OTHER_CFLAGS": [ "-std=c++17", "-fexceptions" ],
                   },
                   "libraries": ["-Wl,-rpath,@loader_path/", "-L<(libzim_dir)/lib", "-lzim"],
               }],
