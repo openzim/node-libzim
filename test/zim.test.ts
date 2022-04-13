@@ -170,10 +170,11 @@ describe('Creator', () => {
 describe('Archive', () => {
   const outFile = './test-read.zim';
 
+  const testText = 'openzim binding';
   const items = Array.from(Array(10).keys()).map(i => new StringItem(
     `test${i}`,
     "text/html",
-    `Hello world ${i}`,
+    `${testText} ${i}`,
     {FRONT_ARTICLE: 1},
     `Hello world ${i}!`
   ));
@@ -330,9 +331,18 @@ describe('Archive', () => {
   describe("Searcher", () => {
     it("searches the archive", () => {
       const archive = new Archive(outFile);
+      expect(archive.hasFulltextIndex()).toBe(true);
+      expect(archive.hasTitleIndex()).toBe(true);
+
       const searcher = new Searcher(archive);
-      const query = new Query("hello world");
-      const search = searcher.search(query);
+      searcher.setVerbose(true);
+      const search = searcher.search(new Query(testText));
+      expect(search).toBeDefined();
+      expect(search.estimatedMatches).toEqual(items.length);
+
+      const results = search.getResults(0, 100);
+      expect(results).toBeDefined();
+      expect(results.size).toEqual(items.length);
     });
   });
 
