@@ -194,7 +194,7 @@ export class SearchIterator {
   get entry(): Entry;
 }
 
-export class SearchResultSet extends Iterable<SearchIterator> {
+export interface SearchResultSet extends Iterable<SearchIterator> {
   get size(): number;
 }
 
@@ -207,5 +207,28 @@ export class Searcher {
   constructor(archives: Archive | Archive[]);
   addArchive(archive: Archive): this;
   search(query: string | Query) : Search;
+  setVerbose(verbose: boolean) : this;
+}
+
+export class SuggestionIterator {
+  get entry(): Entry;
+  get title(): string;
+  get path(): string;
+  get snippet(): string;
+  get hasSnippet(): boolean;
+}
+
+export interface SuggestionResultSet extends Iterable<SuggestionIterator> {
+  get size(): number;
+}
+
+export class SuggestionSearch {
+  getResults(start: number, maxResults: number) : SuggestionResultSet;
+  get estimatedMatches(): number;
+}
+
+export class SuggestionSearcher {
+  constructor(archives: Archive);
+  suggest(query: string): SuggestionSearch;
   setVerbose(verbose: boolean) : this;
 }

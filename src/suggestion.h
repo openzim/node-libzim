@@ -330,7 +330,7 @@ class SuggestionSearcher : public Napi::ObjectWrap<SuggestionSearcher> {
   Napi::Value setVerbose(const Napi::CallbackInfo &info) {
     try {
       suggestionSearcher_->setVerbose(info[0].ToBoolean());
-      return info.Env().Undefined();
+      return info.This();
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }

@@ -15,6 +15,7 @@ import {
   Creator,
   Query,
   Searcher,
+  SuggestionSearcher,
 } from '../src';
 
 
@@ -343,6 +344,45 @@ describe('Archive', () => {
       const results = search.getResults(0, 100);
       expect(results).toBeDefined();
       expect(results.size).toEqual(items.length);
+
+      const iter = results;
+      expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
+      expect(iter[Symbol.iterator]().next().done).toBe(false);
+
+      expect(Array.from(iter).length).toEqual(items.length);
+      for(const item of iter) {
+        expect(item.entry).toBeDefined();
+        expect(item.title).toMatch(new RegExp(`^${testText} \\d+\$`));
+      }
+    });
+  });
+
+  describe("Suggestion Search", () => {
+    it("searches for suggestions in the archive", () => {
+      const archive = new Archive(outFile);
+      expect(archive.hasFulltextIndex()).toBe(true);
+      expect(archive.hasTitleIndex()).toBe(true);
+
+      const suggestionSearcher = new SuggestionSearcher(archive);
+      suggestionSearcher.setVerbose(true);
+
+      const suggestion = suggestionSearcher.suggest(testText);
+      expect(suggestion).toBeDefined();
+      expect(suggestion.estimatedMatches).toEqual(items.length);
+
+      const results = suggestion.getResults(0, 100);
+      expect(results).toBeDefined();
+      expect(results.size).toEqual(items.length);
+
+      const iter = results;
+      expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
+      expect(iter[Symbol.iterator]().next().done).toBe(false);
+
+      expect(Array.from(iter).length).toEqual(items.length);
+      for(const item of iter) {
+        expect(item.entry).toBeDefined();
+        expect(item.title).toMatch(new RegExp(`^${testText} \\d+\$`));
+      }
     });
   });
 
