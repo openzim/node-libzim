@@ -53,7 +53,7 @@
     "minimist": "^1.2.5",
     "mkdirp": "^1.0.4",
     "node-addon-api": "^4.2.0",
-    "node-gyp": "^8.4.0",
+    "node-gyp": "^9.0.0",
     "rimraf": "^3.0.2",
     "tar": "^6.1.0",
     "ts-jest": "^27.0.7",
