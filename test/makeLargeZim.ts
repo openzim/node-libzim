@@ -1,6 +1,7 @@
+import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as faker from 'faker';
-import {ZimArticle, ZimCreator, ZimReader} from '../src';
+import { Creator, Archive, StringItem } from '../src';
 
 const numArticles = 1000000;
 const outFile = path.join(__dirname, '../largeZim.zim');
@@ -9,38 +10,35 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
 
 
 (async () => {
-
   console.info('Starting');
-  const creator = new ZimCreator({
-    fileName: outFile,
-    welcome: 'welcome',
-    fullTextIndexLanguage: 'eng',
-    minChunkSize: 2048,
-  }, {});
-  console.info(`Created Zim`);
+  const creator = new Creator()
+    .configIndexing(true, "en")
+    .configClusterSize(2048)
+    .startZimCreation(outFile);
+
+  console.info(`Created Zim, writing items...`);
 
   for (let i = 0; i < numArticles; i++) {
-    const articleTitle = `${i}_${faker.lorem.words(faker.random.number({min: 1, max: 4}))}`;
-    const articleUrl = articleTitle.replace(/ /g, '_');
+    const title = `${i}_${faker.lorem.words(faker.random.number({min: 1, max: 4}))}`;
+    const url = title.replace(/ /g, '_');
+    const data = faker.lorem.paragraphs(10);
 
-    const a = new ZimArticle({
-      url: articleUrl,
-      title: articleTitle,
-      data: faker.lorem.paragraphs(10),
-      mimeType: 'text/html',
-      shouldIndex: true,
-      ns: 'A'
-    });
-    await creator.addArticle(a);
+    const item = new StringItem(
+      url,
+      "text/html",
+      title,
+      {FRONT_ARTICLE: 1},
+      data,
+    );
+    creator.addItem(item);
   }
 
   console.log(`Finalising...`);
-  await creator.finalise();
+  await creator.finishZimCreation();
   console.log('Done Writing');
 
-  const zimFile = new ZimReader(outFile);
-  const numberOfArticles = await zimFile.getCountArticles();
-  console.info(`Count Articles:`, numberOfArticles);
+  const archive = new Archive(outFile);
+  console.info(`Count Articles:`, archive.articleCount);
 
-  // await zimFile.destroy();
+  await fs.unlink(outFile);
 })();
