@@ -204,7 +204,10 @@ describe('Archive', () => {
     const creator = new Creator()
       .configIndexing(true, "en")
       .startZimCreation(outFile);
-    items.forEach(item => creator.addItem(item));
+
+    for(const item of items) {
+      creator.addItem(item);
+    }
 
     let i = 0;
     for(const [k, v] of Object.entries(meta)) {
