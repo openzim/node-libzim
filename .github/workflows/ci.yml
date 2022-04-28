@@ -39,9 +39,6 @@ jobs:
     - name: installing typescript
       run: npm i -g typescript
 
-    - name: running tsc
-      run: tsc
-
     - name: running test
       run: npm run test
 
@@ -70,9 +67,6 @@ jobs:
 
     - name: installing typescript
       run: npm i -g typescript
-
-    - name: running tsc
-      run: tsc
 
     - name: running test
       run: npm run test
@@ -105,9 +99,6 @@ jobs:
 
     - name: installing codecov
       run: npm i codecov
-
-    - name: running tsc
-      run: tsc
 
     - name: running test
       run: npm run test
