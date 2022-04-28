@@ -4,14 +4,12 @@
     "lib": [
       "es6"
     ],
+    "allowJs": true,
     "declaration": true,
     "noImplicitAny": true,
     "outDir": "dist",
     "removeComments": false,
     "target": "es6",
     "esModuleInterop": true
-  },
-  "files": [
-    "test/zim.test.ts"
-  ]
+  }
 }
