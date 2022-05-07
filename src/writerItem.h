@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <thread>
 
 #include "blob.h"
 #include "common.h"
@@ -88,13 +89,18 @@ class IndexDataWrapper : public zim::writer::IndexData {
   std::optional<GeoPosition> position_;
 };
 
+void noopCB(const Napi::CallbackInfo &) {}
+
 /**
  * Wraps a JS World Item to a zim::writer::Item
+ *
+ * NOTE: should be initialized on the main thread
  */
 class ItemWrapper : public zim::writer::Item {
  public:
   ItemWrapper(Napi::Env env, const Napi::Object &item)
-      : item_{}, hasIndexDataImpl_{false} {
+      : MAIN_THREAD_ID{}, item_{}, hasIndexDataImpl_{false} {
+    MAIN_THREAD_ID = std::this_thread::get_id();
     item_ = Napi::Persistent(item);
 
     path_ = item_.Get("path").ToString();
@@ -106,6 +112,17 @@ class ItemWrapper : public zim::writer::Item {
                       : zim::writer::Item::getHints();
 
     hasIndexDataImpl_ = item_.Value().ToObject().Has("indexData");
+
+    auto noopFn = Napi::Function::New<noopCB>(env);
+    indexDataTSNF_ = Napi::ThreadSafeFunction::New(
+        item_.Env(), noopFn, "ItemWrapper.indexData", 0, 1);
+    contentProviderTSNF_ = Napi::ThreadSafeFunction::New(
+        item_.Env(), noopFn, "ItemWrapper.contentProvider", 0, 1);
+  }
+
+  ~ItemWrapper() {
+    indexDataTSNF_.Release();
+    contentProviderTSNF_.Release();
   }
 
   std::string getPath() const override { return path_; }
@@ -117,16 +134,37 @@ class ItemWrapper : public zim::writer::Item {
   zim::writer::Hints getHints() const override { return hints_; }
 
   std::shared_ptr<zim::writer::IndexData> getIndexData() const override {
-    if (hasIndexDataImpl_) {
-      auto data = item_.Get("indexData");
-      if (data.IsObject()) {  // allows for setting indexData to null
-        return std::make_shared<IndexDataWrapper>(data.ToObject());
-      }
-      return nullptr;
+    if (!hasIndexDataImpl_) {
+      // use default implementation
+      return zim::writer::Item::getIndexData();
     }
 
-    // use default implementation
-    return zim::writer::Item::getIndexData();
+    if (MAIN_THREAD_ID == std::this_thread::get_id()) {
+      auto data = item_.Get("indexData");
+      return data.IsObject()
+                 ? std::make_shared<IndexDataWrapper>(data.ToObject())
+                 : nullptr;
+    }
+
+    // called from a thread
+    using IndexDataWrapperPtr = std::shared_ptr<IndexDataWrapper>;
+    std::promise<IndexDataWrapperPtr> promise;
+    auto future = promise.get_future();
+
+    auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
+      // auto data = jsCallback.Call("indexData", {});
+      auto data = item_.Get("indexData");
+      promise.set_value(
+          data.IsObject() ? std::make_shared<IndexDataWrapper>(data.ToObject())
+                          : nullptr);
+    };
+
+    auto status = indexDataTSNF_.BlockingCall(callback);
+    if (status != napi_ok) {
+      throw std::runtime_error("Error calling indexData ThreadSafeFunction");
+    }
+
+    return future.get();
   }
 
   /**
@@ -135,11 +173,32 @@ class ItemWrapper : public zim::writer::Item {
    */
   std::unique_ptr<zim::writer::ContentProvider> getContentProvider()
       const override {
-    return std::make_unique<ContentProviderWrapper>(
-        item_.Get("contentProvider").ToObject());
+    if (MAIN_THREAD_ID == std::this_thread::get_id()) {
+      return std::make_unique<ContentProviderWrapper>(
+          item_.Get("contentProvider").ToObject());
+    }
+
+    using ContentProviderWrapperPtr = std::unique_ptr<ContentProviderWrapper>;
+    std::promise<ContentProviderWrapperPtr> promise;
+    auto future = promise.get_future();
+
+    auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
+      auto ptr = std::make_unique<ContentProviderWrapper>(
+          item_.Get("contentProvider").ToObject());
+      promise.set_value(std::move(ptr));
+    };
+
+    auto status = contentProviderTSNF_.BlockingCall(callback);
+    if (status != napi_ok) {
+      throw std::runtime_error(
+          "Error calling contentProvider ThreadSafeFunction");
+    }
+
+    return future.get();
   }
 
  private:
+  std::thread::id MAIN_THREAD_ID;
   // js world reference, could be an ObjectWrap provider or custom js object
   Napi::ObjectReference item_;
 
@@ -148,6 +207,9 @@ class ItemWrapper : public zim::writer::Item {
   std::string mimeType_;
   zim::writer::Hints hints_;
   bool hasIndexDataImpl_;
+
+  Napi::ThreadSafeFunction indexDataTSNF_;
+  Napi::ThreadSafeFunction contentProviderTSNF_;
 };
 
 class StringItem : public Napi::ObjectWrap<StringItem> {

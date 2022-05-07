@@ -30,7 +30,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
       {FRONT_ARTICLE: 1},
       data,
     );
-    creator.addItem(item);
+    await creator.addItem(item);
   }
 
   console.log(`Finalising...`);

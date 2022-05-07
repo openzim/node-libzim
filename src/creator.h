@@ -38,6 +38,30 @@ class CreatorAsyncWorker : public Napi::AsyncWorker {
   Napi::Promise::Deferred promise_;
 };
 
+class AddItemAsyncWorker : public Napi::AsyncWorker {
+ public:
+  AddItemAsyncWorker(std::shared_ptr<zim::writer::Creator> creator,
+                     std::shared_ptr<ItemWrapper> item,
+                     Napi::Promise::Deferred promise)
+      : Napi::AsyncWorker(promise.Env()),
+        creator_{creator},
+        item_{item},
+        promise_{promise} {}
+
+  void Execute() override { creator_->addItem(item_); }
+
+  void OnOK() override { promise_.Resolve(Env().Undefined()); }
+
+  void OnError(const Napi::Error &error) override {
+    promise_.Reject(error.Value());
+  }
+
+ private:
+  std::shared_ptr<zim::writer::Creator> creator_;
+  std::shared_ptr<ItemWrapper> item_;
+  Napi::Promise::Deferred promise_;
+};
+
 class Creator : public Napi::ObjectWrap<Creator> {
  public:
   explicit Creator(const Napi::CallbackInfo &info)
@@ -114,22 +138,30 @@ class Creator : public Napi::ObjectWrap<Creator> {
     try {
       auto val = info[0].ToString();
       creator_->startZimCreation(val);
-      // normal api does not return creator but I'm returning it instead of void
-      // because it allows a user to chain config and then start all in one
+      // normal api does not return creator but I'm returning it instead of
+      // void because it allows a user to chain config and then start all in
+      // one
       return info.This();
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
   }
 
-  void addItem(const Napi::CallbackInfo &info) {
+  Napi::Value addItem(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
       if (!info[0].IsObject()) {
         throw Napi::Error::New(env, "addItem requires an item object");
       }
-      auto item = info[0].ToObject();
-      creator_->addItem(std::make_shared<ItemWrapper>(env, item));
+
+      auto item = std::make_shared<ItemWrapper>(env, info[0].ToObject());
+
+      Napi::Promise::Deferred deferred =
+          Napi::Promise::Deferred::New(info.Env());
+
+      auto wk = new AddItemAsyncWorker(creator_, item, deferred);
+      wk->Queue();
+      return deferred.Promise();
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }

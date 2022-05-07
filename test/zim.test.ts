@@ -129,12 +129,12 @@ describe('Creator', () => {
           {FRONT_ARTICLE: 1, COMPRESS: 1},
           `Hello world ${i}!`
         );
-        expect(creator.addItem(item)).toEqual(undefined);
+        await expect(creator.addItem(item)).resolves.toEqual(undefined);
       }
 
       let content = 'ABCDEFG';
       let dataSent = false;
-      creator.addItem({ // custom item
+      await creator.addItem({ // custom item
         path: "customContentProvider",
         mimeType: "text/plain",
         title: "Custom content provider",
@@ -206,7 +206,7 @@ describe('Archive', () => {
       .startZimCreation(outFile);
 
     for(const item of items) {
-      creator.addItem(item);
+      await creator.addItem(item);
     }
 
     let i = 0;
