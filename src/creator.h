@@ -40,17 +40,22 @@ class CreatorAsyncWorker : public Napi::AsyncWorker {
 
 class AddItemAsyncWorker : public Napi::AsyncWorker {
  public:
-  AddItemAsyncWorker(std::shared_ptr<zim::writer::Creator> creator,
-                     std::shared_ptr<ItemWrapper> item,
-                     Napi::Promise::Deferred promise)
-      : Napi::AsyncWorker(promise.Env()),
+  AddItemAsyncWorker(Napi::Env &env,
+                     std::shared_ptr<zim::writer::Creator> creator,
+                     std::shared_ptr<ItemWrapper> item)
+      : Napi::AsyncWorker(env),
         creator_{creator},
         item_{item},
-        promise_{promise} {}
+        promise_(Napi::Promise::Deferred::New(env)) {}
+
+  Napi::Promise Promise() const { return promise_.Promise(); };
 
   void Execute() override { creator_->addItem(item_); }
 
-  void OnOK() override { promise_.Resolve(Env().Undefined()); }
+  void OnOK() override {
+    auto env = Env();
+    promise_.Resolve(env.Undefined());
+  }
 
   void OnError(const Napi::Error &error) override {
     promise_.Reject(error.Value());
@@ -156,12 +161,9 @@ class Creator : public Napi::ObjectWrap<Creator> {
 
       auto item = std::make_shared<ItemWrapper>(env, info[0].ToObject());
 
-      Napi::Promise::Deferred deferred =
-          Napi::Promise::Deferred::New(info.Env());
-
-      auto wk = new AddItemAsyncWorker(creator_, item, deferred);
+      auto wk = new AddItemAsyncWorker(env, creator_, item);
       wk->Queue();
-      return deferred.Promise();
+      return wk->Promise();
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -195,7 +197,7 @@ class Creator : public Napi::ObjectWrap<Creator> {
       auto content = info[1];
       if (content.IsObject()) {  // content provider
         std::unique_ptr<zim::writer::ContentProvider> provider =
-            std::make_unique<ContentProviderWrapper>(content.ToObject());
+            std::make_unique<ContentProviderWrapper>(env, content.ToObject());
         if (info.Length() > 2) {  // preserves default argument
           auto mimetype = info[2].ToString().Utf8Value();
           creator_->addMetadata(name, std::move(provider), mimetype);
@@ -219,11 +221,12 @@ class Creator : public Napi::ObjectWrap<Creator> {
 
   void addIllustration(const Napi::CallbackInfo &info) {
     try {
+      auto env = info.Env();
       auto size = info[0].ToNumber().Uint32Value();
       auto content = info[1];
       if (content.IsObject()) {
         std::unique_ptr<zim::writer::ContentProvider> provider =
-            std::make_unique<ContentProviderWrapper>(content.ToObject());
+            std::make_unique<ContentProviderWrapper>(env, content.ToObject());
         creator_->addIllustration(size, std::move(provider));
       } else {
         auto str = content.ToString().Utf8Value();

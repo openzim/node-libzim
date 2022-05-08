@@ -20,14 +20,13 @@
  */
 class ContentProviderWrapper : public zim::writer::ContentProvider {
  public:
-  explicit ContentProviderWrapper(const Napi::Object &provider)
+  explicit ContentProviderWrapper(Napi::Env env, const Napi::Object &provider)
       : MAIN_THREAD_ID{}, provider_{} {
     MAIN_THREAD_ID = std::this_thread::get_id();
     provider_ = Napi::Persistent(provider);
     size_ = parseSize(provider_.Get("size"));
 
-    auto &&feedFunc = provider_.Get("feed").As<Napi::Function>();
-    tsfn_ = Napi::ThreadSafeFunction::New(provider_.Env(), feedFunc,
+    tsfn_ = Napi::ThreadSafeFunction::New(env, Napi::Function::New<noopCB>(env),
                                           "getContentProvider.feed", 0, 1);
   }
 
@@ -70,8 +69,9 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
     std::promise<zim::Blob> promise;
     auto future = promise.get_future();
 
-    auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
-      auto blobObj = jsCallback.Call(provider_.Value(), {});
+    auto callback = [&promise, this](Napi::Env env, Napi::Function) {
+      auto feedFunc = provider_.Get("feed").As<Napi::Function>();
+      auto blobObj = feedFunc.Call(provider_.Value(), {});
       if (!blobObj.IsObject()) {
         throw std::runtime_error("ContentProvider.feed must return a blob");
       }

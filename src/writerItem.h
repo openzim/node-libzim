@@ -89,8 +89,6 @@ class IndexDataWrapper : public zim::writer::IndexData {
   std::optional<GeoPosition> position_;
 };
 
-void noopCB(const Napi::CallbackInfo &) {}
-
 /**
  * Wraps a JS World Item to a zim::writer::Item
  *
@@ -113,11 +111,11 @@ class ItemWrapper : public zim::writer::Item {
 
     hasIndexDataImpl_ = item_.Value().ToObject().Has("indexData");
 
-    auto noopFn = Napi::Function::New<noopCB>(env);
     indexDataTSNF_ = Napi::ThreadSafeFunction::New(
-        item_.Env(), noopFn, "ItemWrapper.indexData", 0, 1);
-    contentProviderTSNF_ = Napi::ThreadSafeFunction::New(
-        item_.Env(), noopFn, "ItemWrapper.contentProvider", 0, 1);
+        env, Napi::Function::New<noopCB>(env), "ItemWrapper.indexData", 0, 1);
+    contentProviderTSNF_ =
+        Napi::ThreadSafeFunction::New(env, Napi::Function::New<noopCB>(env),
+                                      "ItemWrapper.contentProvider", 0, 1);
   }
 
   ~ItemWrapper() {
@@ -152,7 +150,6 @@ class ItemWrapper : public zim::writer::Item {
     auto future = promise.get_future();
 
     auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
-      // auto data = jsCallback.Call("indexData", {});
       auto data = item_.Get("indexData");
       promise.set_value(
           data.IsObject() ? std::make_shared<IndexDataWrapper>(data.ToObject())
@@ -174,8 +171,9 @@ class ItemWrapper : public zim::writer::Item {
   std::unique_ptr<zim::writer::ContentProvider> getContentProvider()
       const override {
     if (MAIN_THREAD_ID == std::this_thread::get_id()) {
+      auto env = item_.Env();
       return std::make_unique<ContentProviderWrapper>(
-          item_.Get("contentProvider").ToObject());
+          env, item_.Get("contentProvider").ToObject());
     }
 
     using ContentProviderWrapperPtr = std::unique_ptr<ContentProviderWrapper>;
@@ -184,7 +182,7 @@ class ItemWrapper : public zim::writer::Item {
 
     auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
       auto ptr = std::make_unique<ContentProviderWrapper>(
-          item_.Get("contentProvider").ToObject());
+          env, item_.Get("contentProvider").ToObject());
       promise.set_value(std::move(ptr));
     };
 
