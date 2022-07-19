@@ -11,7 +11,6 @@ export class IntegrityCheck {
 
 export class Compression {
   static None: symbol;
-  static Lzma: symbol;
   static Zstd: symbol;
 }
 

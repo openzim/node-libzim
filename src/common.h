@@ -82,7 +82,6 @@ class Compression : public Napi::ObjectWrap<Compression> {
 
     const auto&& values = std::vector<std::pair<zim::Compression, const char*>>{
         {zim::Compression::None, "None"},
-        {zim::Compression::Lzma, "Lzma"},
         {zim::Compression::Zstd, "Zstd"},
     };
     for (const auto& [value, name] : values) {
