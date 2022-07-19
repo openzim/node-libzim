@@ -2,7 +2,7 @@
 import {} from 'ts-jest';
 import path from 'path';
 import * as fs from 'fs';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import {
   Archive,
   IntegrityCheck,
@@ -32,7 +32,7 @@ describe('IntegrityCheck', () => {
 
 describe('Compression', () => {
   it('is exported with symbols', () => {
-    expect(Object.keys(Compression)).toHaveLength(3);
+    expect(Object.keys(Compression)).toHaveLength(2);
     for(const key of Object.keys(Compression)) {
       const keyTyped = key as keyof typeof Compression;
       const sym = Compression[keyTyped];
