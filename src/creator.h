@@ -44,7 +44,7 @@ class AddItemAsyncWorker : public Napi::AsyncWorker {
  public:
   AddItemAsyncWorker(Napi::Env &env,
                      std::shared_ptr<zim::writer::Creator> creator,
-                     std::shared_ptr<ItemWrapper> item)
+                     std::shared_ptr<zim::writer::Item> item)
       : Napi::AsyncWorker(env),
         creator_{creator},
         item_{item},
@@ -67,7 +67,7 @@ class AddItemAsyncWorker : public Napi::AsyncWorker {
 
  private:
   std::shared_ptr<zim::writer::Creator> creator_;
-  std::shared_ptr<ItemWrapper> item_;
+  std::shared_ptr<zim::writer::Item> item_;
   Napi::Promise::Deferred promise_;
 };
 
@@ -163,11 +163,30 @@ class Creator : public Napi::ObjectWrap<Creator> {
         throw Napi::Error::New(env, "addItem requires an item object");
       }
 
-      auto item = std::make_shared<ItemWrapper>(env, info[0].ToObject());
+      const auto &stringItem =
+          env.GetInstanceData<ModuleConstructors>()->stringItem.Value();
+      const auto &fileItem =
+          env.GetInstanceData<ModuleConstructors>()->fileItem.Value();
+
+      std::shared_ptr<zim::writer::Item> item{};
+      auto obj = info[0].ToObject();
+      if (obj.InstanceOf(stringItem)) {
+        item = Napi::ObjectWrap<StringItem>::Unwrap(obj)->getItem();
+      } else if (obj.InstanceOf(fileItem)) {
+        item = Napi::ObjectWrap<FileItem>::Unwrap(obj)->getItem();
+      } else {
+        item = std::make_shared<ItemWrapper>(env, info[0].ToObject());
+      }
+
+      if (item == nullptr) {
+        // should not get here
+        throw Napi::Error::New(env, "addItem failed to created an item");
+      }
 
       auto wk = new AddItemAsyncWorker(env, creator_, item);
       wk->Queue();
       return wk->Promise();
+
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }

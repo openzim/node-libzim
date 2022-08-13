@@ -270,6 +270,8 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
     }
   }
 
+  std::shared_ptr<zim::writer::StringItem> getItem() { return item_; }
+
   Napi::Value getPath(const Napi::CallbackInfo &info) {
     try {
       return Napi::Value::From(info.Env(), item_->getPath());
@@ -368,6 +370,8 @@ class FileItem : public Napi::ObjectWrap<FileItem> {
       throw Napi::Error::New(env, e.what());
     }
   }
+
+  std::shared_ptr<zim::writer::FileItem> getItem() { return item_; }
 
   Napi::Value getPath(const Napi::CallbackInfo &info) {
     try {
