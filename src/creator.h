@@ -22,6 +22,8 @@ class CreatorAsyncWorker : public Napi::AsyncWorker {
         creator_{creator},
         promise_{promise} {}
 
+  ~CreatorAsyncWorker() {}
+
   void Execute() override { creator_->finishZimCreation(); }
 
   void OnOK() override {
@@ -47,6 +49,8 @@ class AddItemAsyncWorker : public Napi::AsyncWorker {
         creator_{creator},
         item_{item},
         promise_(Napi::Promise::Deferred::New(env)) {}
+
+  ~AddItemAsyncWorker() {}
 
   Napi::Promise Promise() const { return promise_.Promise(); };
 

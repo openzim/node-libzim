@@ -9,8 +9,6 @@
 #include <utility>
 #include <vector>
 
-void noopCB(const Napi::CallbackInfo&) {}
-
 using IntegrityCheckMap =
     std::vector<std::pair<zim::IntegrityCheck, Napi::Reference<Napi::Symbol>>>;
 

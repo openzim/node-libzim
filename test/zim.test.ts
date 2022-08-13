@@ -16,6 +16,7 @@ import {
   Query,
   Searcher,
   SuggestionSearcher,
+  WriterItem,
 } from '../src';
 
 
@@ -72,7 +73,9 @@ describe('StringItem', () => {
     expect(item.title).toBe(title);
     expect(item.hints).toEqual(hints);
 
-    const contentProvider = item.contentProvider;
+    expect(typeof item.getContentProvider).toBe("function");
+
+    const contentProvider = item.getContentProvider();
     expect(contentProvider).toBeDefined();
     expect(contentProvider.size).toBe(content.length);
 
@@ -132,22 +135,24 @@ describe('Creator', () => {
         await expect(creator.addItem(item)).resolves.toEqual(undefined);
       }
 
-      let content = 'ABCDEFG';
-      let dataSent = false;
       await creator.addItem({ // custom item
         path: "customContentProvider",
         mimeType: "text/plain",
         title: "Custom content provider",
         hints: {},
-        contentProvider: { // custom content provider
-          size: content.length,
-          feed() {
-            if(!dataSent) {
-              dataSent = true;
-              return new Blob(content);
-            }
-            return new Blob();
-          },
+        getContentProvider() { // custom content provider
+          let content = 'ABCDEFG';
+          let dataSent = false;
+          return {
+            size: content.length,
+            feed() {
+              if(!dataSent) {
+                dataSent = true;
+                return new Blob(content);
+              }
+              return new Blob();
+            },
+          };
         },
       });
 
@@ -172,13 +177,35 @@ describe('Archive', () => {
   const outFile = './test-read.zim';
 
   const testText = 'openzim binding';
-  const items = Array.from(Array(10).keys()).map(i => new StringItem(
+  const items: WriterItem[] = Array.from(Array(5).keys()).map(i => new StringItem(
     `test${i}`,
     "text/html",
     `${testText} ${i}`,
     {FRONT_ARTICLE: 1},
     `Hello world ${i}!`
   ));
+
+  // custom item
+  items.push(...Array.from(Array(5).keys()).map(i => i+5).map(i => ({
+    path: `test${i}`,
+    mimeType: "text/html",
+    title: `${testText} ${i}`,
+    hints: {FRONT_ARTICLE: 1},
+    getContentProvider() {
+      let sent = false;
+      const data = `Hello world ${i}!`;
+      return {
+        size: data.length,
+        feed() {
+          if(!sent) {
+            sent = true;
+            return new Blob(data);
+          }
+          return new Blob();
+        }
+      };
+    },
+  })));
 
   const meta = {
     test1: 'test string 1',

@@ -96,30 +96,47 @@ class IndexDataWrapper : public zim::writer::IndexData {
  */
 class ItemWrapper : public zim::writer::Item {
  public:
-  ItemWrapper(Napi::Env env, const Napi::Object &item)
+  ItemWrapper(Napi::Env env, Napi::Object item)
       : MAIN_THREAD_ID{}, item_{}, hasIndexDataImpl_{false} {
     MAIN_THREAD_ID = std::this_thread::get_id();
     item_ = Napi::Persistent(item);
 
-    path_ = item_.Get("path").ToString();
-    title_ = item_.Get("title").ToString();
-    mimeType_ = item_.Get("mimeType").ToString();
+    path_ = item.Get("path").ToString();
+    title_ = item.Get("title").ToString();
+    mimeType_ = item.Get("mimeType").ToString();
 
-    const auto hasHints = item_.Value().ToObject().Has("hints");
-    hints_ = hasHints ? Object2Hints(item_.Get("hints").ToObject())
+    const auto hasHints = item.Has("hints");
+    hints_ = hasHints ? Object2Hints(item.Get("hints").ToObject())
                       : zim::writer::Item::getHints();
 
-    hasIndexDataImpl_ = item_.Value().ToObject().Has("indexData");
+    hasIndexDataImpl_ = item.Has("hasIndexData");
 
-    indexDataTSNF_ = Napi::ThreadSafeFunction::New(
-        env, Napi::Function::New<noopCB>(env), "ItemWrapper.indexData", 0, 1);
-    contentProviderTSNF_ =
-        Napi::ThreadSafeFunction::New(env, Napi::Function::New<noopCB>(env),
-                                      "ItemWrapper.contentProvider", 0, 1);
+    if (hasIndexDataImpl_) {
+      auto indexDataFuncValue = item.Get("getIndexData");
+      if (!indexDataFuncValue.IsFunction()) {
+        throw std::runtime_error("getIndexData must be a function");
+      }
+
+      auto indexDataFunc = indexDataFuncValue.As<Napi::Function>();
+      indexDataFunc_ = Napi::Persistent(indexDataFunc);
+      indexDataTSNF_ = Napi::ThreadSafeFunction::New(
+          env, indexDataFunc, "ItemWrapper.indexData", 0, 1);
+    }
+
+    auto providerFuncValue = item.Get("getContentProvider");
+    if (!providerFuncValue.IsFunction()) {
+      throw std::runtime_error("getContentProvider must be a function");
+    }
+    auto providerFunc = providerFuncValue.As<Napi::Function>();
+    contentProviderFunc_ = Napi::Persistent(providerFunc);
+    contentProviderTSNF_ = Napi::ThreadSafeFunction::New(
+        env, providerFunc, "ItemWrapper.contentProvider", 5, 1);
   }
 
   ~ItemWrapper() {
-    indexDataTSNF_.Release();
+    if (hasIndexDataImpl_) {
+      indexDataTSNF_.Release();
+    }
     contentProviderTSNF_.Release();
   }
 
@@ -138,7 +155,7 @@ class ItemWrapper : public zim::writer::Item {
     }
 
     if (MAIN_THREAD_ID == std::this_thread::get_id()) {
-      auto data = item_.Get("indexData");
+      auto data = indexDataFunc_.Call(item_.Value(), {});
       return data.IsObject()
                  ? std::make_shared<IndexDataWrapper>(data.ToObject())
                  : nullptr;
@@ -149,8 +166,8 @@ class ItemWrapper : public zim::writer::Item {
     std::promise<IndexDataWrapperPtr> promise;
     auto future = promise.get_future();
 
-    auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
-      auto data = item_.Get("indexData");
+    auto callback = [&promise, this](Napi::Env env, Napi::Function idxFunc) {
+      auto data = idxFunc.Call(item_.Value(), {});
       promise.set_value(
           data.IsObject() ? std::make_shared<IndexDataWrapper>(data.ToObject())
                           : nullptr);
@@ -171,19 +188,36 @@ class ItemWrapper : public zim::writer::Item {
   std::unique_ptr<zim::writer::ContentProvider> getContentProvider()
       const override {
     if (MAIN_THREAD_ID == std::this_thread::get_id()) {
-      auto env = item_.Env();
-      return std::make_unique<ContentProviderWrapper>(
-          env, item_.Get("contentProvider").ToObject());
+      auto env = contentProviderFunc_.Env();
+      auto provider = contentProviderFunc_.Call(item_.Value(), {});
+      if (provider.IsObject()) {
+        return std::make_unique<ContentProviderWrapper>(env,
+                                                        provider.ToObject());
+      } else if (provider.IsNull() || provider.IsUndefined()) {
+        return nullptr;
+      }
+
+      throw std::runtime_error(
+          "getContentProvider must return an object or null");
     }
 
     using ContentProviderWrapperPtr = std::unique_ptr<ContentProviderWrapper>;
     std::promise<ContentProviderWrapperPtr> promise;
     auto future = promise.get_future();
 
-    auto callback = [&promise, this](Napi::Env env, Napi::Function jsCallback) {
-      auto ptr = std::make_unique<ContentProviderWrapper>(
-          env, item_.Get("contentProvider").ToObject());
-      promise.set_value(std::move(ptr));
+    auto callback = [&promise, this](Napi::Env env,
+                                     Napi::Function providerFunc) {
+      auto provider = providerFunc.Call(item_.Value(), {});
+      if (provider.IsObject()) {
+        auto ptr =
+            std::make_unique<ContentProviderWrapper>(env, provider.ToObject());
+        promise.set_value(std::move(ptr));
+      } else if (provider.IsNull() || provider.IsUndefined()) {
+        promise.set_value(nullptr);
+      } else {
+        throw std::runtime_error(
+            "getContentProvider must return an object or null");
+      }
     };
 
     auto status = contentProviderTSNF_.BlockingCall(callback);
@@ -206,7 +240,9 @@ class ItemWrapper : public zim::writer::Item {
   zim::writer::Hints hints_;
   bool hasIndexDataImpl_;
 
+  Napi::FunctionReference indexDataFunc_;
   Napi::ThreadSafeFunction indexDataTSNF_;
+  Napi::FunctionReference contentProviderFunc_;
   Napi::ThreadSafeFunction contentProviderTSNF_;
 };
 
@@ -222,11 +258,11 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
     }
 
     try {
-      auto path = info[0].ToString();
-      auto mimetype = info[1].ToString();
-      auto title = info[2].ToString();
+      auto path = info[0].ToString().Utf8Value();
+      auto mimetype = info[1].ToString().Utf8Value();
+      auto title = info[2].ToString().Utf8Value();
       auto hints = Object2Hints(info[3].ToObject());
-      auto content = info[4].ToString();
+      auto content = info[4].ToString().Utf8Value();
       item_ = zim::writer::StringItem::create(path, mimetype, title, hints,
                                               content);
     } catch (const std::exception &e) {
@@ -296,8 +332,8 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
                         InstanceAccessor<&StringItem::getPath>("path"),
                         InstanceAccessor<&StringItem::getTitle>("title"),
                         InstanceAccessor<&StringItem::getMimeType>("mimeType"),
-                        InstanceAccessor<&StringItem::getContentProvider>(
-                            "contentProvider"),
+                        InstanceMethod<&StringItem::getContentProvider>(
+                            "getContentProvider"),
                         InstanceAccessor<&StringItem::getHints>("hints"),
                     });
 
@@ -378,7 +414,7 @@ class FileItem : public Napi::ObjectWrap<FileItem> {
 
   Napi::Value getContentProvider(const Napi::CallbackInfo &info) {
     try {
-      return StringProvider::New(info.Env(), item_->getContentProvider());
+      return FileProvider::New(info.Env(), item_->getContentProvider());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -393,7 +429,7 @@ class FileItem : public Napi::ObjectWrap<FileItem> {
             InstanceAccessor<&FileItem::getPath>("path"),
             InstanceAccessor<&FileItem::getTitle>("title"),
             InstanceAccessor<&FileItem::getMimeType>("mimeType"),
-            InstanceAccessor<&FileItem::getContentProvider>("contentProvider"),
+            InstanceMethod<&FileItem::getContentProvider>("getContentProvider"),
             InstanceAccessor<&FileItem::getHints>("hints"),
         });
 

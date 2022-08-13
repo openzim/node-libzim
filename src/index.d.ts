@@ -56,9 +56,9 @@ export interface WriterItem {
   path: string;
   title: string;
   mimeType: string;
-  contentProvider : ContentProvider;
+  getContentProvider() : ContentProvider;
   hints: Hint;
-  indexData?: IndexData;
+  getIndexData?: () => IndexData;
 }
 
 export class StringItem {
@@ -66,7 +66,7 @@ export class StringItem {
   get path(): string;
   get title(): string;
   get mimeType(): string;
-  get contentProvider() : StringProvider;
+  getContentProvider() : StringProvider;
   get hints(): Hint;
 }
 
@@ -74,7 +74,7 @@ export class FileItem {
   get path(): string;
   get title(): string;
   get mimeType(): string;
-  get contentProvider() : StringProvider;
+  getContentProvider() : StringProvider;
   get hints(): Hint;
 }
 

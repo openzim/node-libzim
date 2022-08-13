@@ -21,12 +21,19 @@
 class ContentProviderWrapper : public zim::writer::ContentProvider {
  public:
   explicit ContentProviderWrapper(Napi::Env env, const Napi::Object &provider)
-      : MAIN_THREAD_ID{}, provider_{} {
+      : MAIN_THREAD_ID{} {
     MAIN_THREAD_ID = std::this_thread::get_id();
-    provider_ = Napi::Persistent(provider);
-    size_ = parseSize(provider_.Get("size"));
 
-    tsfn_ = Napi::ThreadSafeFunction::New(env, Napi::Function::New<noopCB>(env),
+    if (!provider.Get("feed").IsFunction()) {
+      throw std::runtime_error("ContentProvider.feed must be a function.");
+    }
+
+    auto feedFunc = provider.Get("feed").As<Napi::Function>();
+    feed_ = Napi::Persistent(feedFunc);
+    size_ = parseSize(provider.Get("size"));
+    provider_ = Napi::Persistent(provider);
+
+    tsfn_ = Napi::ThreadSafeFunction::New(env, feedFunc,
                                           "getContentProvider.feed", 0, 1);
   }
 
@@ -56,8 +63,7 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
   zim::Blob feed() override {
     if (MAIN_THREAD_ID == std::this_thread::get_id()) {
       // on main thread for some reason, do it here
-      auto feedFunc = provider_.Get("feed").As<Napi::Function>();
-      auto blobObj = feedFunc.Call(provider_.Value(), {});
+      auto blobObj = feed_.Call(provider_.Value(), {});
       if (!blobObj.IsObject()) {
         throw std::runtime_error("ContentProvider.feed must return a blob");
       }
@@ -69,8 +75,7 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
     std::promise<zim::Blob> promise;
     auto future = promise.get_future();
 
-    auto callback = [&promise, this](Napi::Env env, Napi::Function) {
-      auto feedFunc = provider_.Get("feed").As<Napi::Function>();
+    auto callback = [&promise, this](Napi::Env env, Napi::Function feedFunc) {
       auto blobObj = feedFunc.Call(provider_.Value(), {});
       if (!blobObj.IsObject()) {
         throw std::runtime_error("ContentProvider.feed must return a blob");
@@ -92,6 +97,7 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
   std::thread::id MAIN_THREAD_ID;
   // js world reference, could be an ObjectWrap provider or custom js object
   Napi::ObjectReference provider_;
+  Napi::FunctionReference feed_;
   Napi::ThreadSafeFunction tsfn_;
   zim::size_type size_;
 };
