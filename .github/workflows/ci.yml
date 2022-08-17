@@ -11,7 +11,7 @@ on:
 jobs:
 
   macOS:
-    runs-on: macos-latest
+    runs-on: macos-11
 
     strategy:
       matrix:
@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
 
     - name: Setup python 3.6
       uses: actions/setup-python@v1
@@ -39,9 +39,6 @@ jobs:
     - name: installing typescript
       run: npm i -g typescript
 
-    - name: running tsc
-      run: tsc
-
     - name: running test
       run: npm run test
 
@@ -55,7 +52,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
 
@@ -71,9 +68,6 @@ jobs:
     - name: installing typescript
       run: npm i -g typescript
 
-    - name: running tsc
-      run: tsc
-
     - name: running test
       run: npm run test
 
@@ -87,7 +81,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
 
@@ -105,9 +99,6 @@ jobs:
 
     - name: installing codecov
       run: npm i codecov
-
-    - name: running tsc
-      run: tsc
 
     - name: running test
       run: npm run test

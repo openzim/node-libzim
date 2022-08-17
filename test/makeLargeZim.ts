@@ -1,46 +1,79 @@
+import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as faker from 'faker';
-import {ZimArticle, ZimCreator, ZimReader} from '../src';
+import { faker } from '@faker-js/faker';
+import { Creator, Archive, StringItem, Blob } from '../src';
+const tqdm: any = require('tqdm');
 
 const numArticles = 1000000;
+//const numArticles = 10000;
 const outFile = path.join(__dirname, '../largeZim.zim');
 
 console.log(`Making ZIM file with [${numArticles}] articles`);
 
 
 (async () => {
-
   console.info('Starting');
-  const creator = new ZimCreator({
-    fileName: outFile,
-    welcome: 'welcome',
-    fullTextIndexLanguage: 'eng',
-    minChunkSize: 2048,
-  }, {});
-  console.info(`Created Zim`);
+  const creator = new Creator()
+    .configNbWorkers(1)
+    .configIndexing(true, "en")
+    .configClusterSize(2048)
+    .startZimCreation(outFile);
 
-  for (let i = 0; i < numArticles; i++) {
-    const articleTitle = `${i}_${faker.lorem.words(faker.random.number({min: 1, max: 4}))}`;
-    const articleUrl = articleTitle.replace(/ /g, '_');
+  console.info(`Created Zim, writing items...`);
 
-    const a = new ZimArticle({
-      url: articleUrl,
-      title: articleTitle,
-      data: faker.lorem.paragraphs(10),
-      mimeType: 'text/html',
-      shouldIndex: true,
-      ns: 'A'
-    });
-    await creator.addArticle(a);
+  function* rangeGenerator(N = numArticles) {
+    for(let i = 0; i < N; i++) {
+      yield i;
+    }
+  }
+
+  for(const i of tqdm(rangeGenerator(numArticles), { total: numArticles })) {
+  //for (let i = 0; i < numArticles; i++) {
+    //const title = `${i}_${faker.lorem.words(faker.random.number({min: 1, max: 4}))}`;
+    const title = `test ${i}`;
+    const url = title.replace(/ /g, '_');
+    //const data = faker.lorem.paragraphs(10);
+    const data = `hello world ${i}`;
+
+    const stringItem = new StringItem(
+      url,
+      "text/html",
+      title,
+      {FRONT_ARTICLE: 1},
+      data,
+    );
+
+    /*
+    const customItem = { // custom item
+      path: url,
+      mimeType: "text/html",
+      title: title,
+      hints: {FRONT_ARTICLE: 1},
+      getContentProvider() { // custom content provider
+        let sent = false;
+        return {
+          size: data.length,
+          feed() {
+            if(!sent) {
+              sent = true;
+              return new Blob(data);
+            }
+            return new Blob();
+          }
+        };
+      },
+    };
+    */
+
+    await creator.addItem(stringItem);
   }
 
   console.log(`Finalising...`);
-  await creator.finalise();
+  await creator.finishZimCreation();
   console.log('Done Writing');
 
-  const zimFile = new ZimReader(outFile);
-  const numberOfArticles = await zimFile.getCountArticles();
-  console.info(`Count Articles:`, numberOfArticles);
+  const archive = new Archive(outFile);
+  console.info(`Count Articles:`, archive.articleCount);
 
-  // await zimFile.destroy();
+  await fs.unlink(outFile);
 })();

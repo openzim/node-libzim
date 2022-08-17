@@ -17,7 +17,7 @@ if (!isMacOS && !isLinux) {
 
 let osPrefix = (isMacOS) ? 'macos' : 'linux';
 const urls = [
-    `http://download.openzim.org/release/libzim/libzim_${osPrefix}-x86_64-${process.env.LIBZIM_VERSION}.tar.gz`,
+    `https://download.openzim.org/release/libzim/libzim_${osPrefix}-x86_64-${process.env.LIBZIM_VERSION}.tar.gz`,
 ].filter(a => a);
 
 for (let url of urls) {

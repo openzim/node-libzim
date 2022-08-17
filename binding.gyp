@@ -24,7 +24,7 @@
                 "libraries": [
                   "-Wl,-rpath,'$$ORIGIN'",
                   "-L<(libzim_dir)/lib/x86_64-linux-gnu",
-                  "<(libzim_dir)/lib/x86_64-linux-gnu/libzim.so.6",
+                  "<(libzim_dir)/lib/x86_64-linux-gnu/libzim.so.7",
                 ],
               }],
               ["libzim_local!='true' and OS=='mac'", {
@@ -33,7 +33,8 @@
                   "xcode_settings": {
                       "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",  # -fvisibility=hidden
                       "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
-                      "LD_RUNPATH_SEARCH_PATHS": "@loader_path/"
+                      "LD_RUNPATH_SEARCH_PATHS": "@loader_path/",
+                      "OTHER_CFLAGS": [ "-std=c++17", "-fexceptions" ],
                   },
                   "libraries": ["-Wl,-rpath,@loader_path/", "-L<(libzim_dir)/lib", "-lzim"],
               }],
@@ -45,9 +46,6 @@
             "cflags_cc": [ "-std=c++17", "-fexceptions" ],
             "sources": [
                 "src/module.cc",
-                "src/article.cc",
-                "src/reader.cc",
-                "src/writer.cc",
             ],
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")",
