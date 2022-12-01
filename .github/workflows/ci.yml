@@ -4,9 +4,10 @@
 name: CI
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
 
@@ -15,49 +16,23 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 17.x]
+        node-version: [16, 18]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
-
-    - name: Setup python 3.6
-      uses: actions/setup-python@v1
       with:
         node-version: ${{ matrix.node-version }}
+
+    - name: Setup python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
     - name: installing add on packages
       run: brew install ossp-uuid
-
-    - name: setting path
-      run: PATH=$PATH:$HOME/bin
-
-    - name: installing dependencies
-      run: npm i
-
-    - name: installing typescript
-      run: npm i -g typescript
-
-    - name: running test
-      run: npm run test
-
-  Ubuntu-Bionic:
-    runs-on: ubuntu-18.04
-
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 17.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: installing add on packages
-      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
 
     - name: setting path
       run: PATH=$PATH:$HOME/bin
@@ -76,10 +51,52 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 17.x]
+        node-version: [16, 18]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: installing add on packages
+      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
+
+    - name: setting path
+      run: PATH=$PATH:$HOME/bin
+
+    - name: installing dependencies
+      run: npm i
+
+    - name: installing typescript
+      run: npm i -g typescript
+
+    - name: installing codecov
+      run: npm i codecov
+
+    - name: running test
+      run: npm run test
+
+    - name: running codecov
+      run: npm run codecov
+
+    - name: codecov action
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  Ubuntu-Jammy:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        node-version: [16, 18]
+
+    steps:
+    - uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
