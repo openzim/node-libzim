@@ -63,11 +63,11 @@ export interface WriterItem {
 
 export class StringItem {
   constructor(path: string, mimeType: string, title: string, hint: Hint, content: string);
-  get path(): string;
-  get title(): string;
-  get mimeType(): string;
+  readonly path: string;
+  readonly title: string;
+  readonly mimeType: string;
   getContentProvider() : StringProvider;
-  get hints(): Hint;
+  readonly hints: Hint;
 }
 
 export class FileItem {
@@ -194,7 +194,7 @@ export class SearchIterator {
 }
 
 export interface SearchResultSet extends Iterable<SearchIterator> {
-  get size(): number;
+  readonly size: number;
 }
 
 export class Search {
@@ -218,7 +218,7 @@ export class SuggestionIterator {
 }
 
 export interface SuggestionResultSet extends Iterable<SuggestionIterator> {
-  get size(): number;
+  readonly size: number;
 }
 
 export class SuggestionSearch {
