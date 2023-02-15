@@ -12,9 +12,7 @@
 class Blob : public Napi::ObjectWrap<Blob> {
  public:
   explicit Blob(const Napi::CallbackInfo &info)
-      : Napi::ObjectWrap<Blob>(info),
-        blob_{std::make_shared<zim::Blob>()},
-        refcontent_{} {
+      : Napi::ObjectWrap<Blob>(info), blob_{std::make_shared<zim::Blob>()} {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
@@ -25,19 +23,30 @@ class Blob : public Napi::ObjectWrap<Blob> {
       // TODO(kelvinhammond): avoid copying content somehow in certain scenarios
       // if possible Maybe use a reference object??? What is the lifecycle of
       // that and what if it's changed?
+
+      size_t size = 0;
+      std::shared_ptr<char> data = nullptr;
       if (info[0].IsArrayBuffer()) {  // handle ArrayBuffer
         auto buf = info[0].As<Napi::ArrayBuffer>();
-        auto refcontent_ =
-            std::string(static_cast<char *>(buf.Data()), buf.ByteLength());
+        size = buf.ByteLength();
+        data = std::shared_ptr<char>(new char[size]);
+        memset(data.get(), 0, size);
+        memcpy(data.get(), buf.Data(), size);
       } else if (info[0].IsBuffer()) {  // handle Buffer
         auto buf = info[0].As<Napi::Buffer<char>>();
-        auto refcontent_ = std::string(buf.Data(), buf.Length());
-      } else {                             // all others toString()
-        refcontent_ = info[0].ToString();  // coerce
+        size = buf.Length();
+        data = std::shared_ptr<char>(new char[size]);
+        memset(data.get(), 0, size);
+        memcpy(data.get(), buf.Data(), size);
+      } else {                                      // all others toString()
+        auto str = info[0].ToString().Utf8Value();  // coerce to string
+        size = str.size();
+        data = std::shared_ptr<char>(new char[size]);
+        memset(data.get(), 0, size);
+        memcpy(data.get(), str.c_str(), size);
       }
 
-      blob_ =
-          std::make_shared<zim::Blob>(refcontent_.data(), refcontent_.size());
+      blob_ = std::make_shared<zim::Blob>(data, size);  // blob takes ownership
     }
   }
 
@@ -92,5 +101,4 @@ class Blob : public Napi::ObjectWrap<Blob> {
 
  private:
   std::shared_ptr<zim::Blob> blob_;
-  std::string refcontent_;
 };
