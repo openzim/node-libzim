@@ -30,19 +30,16 @@ class Blob : public Napi::ObjectWrap<Blob> {
         auto buf = info[0].As<Napi::ArrayBuffer>();
         size = buf.ByteLength();
         data = std::shared_ptr<char>(new char[size]);
-        memset(data.get(), 0, size);
         memcpy(data.get(), buf.Data(), size);
       } else if (info[0].IsBuffer()) {  // handle Buffer
         auto buf = info[0].As<Napi::Buffer<char>>();
         size = buf.Length();
         data = std::shared_ptr<char>(new char[size]);
-        memset(data.get(), 0, size);
         memcpy(data.get(), buf.Data(), size);
       } else {                                      // all others toString()
         auto str = info[0].ToString().Utf8Value();  // coerce to string
         size = str.size();
         data = std::shared_ptr<char>(new char[size]);
-        memset(data.get(), 0, size);
         memcpy(data.get(), str.c_str(), size);
       }
 
