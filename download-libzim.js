@@ -10,14 +10,29 @@ mkdirp.sync('./download');
 
 const isMacOS = os.type() === 'Darwin'
 const isLinux = os.type() === 'Linux'
+const rawArch = os.arch()
+const isAvailableArch = rawArch === 'x64' || rawArch == 'arm' || rawArch == 'arm64'
 
 if (!isMacOS && !isLinux) {
     console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux and MacOS for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
 }
+if (!isAvailableArch) {
+    console.warn(`\x1b[41m\n================================ README \n\nPre-built binaries only available on x86_64, arm and arm64 for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`);
+}
 
 let osPrefix = (isMacOS) ? 'macos' : 'linux';
+let osArch = 'x86_64'
+
+if(rawArch != 'x64'){
+    if(isLinux) {
+        osArch = rawArch == 'arm64' ? 'aarch64' : 'armhf'
+    } else {
+        osArch = rawArch
+    }
+}
+
 const urls = [
-    `https://download.openzim.org/release/libzim/libzim_${osPrefix}-x86_64-${process.env.LIBZIM_VERSION}.tar.gz`,
+    `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${osArch}-${process.env.LIBZIM_VERSION}.tar.gz`,
 ].filter(a => a);
 
 for (let url of urls) {
