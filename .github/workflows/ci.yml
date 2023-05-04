@@ -73,19 +73,8 @@ jobs:
     - name: installing typescript
       run: npm i -g typescript
 
-    - name: installing codecov
-      run: npm i codecov
-
     - name: running test
       run: npm run test
-
-    - name: running codecov
-      run: npm run codecov
-
-    - name: codecov action
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
 
   Ubuntu-Jammy:
     runs-on: ubuntu-22.04
@@ -115,15 +104,18 @@ jobs:
       run: npm i -g typescript
 
     - name: installing codecov
+      if: ${{ matrix.node-version == '20' }}
       run: npm i codecov
 
     - name: running test
       run: npm run test
 
     - name: running codecov
+      if: ${{ matrix.node-version == '20' }}
       run: npm run codecov
 
     - name: codecov action
-      uses: codecov/codecov-action@v1
+      if: ${{ matrix.node-version == '20' }}
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
