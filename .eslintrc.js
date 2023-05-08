@@ -229,5 +229,15 @@ module.exports = {
         ],
         "use-isnan": "error",
         "valid-typeof": "off"
-    }
+    },
+    "overrides": [
+      {
+        "files": ["*.js", "*.jsx"],
+        "rules": {
+            // "@typescript-eslint/recommended": "off",
+            // "@typescript-eslint/recommended-requiring-type-checking": "off",
+            // "@typescript-eslint/no-var-requires": "off",
+        }
+      }
+    ]
 };
