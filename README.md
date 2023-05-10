@@ -28,49 +28,71 @@ npm i openzim/libzim
 ### Writing a Zim file
 ```javascript
 // write.js
-const { ZimArticle, ZimCreator } = require("@openzim/libzim");
+import { Creator, StringItem } from "@openzim/libzim";
 
 (async () => {
-
     console.info('Starting');
-    const creator = new ZimCreator({ fileName: 'test.zim' }, { welcome: 'index.html' });
+    const outFile = "./test.zim";
+    const creator = new Creator()
+        .configNbWorkers(1)
+        .configIndexing(true, "en")
+        .configClusterSize(2048)
+        .startZimCreation(outFile);
 
-    for (let i = 100; i > 0; i--) {
-        const a = new ZimArticle({ url: `file${i}`, data: `Content ${i}` });
-        await creator.addArticle(a);
+    for (let i = 0; i < 100; i++) {
+        const item = new StringItem(
+            `file${i}`,                       // path url
+            "text/plain",                     // content-type
+            `Title ${i}`,                     // title
+            {FRONT_ARTICLE: 1, COMPRESS: 1},  // hint option flags
+            `<h1>Content / Data ${i}</h1>`    // content
+        );
+        await creator.addItem(item);
     }
 
-    const welcome = new ZimArticle({ url: `index.html`, data: `<h1>Welcome!</h1>` });
-    await creator.addArticle(welcome);
-
-    await creator.finalise();
+    creator.setMainPath("file0");
+    await creator.finishZimCreation();
 
     console.log('Done Writing');
-
 })();
 ```
 
 ### Reading a Zim file
 ```javascript
 // read.js
-
-const { ZimArticle, ZimReader } = require("@openzim/libzim");
+import { Archive, SuggestionSearcher, Searcher } from "@openzim/libzim";
 
 (async () => {
+    const outFile = "./test.zim";
+    const archive = new Archive(outFile);
+    console.log(`Archive opened: main entry path - ${archive.mainEntry.path}`);
 
-    const zimFile = new ZimReader(path.join(__dirname, '../test.zim'));
+    for (const entry of archive.iterByPath()) {
+        console.log(`entry: ${entry.path} - ${entry.title}`);
+    }
 
-    const suggestResults = await zimFile.suggest('laborum');
-    console.info(`Suggest Results:`, suggestResults);
+    const suggestionSearcher = new SuggestionSearcher(archive);
+    const suggestion = suggestionSearcher.suggest('laborum');
+    let results = suggestion.getResults(0, 10);
+    console.log("Suggestion results:");
+    for(const entry of results) {
+        console.log(`\t- ${entry.path} - ${entry.title}`);
+    }
 
-    const searchResults = await zimFile.search('rem');
-    console.info(`Search Results:`, searchResults);
+    const searcher = new Searcher(archive);
+    const search = searcher.search(new Query('rem'));
+    results = search.getResults(0, 10);
+    console.log("Search results:");
+    for(const entry of results) {
+        console.log(`\t- ${entry.path} - ${entry.title}`);
+    }
 
-    const readArticleContent = await zimFile.getArticleByUrl('A/laborum');
-    console.info(`Article by url (laborum):`, readArticleContent);
 
-    await zimFile.destroy();
-
+    const entry = await archive.getEntryByPath("A/laborum");
+    const item = entry.item;
+    const blob = item.data;
+    console.info(`Entry by url (laborum):`, blob.data);
+    delete archive;
 })();
 
 ```
