@@ -71,11 +71,12 @@ export class StringItem {
 }
 
 export class FileItem {
-  get path(): string;
-  get title(): string;
-  get mimeType(): string;
+  constructor(path: string, mimeType: string, title: string, hints: Hint, filePath: string);
+  readonly path: string;
+  readonly title: string;
+  readonly mimeType: string;
   getContentProvider() : StringProvider;
-  get hints(): Hint;
+  readonly hints: Hint;
 }
 
 export class Creator {
@@ -86,7 +87,7 @@ export class Creator {
   configIndexing(indexing: boolean, language: string) : this;
   configNbWorkers(num: number) : this;
   startZimCreation(filepath: string): this;
-  addItem(item: WriterItem): void;
+  addItem(item: WriterItem): Promise<void>;
   addMetadata(name: string, content: string | ContentProvider, mimetype?: string): void;
   addIllustration(size: number, content: string | ContentProvider): void;
   addRedirection(path: string, title: string, targetPath: string, hints?: Hint): void;
