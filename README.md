@@ -22,7 +22,7 @@ here](https://github.com/openzim/libzim/)).
 ## Usage
 
 ```bash
-npm i openzim/libzim
+npm i @openzim/libzim
 ```
 
 ### Writing a ZIM file
