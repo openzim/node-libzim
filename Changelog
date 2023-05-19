@@ -1,3 +1,10 @@
+3.0.0:
+* NEW: Use libzim v8.2.0
+* NEW: Calling API (to follow libzim changes)
+* NEW: Add support of ARM(64) for both Linux and macOS
+* UPDATE: Most of the dependencies
+* UPDATE: Many improvements around the CI
+
 2.4.4:
 * NEW: Use libzim v6.3.2
 

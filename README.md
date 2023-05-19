@@ -25,7 +25,7 @@ here](https://github.com/openzim/libzim/)).
 npm i openzim/libzim
 ```
 
-### Writing a Zim file
+### Writing a ZIM file
 ```javascript
 // write.js
 import { Creator, StringItem } from "@openzim/libzim";
@@ -57,7 +57,7 @@ import { Creator, StringItem } from "@openzim/libzim";
 })();
 ```
 
-### Reading a Zim file
+### Reading a ZIM file
 ```javascript
 // read.js
 import { Archive, SuggestionSearcher, Searcher } from "@openzim/libzim";
