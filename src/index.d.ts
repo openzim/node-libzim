@@ -62,7 +62,7 @@ export interface WriterItem {
 }
 
 export class StringItem {
-  constructor(path: string, mimeType: string, title: string, hint: Hint, content: string);
+  constructor(path: string, mimeType: string, title: string, hint: Hint, content: ArrayBuffer | Buffer | string);
   readonly path: string;
   readonly title: string;
   readonly mimeType: string;
