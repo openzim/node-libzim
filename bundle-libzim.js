@@ -1,13 +1,12 @@
-import dotenv from 'dotenv'
-dotenv.config()
-import { sync } from 'mkdirp';
-import exec from 'exec-then';
-import { type } from 'os';
+require('dotenv').config();
+const mkdirp = require('mkdirp');
+const exec = require('exec-then');
+const os = require('os');
 
-sync('./build/Release');
+mkdirp.sync('./build/Release');
 
-const isMacOS = type() === 'Darwin'
-const isLinux = type() === 'Linux'
+const isMacOS = os.type() === 'Darwin'
+const isLinux = os.type() === 'Linux'
 
 if (!isMacOS && !isLinux) {
     console.warn('\x1b[41m\n================================ README \n\nlibzim bundle with prebuilt binaries only available for macOS and Linux:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n');

@@ -1,17 +1,16 @@
-import dotenv from 'dotenv'
-dotenv.config()
-import axios from 'axios';
-import { sync } from 'mkdirp';
-import exec from 'exec-then';
-import { type, arch } from 'os';
-import { statSync, createWriteStream } from 'fs';
-import { parse } from 'url';
+require('dotenv').config();
+const axios = require('axios');
+const mkdirp = require('mkdirp');
+const exec = require('exec-then');
+const os = require('os');
+const fs = require('fs');
+const urlParser = require('url');
 
-sync('./download');
+mkdirp.sync('./download');
 
-const isMacOS = type() === 'Darwin'
-const isLinux = type() === 'Linux'
-const rawArch = arch()
+const isMacOS = os.type() === 'Darwin'
+const isLinux = os.type() === 'Linux'
+const rawArch = os.arch()
 const isAvailableArch = rawArch === 'x64' || rawArch === 'arm' || rawArch === 'arm64'
 
 if (!isMacOS && !isLinux) {
@@ -38,16 +37,16 @@ const urls = [
 
 for (const url of urls) {
     console.info('Downloading Libzim from: ', url);
-    const filename = parse(url).pathname.split('/').slice(-1)[0];
+    const filename = urlParser.parse(url).pathname.split('/').slice(-1)[0];
     const dlFile = `./download/${filename}`;
 
     try {
-        statSync(dlFile);
+        fs.statSync(dlFile);
         console.warn(`File [${dlFile}] already exists, not downloading`);
         return;
     } catch (err) {
         //
-    }
+     }
 
     axios({
         url,
@@ -55,7 +54,7 @@ for (const url of urls) {
         responseType: 'stream'
     })
         .then(function (response) {
-            const ws = createWriteStream(dlFile);
+            const ws = fs.createWriteStream(dlFile);
             return new Promise((resolve, reject) => {
                 response.data
                     .pipe(ws)

@@ -223,6 +223,7 @@ module.exports = {
         "no-import-assign": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-var-requires": "off"
       },
       plugins: ["@typescript-eslint"],
       extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
