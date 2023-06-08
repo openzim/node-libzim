@@ -262,7 +262,20 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
       auto mimetype = info[1].ToString().Utf8Value();
       auto title = info[2].ToString().Utf8Value();
       auto hints = Object2Hints(info[3].ToObject());
-      auto content = info[4].ToString().Utf8Value();
+      std::string content;
+
+      if (info[0].IsArrayBuffer()) {  // handle ArrayBuffer
+        auto buf = info[0].As<Napi::ArrayBuffer>();
+        auto size = buf.ByteLength();
+        content = std::string(reinterpret_cast<const char *>(buf.Data()), size);
+      } else if (info[0].IsBuffer()) {  // handle Buffer
+        auto buf = info[0].As<Napi::Buffer<char>>();
+        auto size = buf.Length();
+        content = std::string(reinterpret_cast<const char *>(buf.Data()), size);
+      } else {
+        content = info[4].ToString().Utf8Value();
+      }
+
       item_ = zim::writer::StringItem::create(path, mimetype, title, hints,
                                               content);
     } catch (const std::exception &e) {

@@ -89,6 +89,32 @@ describe('StringItem', () => {
     expect(feed.size).toBe(0);
     expect(feed.data.toString()).toBe('');
   });
+
+  it('constructs a StringItem from a Buffer', () => {
+    const content = Buffer.from('abc\0def');
+    expect(content.length).toEqual(7);
+
+    const item = new StringItem(path, mimeType, title, hints, content);
+    expect(item).toBeDefined();
+    expect(item.path).toBe(path);
+    expect(item.mimeType).toBe(mimeType);
+    expect(item.title).toBe(title);
+    expect(item.hints).toEqual(hints);
+
+    const contentProvider = item.getContentProvider();
+    expect(contentProvider).toBeDefined();
+    expect(contentProvider.size).toBe(content.length);
+
+    let feed = contentProvider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(content.length);
+    expect(content.equals(feed.data)).toBe(true);
+
+    feed = contentProvider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(0);
+    expect(feed.data.toString()).toBe('');
+  });
 });
 
 describe('Creator', () => {
