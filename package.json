@@ -14,7 +14,9 @@
     "download": "node ./download-libzim.js",
     "bundle": "node ./bundle-libzim.js",
     "test": "jest",
-    "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts"
+    "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts",
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint . --fix"
   },
   "nyc": {
     "extension": [

@@ -1,5 +1,5 @@
 
-const bindings = require('bindings');
+import bindings from 'bindings';
 
 const {
   Archive,

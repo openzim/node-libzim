@@ -49,7 +49,7 @@ describe('Blob', () => {
   });
 
   it('returns proper data', () => {
-    const str = "hello world";
+    const str = 'hello world';
     const blob = new Blob(str);
     expect(blob).toBeDefined();
     expect(blob.size).toBe(str.length);
@@ -59,11 +59,11 @@ describe('Blob', () => {
 });
 
 describe('StringItem', () => {
-  const path = "test";
-  const mimeType = "text/plain";
-  const title = "Hello world";
+  const path = 'test';
+  const mimeType = 'text/plain';
+  const title = 'Hello world';
   const hints = {COMPRESS: 0, FRONT_ARTICLE: 10};
-  const content = "Hello world 1!";
+  const content = 'Hello world 1!';
 
   it('constructs a StringItem with proper data', () => {
     const item = new StringItem(path, mimeType, title, hints, content);
@@ -73,7 +73,7 @@ describe('StringItem', () => {
     expect(item.title).toBe(title);
     expect(item.hints).toEqual(hints);
 
-    expect(typeof item.getContentProvider).toBe("function");
+    expect(typeof item.getContentProvider).toBe('function');
 
     const contentProvider = item.getContentProvider();
     expect(contentProvider).toBeDefined();
@@ -118,7 +118,7 @@ describe('StringItem', () => {
 });
 
 describe('Creator', () => {
-  const outFile = "./test.zim";
+  const outFile = './test.zim';
 
   const removeOutFile = () => {
     try {
@@ -141,19 +141,19 @@ describe('Creator', () => {
     expect(creator.configVerbose(true)).toEqual(creator);
     expect(creator.configCompression(Compression.Zstd)).toEqual(creator);
     expect(creator.configClusterSize(100)).toEqual(creator);
-    expect(creator.configIndexing(true, "en")).toEqual(creator);
+    expect(creator.configIndexing(true, 'en')).toEqual(creator);
     expect(creator.configNbWorkers(10)).toEqual(creator);
   });
 
   it('Creates a zim file', async () => {
     const creator = new Creator();
     try {
-      expect(creator.configIndexing(true, "en")).toEqual(creator);
+      expect(creator.configIndexing(true, 'en')).toEqual(creator);
       expect(creator.startZimCreation(outFile)).toEqual(creator);
       for(let i = 0; i < 10; i++) {
         const item = new StringItem(
           `test${i}`,
-          "text/plain",
+          'text/plain',
           `Hello world ${i}`,
           {FRONT_ARTICLE: 1, COMPRESS: 1},
           `Hello world ${i}!`
@@ -162,12 +162,12 @@ describe('Creator', () => {
       }
 
       await creator.addItem({ // custom item
-        path: "customContentProvider",
-        mimeType: "text/plain",
-        title: "Custom content provider",
+        path: 'customContentProvider',
+        mimeType: 'text/plain',
+        title: 'Custom content provider',
         hints: {},
         getContentProvider() { // custom content provider
-          let content = 'ABCDEFG';
+          const content = 'ABCDEFG';
           let dataSent = false;
           return {
             size: content.length,
@@ -182,17 +182,17 @@ describe('Creator', () => {
         },
       });
 
-      creator.addMetadata("test string", "A test string");
+      creator.addMetadata('test string', 'A test string');
       creator.addMetadata(
-        "test provider",
-        new StringProvider("A string provider"));
+        'test provider',
+        new StringProvider('A string provider'));
 
       const png = Buffer.from('789c626001000000ffff030000060005', 'hex')
         .toString('utf8');
       creator.addIllustration(1, png);
-      creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {COMPRESS: 1});
-      creator.setMainPath("redirect/test1");
-      creator.setUuid("1234567890ABCDEF");
+      creator.addRedirection('redirect/test1', 'Redirect to test 1', 'test1', {COMPRESS: 1});
+      creator.setMainPath('redirect/test1');
+      creator.setUuid('1234567890ABCDEF');
     } finally {
       await creator.finishZimCreation();
     }
@@ -205,7 +205,7 @@ describe('Archive', () => {
   const testText = 'openzim binding';
   const items: WriterItem[] = Array.from(Array(5).keys()).map(i => new StringItem(
     `test${i}`,
-    "text/html",
+    'text/html',
     `${testText} ${i}`,
     {FRONT_ARTICLE: 1},
     `Hello world ${i}!`
@@ -214,7 +214,7 @@ describe('Archive', () => {
   // custom item
   items.push(...Array.from(Array(5).keys()).map(i => i+5).map(i => ({
     path: `test${i}`,
-    mimeType: "text/html",
+    mimeType: 'text/html',
     title: `${testText} ${i}`,
     hints: {FRONT_ARTICLE: 1},
     getContentProvider() {
@@ -255,7 +255,7 @@ describe('Archive', () => {
     removeOutFile();
 
     const creator = new Creator()
-      .configIndexing(true, "en")
+      .configIndexing(true, 'en')
       .startZimCreation(outFile);
 
     for(const item of items) {
@@ -264,7 +264,7 @@ describe('Archive', () => {
 
     let i = 0;
     for(const [k, v] of Object.entries(meta)) {
-      creator.addMetadata(k, (++i %2 == 0) ? v : new StringProvider(v));
+      creator.addMetadata(k, (++i %2 === 0) ? v : new StringProvider(v));
     }
 
     creator.addIllustration(png_size, png);
@@ -348,7 +348,7 @@ describe('Archive', () => {
 
     expect(Array.from(iter).length).toEqual(items.length);
     expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
-    expect(iter[Symbol.iterator]().next().value.title).toBe(items[0].title);
+    expect(iter[Symbol.iterator]().next().value.title).toBe(items[0]?.title);
     expect(iter[Symbol.iterator]().next().done).toBe(false);
 
     const itSpy = jest.fn();
@@ -385,8 +385,8 @@ describe('Archive', () => {
     expect(archive.hasNewNamespaceScheme).toBe(true);
   });
 
-  describe("Searcher", () => {
-    it("searches the archive", () => {
+  describe('Searcher', () => {
+    it('searches the archive', () => {
       const archive = new Archive(outFile);
       expect(archive.hasFulltextIndex()).toBe(true);
       expect(archive.hasTitleIndex()).toBe(true);
@@ -413,8 +413,8 @@ describe('Archive', () => {
     });
   });
 
-  describe("Suggestion Search", () => {
-    it("searches for suggestions in the archive", () => {
+  describe('Suggestion Search', () => {
+    it('searches for suggestions in the archive', () => {
       const archive = new Archive(outFile);
       expect(archive.hasFulltextIndex()).toBe(true);
       expect(archive.hasTitleIndex()).toBe(true);
@@ -444,12 +444,12 @@ describe('Archive', () => {
 
 });
 
-describe("Query", () => {
+describe('Query', () => {
   it('constructs a query', () => {
-    const query = new Query("hello world");
+    const query = new Query('hello world');
     expect(query).toBeDefined();
-    expect(query.query).toEqual("hello world");
-    expect(query.toString()).toEqual("hello world");
+    expect(query.query).toEqual('hello world');
+    expect(query.toString()).toEqual('hello world');
     expect(query.georange).toBe(null);
 
     const range = { latitude: 1, longitude: 2, distance: 3 };
