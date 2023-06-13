@@ -3,6 +3,10 @@ module.exports = {
     es6: true,
     node: true,
   },
+  rules:{
+    "prettier/prettier" : "error",
+    "eqeqeq": "error"
+  },
   extends: ["prettier"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -12,10 +16,6 @@ module.exports = {
   plugins: ["prettier"],
   root: true,
   overrides: [
-    // {
-    //   files: ["**/*.ts", "**/*.js"],
-    //   rules: {},
-    // },
     {
       files: ["*.ts"],
       rules: {

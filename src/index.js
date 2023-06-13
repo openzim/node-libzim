@@ -1,5 +1,4 @@
-
-import bindings from 'bindings';
+import bindings from "bindings";
 
 const {
   Archive,
@@ -15,7 +14,7 @@ const {
   FileProvider,
   StringItem,
   FileItem,
-} = bindings('zim_binding');
+} = bindings("zim_binding");
 
 module.exports = {
   Archive,
@@ -31,4 +30,4 @@ module.exports = {
   FileProvider,
   StringItem,
   FileItem,
-}
+};

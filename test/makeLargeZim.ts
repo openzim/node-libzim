@@ -1,46 +1,45 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { Creator, Archive, StringItem } from '../src';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { Creator, Archive, StringItem } from "../src";
 
-const tqdm = require('tqdm');
+const tqdm = require("tqdm");
 
 const numArticles = 1000000;
 // const numArticles = 10000;
-const outFile = path.join(__dirname, '../largeZim.zim');
+const outFile = path.join(__dirname, "../largeZim.zim");
 
 console.log(`Making ZIM file with [${numArticles}] articles`);
 
-
 (async () => {
-  console.info('Starting');
+  console.info("Starting");
   const creator = new Creator()
     .configNbWorkers(1)
-    .configIndexing(true, 'en')
+    .configIndexing(true, "en")
     .configClusterSize(2048)
     .startZimCreation(outFile);
 
-  console.info('Created Zim, writing items...');
+  console.info("Created Zim, writing items...");
 
   function* rangeGenerator(N = numArticles) {
-    for(let i = 0; i < N; i++) {
+    for (let i = 0; i < N; i++) {
       yield i;
     }
   }
 
-  for(const i of tqdm(rangeGenerator(numArticles), { total: numArticles })) {
-  // for (let i = 0; i < numArticles; i++) {
+  for (const i of tqdm(rangeGenerator(numArticles), { total: numArticles })) {
+    // for (let i = 0; i < numArticles; i++) {
     // const title = `${i}_${faker.lorem.words(faker.random.number({min: 1, max: 4}))}`;
     const title = `test ${i}`;
-    const url = title.replace(/ /g, '_');
+    const url = title.replace(/ /g, "_");
     // const data = faker.lorem.paragraphs(10);
     const data = `hello world ${i}`;
 
     const stringItem = new StringItem(
       url,
-      'text/html',
+      "text/html",
       title,
-      {FRONT_ARTICLE: 1},
-      data,
+      { FRONT_ARTICLE: 1 },
+      data
     );
 
     /*
@@ -68,12 +67,12 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
     await creator.addItem(stringItem);
   }
 
-  console.log('Finalising...');
+  console.log("Finalising...");
   await creator.finishZimCreation();
-  console.log('Done Writing');
+  console.log("Done Writing");
 
   const archive = new Archive(outFile);
-  console.info('Count Articles:', archive.articleCount);
+  console.info("Count Articles:", archive.articleCount);
 
   await fs.unlink(outFile);
 })();
