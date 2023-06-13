@@ -1,8 +1,6 @@
 // noinspection ES6UnusedImports
 import {} from 'ts-jest';
-import path from 'path';
 import * as fs from 'fs';
-import { faker } from '@faker-js/faker';
 import {
   Archive,
   IntegrityCheck,

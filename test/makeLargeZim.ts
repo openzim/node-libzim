@@ -1,9 +1,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { faker } from '@faker-js/faker';
-import { Creator, Archive, StringItem, Blob } from '../src';
-// eslint-disable-next-line
-const tqdm: any = require('tqdm');
+import { Creator, Archive, StringItem } from '../src';
+
+const tqdm = require('tqdm');
 
 const numArticles = 1000000;
 // const numArticles = 10000;
