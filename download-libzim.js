@@ -49,7 +49,9 @@ for (let url of urls) {
     fs.statSync(dlFile);
     console.warn(`File [${dlFile}] already exists, not downloading`);
     return;
-  } catch (err) {}
+  } catch (err) {
+    //
+  }
 
   axios({
     url,

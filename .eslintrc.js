@@ -3,11 +3,16 @@ module.exports = {
     es6: true,
     node: true,
   },
-  rules:{
-    "prettier/prettier" : "error",
-    "eqeqeq": "error"
+  rules: {
+    "prettier/prettier": "error",
+    eqeqeq: "error",
   },
-  extends: ["prettier"],
+  extends: [
+    "prettier",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: "tsconfig.json",
@@ -17,16 +22,18 @@ module.exports = {
   root: true,
   overrides: [
     {
-      files: ["*.ts"],
+      files: ["*.ts", "*.js"],
       rules: {
-        "@typescript-eslint/no-var-requires" : "off"
+        "@typescript-eslint/no-var-requires": "off",
+        "no-import-assign": "off",
+        "no-useless-escape": "off",
       },
       parserOptions: {
-        sourceType: "module"
+        sourceType: "module",
       },
-      extends : ["plugin:@typescript-eslint/recommended"],
-       parser: "@typescript-eslint/parser",
-      plugins: ["@typescript-eslint"]
-    }
+      extends: ["plugin:@typescript-eslint/recommended"],
+      parser: "@typescript-eslint/parser",
+      plugins: ["@typescript-eslint"],
+    },
   ],
 };

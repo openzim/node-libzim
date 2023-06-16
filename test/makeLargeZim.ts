@@ -67,7 +67,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
     await creator.addItem(stringItem);
   }
 
-  console.log("Finalising...");
+  console.log("Finalizing...");
   await creator.finishZimCreation();
   console.log("Done Writing");
 
