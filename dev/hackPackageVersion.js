@@ -1,5 +1,5 @@
-const { writeFileSync } = require('fs');
+import { writeFileSync } from "fs";
 
-const pkg = require('../package.json');
-pkg.version = pkg.version + '-' + Date.now();
-writeFileSync('./package.json', JSON.stringify(pkg), 'utf8');
+import pkg, { version } from "../package.json";
+version = `${version}-${Date.now()}`;
+writeFileSync("./package.json", JSON.stringify(pkg), "utf8");

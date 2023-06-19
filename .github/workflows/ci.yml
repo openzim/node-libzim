@@ -43,6 +43,9 @@ jobs:
     - name: installing typescript
       run: npm i -g typescript
 
+    - name: running lint
+      run: npm run lint
+
     - name: running test
       run: npm run test
 
@@ -72,6 +75,9 @@ jobs:
 
     - name: installing typescript
       run: npm i -g typescript
+
+    - name: running lint
+      run: npm run lint
 
     - name: running test
       run: npm run test
@@ -106,6 +112,9 @@ jobs:
     - name: installing codecov
       if: ${{ matrix.node-version == '20' }}
       run: npm i codecov
+
+    - name: running lint
+      run: npm run lint
 
     - name: running test
       run: npm run test
