@@ -229,6 +229,24 @@ describe("Archive", () => {
       )
   );
 
+  // test blobs containing null bytes
+  const null_blobs = [
+    new StringItem(
+      'null_blob_1',
+      "application/octet-stream",
+      "null blob title 1",
+      {},
+      "\xffabc\x00123",
+    ),
+    new StringItem(
+      'null_blob_2',
+      "application/octet-stream",
+      "null blob title 2",
+      {},
+      "abc 123 \x00",
+    )
+  ];
+
   // custom item
   items.push(
     ...Array.from(Array(5).keys())
@@ -256,7 +274,7 @@ describe("Archive", () => {
   );
 
   // all entries
-  const entries = items.concat(blobs);
+  const entries = items.concat(blobs, null_blobs);
 
   const meta = {
     test1: "test string 1",
@@ -284,7 +302,7 @@ describe("Archive", () => {
       .configIndexing(true, "en")
       .startZimCreation(outFile);
 
-    for (const item of items.concat(blobs)) {
+    for (const item of entries) {
       await creator.addItem(item);
     }
 
@@ -428,6 +446,33 @@ describe("Archive", () => {
       const data = entry.item.data.data;
       expect(entry.item.data.size).toEqual(hash.length);
       expect(data).toEqual(hash);
+    }
+  });
+
+  it("verifies that blobs containing and ending in null were stored correctly from the archive", () => {
+    const archive = new Archive(outFile);
+    expect(archive).toBeDefined();
+
+    for(const nb of null_blobs) {
+      const contentProvider = nb.getContentProvider();
+      let feed = contentProvider.feed();
+      expect(feed).toBeDefined();
+      expect(feed.size).toBeGreaterThan(0);
+      if(nb.path === 'null_blob_1') {
+        // 4th byte is null, last byte is not
+        expect(feed.data[5]).toEqual(0);
+        expect(feed.data[feed.data.length - 1]).not.toEqual(0);
+      } else if(nb.path === 'null_blob_2') {
+        // last byte is null
+        expect(feed.data[feed.data.length - 1]).toEqual(0);
+      }
+
+      const entry = Array.from(archive.findByPath(nb.path))[0];
+      expect(entry).toBeDefined();
+      expect(entry.title).toEqual(nb.title);
+
+      expect(entry.item.data.size).toEqual(feed.data.length);
+      expect(entry.item.data.data).toEqual(feed.data);
     }
   });
 
