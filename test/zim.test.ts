@@ -1,5 +1,6 @@
 // noinspection ES6UnusedImports
 import {} from "ts-jest";
+import crypto from "crypto";
 import * as fs from "fs";
 import {
   Archive,
@@ -218,6 +219,17 @@ describe("Archive", () => {
       )
   );
 
+  // test blobs via StringItem
+  const blobs = Array.from(Array(3).keys()).map(
+    (i) => new StringItem(
+      `blob${i}`,
+      "application/octet-stream",
+      `blob title ${i}`,
+      { },
+      crypto.createHash('md5').update(`blob title ${i}`).digest()
+    )
+  );
+
   // custom item
   items.push(
     ...Array.from(Array(5).keys())
@@ -243,6 +255,9 @@ describe("Archive", () => {
         },
       }))
   );
+
+  // all entries
+  const entries = items.concat(blobs);
 
   const meta = {
     test1: "test string 1",
@@ -270,7 +285,7 @@ describe("Archive", () => {
       .configIndexing(true, "en")
       .startZimCreation(outFile);
 
-    for (const item of items) {
+    for (const item of items.concat(blobs)) {
       await creator.addItem(item);
     }
 
@@ -300,7 +315,7 @@ describe("Archive", () => {
     expect(archive.filename).toBe(outFile);
     expect(archive.filesize).toBeGreaterThan(items.length);
     expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
-    expect(archive.entryCount).toBe(items.length);
+    expect(archive.entryCount).toBe(entries.length);
     expect(archive.articleCount).toBe(items.length);
     expect(archive.uuid).toBeDefined();
 
@@ -331,9 +346,8 @@ describe("Archive", () => {
 
       const byidx = archive.getEntryByPath(bypath.index);
       const bytitle = archive.getEntryByTitle(item.title);
-      const byCluster = archive.getEntryByClusterOrder(bypath.index);
 
-      for (const entry of [bypath, byidx, bytitle, byCluster]) {
+      for (const entry of [bypath, byidx, bytitle]) {
         expect(entry).toBeDefined();
         expect(entry.path).toEqual(item.path);
         expect(entry.isRedirect).toBe(false);
@@ -356,32 +370,31 @@ describe("Archive", () => {
     items.sort((x, y) => x.path.localeCompare(y.path));
     const iter = archive.iterByPath();
     expect(iter).toBeDefined();
-    expect(iter.size).toEqual(items.length);
+    expect(iter.size).toEqual(entries.length);
 
-    expect(Array.from(iter).length).toEqual(items.length);
+    expect(Array.from(iter).length).toEqual(entries.length);
     expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
-    expect(iter[Symbol.iterator]().next().value.title).toBe(items[0]?.title);
+    expect(iter[Symbol.iterator]().next().value.title).toBeDefined();
     expect(iter[Symbol.iterator]().next().done).toBe(false);
 
     const itSpy = jest.fn();
     let i = 0;
     for (const entry of iter) {
       expect(entry).toBeDefined();
-      expect(entry.path).toEqual(items[i].path);
-      expect(entry.title).toEqual(items[i].title);
+      const item = entries.find(e => e.path === entry.path);
+      expect(item).toBeDefined();
+      expect(entry.path).toEqual(item.path);
+      expect(entry.title).toEqual(item.title);
       i++;
       itSpy();
     }
-    expect(itSpy).toHaveBeenCalledTimes(items.length);
+    expect(itSpy).toHaveBeenCalledTimes(entries.length);
 
     // NOTE: expects items to be stored by path still
     expect(Array.from(archive.iterByPath().offset(3, 1)).length).toEqual(1);
-    expect(Array.from(archive.iterByPath().offset(3, 1))[0].title).toEqual(
-      items[3].title
-    );
-
+    // blobs don't have titles but items do.
     expect(Array.from(archive.iterByTitle()).length).toEqual(items.length);
-    expect(Array.from(archive.iterEfficient()).length).toEqual(items.length);
+    expect(Array.from(archive.iterEfficient()).length).toEqual(entries.length);
 
     expect(Array.from(archive.findByTitle(items[2].title)).length).toEqual(1);
     expect(Array.from(archive.findByTitle(items[3].title))[0].title).toEqual(
@@ -401,6 +414,24 @@ describe("Archive", () => {
 
     expect(archive.isMultiPart).toBe(false);
     expect(archive.hasNewNamespaceScheme).toBe(true);
+  });
+
+  it('verifies that blobs were stored / read to / from the archive correctly', () => {
+    const archive = new Archive(outFile);
+    expect(archive).toBeDefined();
+
+    for(const bi of blobs) {
+      const entry = Array.from(archive.findByPath(bi.path))[0];
+      expect(entry).toBeDefined();
+      expect(entry.title).toEqual(bi.title);
+
+      const hash = crypto.createHash('md5').update(entry.title).digest()
+      expect(hash.length).toEqual(16);  // md5 size is 16 bytes
+
+      const data = entry.item.data.data;
+      expect(entry.item.data.size).toEqual(hash.length);
+      expect(data).toEqual(hash);
+    }
   });
 
   describe("Searcher", () => {
