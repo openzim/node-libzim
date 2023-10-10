@@ -232,19 +232,19 @@ describe("Archive", () => {
   // test blobs containing null bytes
   const null_blobs = [
     new StringItem(
-      'null_blob_1',
+      "null_blob_1",
       "application/octet-stream",
       "null blob title 1",
       {},
-      "\xffabc\x00123",
+      "\xffabc\x00123"
     ),
     new StringItem(
-      'null_blob_2',
+      "null_blob_2",
       "application/octet-stream",
       "null blob title 2",
       {},
-      "abc 123 \x00",
-    )
+      "abc 123 \x00"
+    ),
   ];
 
   // custom item
@@ -453,16 +453,16 @@ describe("Archive", () => {
     const archive = new Archive(outFile);
     expect(archive).toBeDefined();
 
-    for(const nb of null_blobs) {
+    for (const nb of null_blobs) {
       const contentProvider = nb.getContentProvider();
-      let feed = contentProvider.feed();
+      const feed = contentProvider.feed();
       expect(feed).toBeDefined();
       expect(feed.size).toBeGreaterThan(0);
-      if(nb.path === 'null_blob_1') {
+      if (nb.path === "null_blob_1") {
         // 4th byte is null, last byte is not
         expect(feed.data[5]).toEqual(0);
         expect(feed.data[feed.data.length - 1]).not.toEqual(0);
-      } else if(nb.path === 'null_blob_2') {
+      } else if (nb.path === "null_blob_2") {
         // last byte is null
         expect(feed.data[feed.data.length - 1]).toEqual(0);
       }
