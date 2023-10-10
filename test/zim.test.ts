@@ -8,9 +8,7 @@ import {
   Compression,
   Blob,
   StringItem,
-  FileItem,
   StringProvider,
-  FileProvider,
   Creator,
   Query,
   Searcher,
@@ -221,13 +219,14 @@ describe("Archive", () => {
 
   // test blobs via StringItem
   const blobs = Array.from(Array(3).keys()).map(
-    (i) => new StringItem(
-      `blob${i}`,
-      "application/octet-stream",
-      `blob title ${i}`,
-      { },
-      crypto.createHash('md5').update(`blob title ${i}`).digest()
-    )
+    (i) =>
+      new StringItem(
+        `blob${i}`,
+        "application/octet-stream",
+        `blob title ${i}`,
+        {},
+        crypto.createHash("md5").update(`blob title ${i}`).digest()
+      )
   );
 
   // custom item
@@ -378,14 +377,12 @@ describe("Archive", () => {
     expect(iter[Symbol.iterator]().next().done).toBe(false);
 
     const itSpy = jest.fn();
-    let i = 0;
     for (const entry of iter) {
       expect(entry).toBeDefined();
-      const item = entries.find(e => e.path === entry.path);
+      const item = entries.find((e) => e.path === entry.path);
       expect(item).toBeDefined();
       expect(entry.path).toEqual(item.path);
       expect(entry.title).toEqual(item.title);
-      i++;
       itSpy();
     }
     expect(itSpy).toHaveBeenCalledTimes(entries.length);
@@ -416,17 +413,17 @@ describe("Archive", () => {
     expect(archive.hasNewNamespaceScheme).toBe(true);
   });
 
-  it('verifies that blobs were stored / read to / from the archive correctly', () => {
+  it("verifies that blobs were stored / read to / from the archive correctly", () => {
     const archive = new Archive(outFile);
     expect(archive).toBeDefined();
 
-    for(const bi of blobs) {
+    for (const bi of blobs) {
       const entry = Array.from(archive.findByPath(bi.path))[0];
       expect(entry).toBeDefined();
       expect(entry.title).toEqual(bi.title);
 
-      const hash = crypto.createHash('md5').update(entry.title).digest()
-      expect(hash.length).toEqual(16);  // md5 size is 16 bytes
+      const hash = crypto.createHash("md5").update(entry.title).digest();
+      expect(hash.length).toEqual(16); // md5 size is 16 bytes
 
       const data = entry.item.data.data;
       expect(entry.item.data.size).toEqual(hash.length);
