@@ -1,4 +1,5 @@
 3.1.0:
+* NEW: Use libzim v8.2.1
 * FIX: Handling of binary data in the creator
 * FIX: Use ESLint instead of TSLint
 * REMOVE: Node.js 16 from the CI
