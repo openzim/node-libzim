@@ -153,6 +153,7 @@ export class Archive {
   get allEntryCount(): number;
   get entryCount(): number;
   get articleCount(): number;
+  get mediaCount(): number;
   get uuid(): string;
   getMetadata(name: string): string;
   getMetadataItem(name: string): Item;
