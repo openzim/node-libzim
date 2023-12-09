@@ -8,9 +8,12 @@ const urlParser = require("url");
 
 mkdirp.sync("./download");
 
+console.info("os.type() is:", os.type());
+console.info("os.arch() is:", os.arch());
 const isMacOS = os.type() === "Darwin";
 const isLinux = os.type() === "Linux";
 const rawArch = os.arch();
+
 const isAvailableArch =
   rawArch === "x64" || rawArch === "arm" || rawArch === "arm64";
 

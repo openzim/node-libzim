@@ -10,28 +10,33 @@ on:
       - main
 
 jobs:
-
-  macOS:
-    runs-on: macos-12
-
+  CI:
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [18, 20]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12, macos-13]
+        node: [18, 20, 21]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Setup python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+        node-version: ${{ matrix.node }}
 
     - name: installing add on packages
+      if: startsWith(matrix.os, 'ubuntu')
+      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
+
+    - name: Setup Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: installing add on packages
+      if: startsWith(matrix.os, 'macos')
       run: brew install ossp-uuid
 
     - name: setting path
@@ -49,82 +54,12 @@ jobs:
     - name: running test
       run: npm run test
 
-  Ubuntu-Focal:
-    runs-on: ubuntu-20.04
-
-    strategy:
-      matrix:
-        node-version: [18, 20]
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: installing add on packages
-      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
-
-    - name: setting path
-      run: PATH=$PATH:$HOME/bin
-
-    - name: installing dependencies
-      run: npm i
-
-    - name: installing typescript
-      run: npm i -g typescript
-
-    - name: running lint
-      run: npm run lint
-
-    - name: running test
-      run: npm run test
-
-  Ubuntu-Jammy:
-    runs-on: ubuntu-22.04
-
-    strategy:
-      matrix:
-        node-version: [18, 20]
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: installing add on packages
-      run: sudo apt install gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
-
-    - name: setting path
-      run: PATH=$PATH:$HOME/bin
-
-    - name: installing dependencies
-      run: npm i
-
-    - name: installing typescript
-      run: npm i -g typescript
-
-    - name: installing codecov
-      if: ${{ matrix.node-version == '20' }}
-      run: npm i codecov
-
-    - name: running lint
-      run: npm run lint
-
-    - name: running test
-      run: npm run test
-
     - name: running codecov
-      if: ${{ matrix.node-version == '20' }}
+      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-20.04' }}
       run: npm run codecov
 
     - name: codecov action
-      if: ${{ matrix.node-version == '20' }}
+      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-20.04' }}
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
