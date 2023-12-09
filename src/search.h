@@ -200,14 +200,6 @@ class SearchIterator : public Napi::ObjectWrap<SearchIterator> {
     }
   }
 
-  Napi::Value getSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(), searchIterator_.getSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
   Napi::Value getFileIndex(const Napi::CallbackInfo &info) {
     try {
       return Napi::Value::From(info.Env(), searchIterator_.getFileIndex());
@@ -250,7 +242,6 @@ class SearchIterator : public Napi::ObjectWrap<SearchIterator> {
             InstanceAccessor<&SearchIterator::getScore>("score"),
             InstanceAccessor<&SearchIterator::getSnippet>("snippet"),
             InstanceAccessor<&SearchIterator::getWordCount>("wordCount"),
-            InstanceAccessor<&SearchIterator::getSize>("size"),
             InstanceAccessor<&SearchIterator::getFileIndex>("fileIndex"),
             InstanceAccessor<&SearchIterator::getZimId>("zimId"),
             InstanceAccessor<&SearchIterator::getEntry>("entry"),

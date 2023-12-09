@@ -153,6 +153,7 @@ export class Archive {
   get allEntryCount(): number;
   get entryCount(): number;
   get articleCount(): number;
+  get mediaCount(): number;
   get uuid(): string;
   getMetadata(name: string): string;
   getMetadataItem(name: string): Item;
@@ -208,7 +209,6 @@ export class SearchIterator {
   get score(): number;
   get snippet(): string;
   get wordCount(): number;
-  get size(): number;
   get fileIndex(): number;
   get zimId(): string;
   get entry(): Entry;

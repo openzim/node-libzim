@@ -69,6 +69,14 @@ class Archive : public Napi::ObjectWrap<Archive> {
     }
   }
 
+  Napi::Value getMediaCount(const Napi::CallbackInfo &info) {
+    try {
+      return Napi::Value::From(info.Env(), archive_->getMediaCount());
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
   Napi::Value getUuid(const Napi::CallbackInfo &info) {
     try {
       // TODO(kelvinhammond): convert this to
@@ -446,6 +454,7 @@ class Archive : public Napi::ObjectWrap<Archive> {
             InstanceAccessor<&Archive::getAllEntryCount>("allEntryCount"),
             InstanceAccessor<&Archive::getEntryCount>("entryCount"),
             InstanceAccessor<&Archive::getArticleCount>("articleCount"),
+            InstanceAccessor<&Archive::getMediaCount>("mediaCount"),
             InstanceAccessor<&Archive::getUuid>("uuid"),
             InstanceMethod<&Archive::getMetadata>("getMetadata"),
             InstanceMethod<&Archive::getMetadataItem>("getMetadataItem"),

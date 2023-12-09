@@ -334,6 +334,7 @@ describe("Archive", () => {
     expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
     expect(archive.entryCount).toBe(entries.length);
     expect(archive.articleCount).toBe(items.length);
+    expect(archive.mediaCount).toBe(0);
     expect(archive.uuid).toBeDefined();
 
     // test metadata
