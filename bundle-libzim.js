@@ -15,18 +15,18 @@ if (!isMacOS && !isLinux) {
 }
 
 if (isLinux) {
-  console.info("Copying libzim.so.8 to build folder");
+  console.info("Copying libzim.so.9 to build folder");
   exec(
-    "cp download/lib/x86_64-linux-gnu/libzim.so.8 build/Release/libzim.so.8"
+    "cp download/lib/x86_64-linux-gnu/libzim.so.9 build/Release/libzim.so.9"
   );
-  exec("ln -sf build/Release/libzim.so.8 build/Release/libzim.so"); // convienience only, not required
+  exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so"); // convienience only, not required
 }
 if (isMacOS) {
-  console.info("Copying libzim.8.dylib to build folder");
-  exec("cp download/lib/libzim.8.dylib build/Release/libzim.8.dylib");
-  exec("ln -sf build/Release/libzim.8.dylib build/Release/libzim.dylib"); // convienience only, not required
+  console.info("Copying libzim.9.dylib to build folder");
+  exec("cp download/lib/libzim.9.dylib build/Release/libzim.9.dylib");
+  exec("ln -sf build/Release/libzim.9.dylib build/Release/libzim.dylib"); // convienience only, not required
   console.info("Fixing rpath");
   exec(
-    "install_name_tool -change libzim.8.dylib @loader_path/libzim.8.dylib build/Release/zim_binding.node"
+    "install_name_tool -change libzim.9.dylib @loader_path/libzim.9.dylib build/Release/zim_binding.node"
   );
 }
