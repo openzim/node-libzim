@@ -208,7 +208,6 @@ export class SearchIterator {
   get score(): number;
   get snippet(): string;
   get wordCount(): number;
-  get size(): number;
   get fileIndex(): number;
   get zimId(): string;
   get entry(): Entry;
