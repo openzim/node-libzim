@@ -24,7 +24,7 @@
                 "libraries": [
                   "-Wl,-rpath,'$$ORIGIN'",
                   "-L<(libzim_dir)/lib/x86_64-linux-gnu",
-                  "<(libzim_dir)/lib/x86_64-linux-gnu/libzim.so.8",
+                  "<(libzim_dir)/lib/x86_64-linux-gnu/libzim.so.9",
                 ],
               }],
               ["libzim_local!='true' and OS=='mac'", {
