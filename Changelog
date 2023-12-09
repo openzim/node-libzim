@@ -1,3 +1,10 @@
+3.2.0:
+* NEW: Use libzim v9.0.0
+* NEW: Added mediaCount to Archive
+* FIX: Simplify a lot the CI
+* FIX: Nlob allocation and warning
+* DEL: Deprecated getSize from SearchIterator
+
 3.1.0:
 * NEW: Use libzim v8.2.1
 * FIX: Handling of binary data in the creator
