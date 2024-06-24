@@ -43,10 +43,11 @@ jobs:
       run: PATH=$PATH:$HOME/bin
 
     - name: installing dependencies
-      run: npm i
-
-    - name: installing typescript
-      run: npm i -g typescript
+      run: |
+        npm install
+        npm i -g eslint
+        npm i -g codecov
+        npm i -g typescript
 
     - name: running lint
       run: npm run lint
