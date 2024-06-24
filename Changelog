@@ -1,3 +1,8 @@
+3.2.1
+* NEW: Use libzim 9.2.1
+* FIX: Module properly in ESM format
+* FIX: Codecov in the CI
+
 3.2.0:
 * NEW: Use libzim v9.0.0
 * NEW: Added mediaCount to Archive
