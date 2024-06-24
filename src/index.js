@@ -1,4 +1,4 @@
-import bindings from "bindings";
+const bindings = require("bindings");
 
 const {
   Archive,

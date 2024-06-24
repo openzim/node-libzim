@@ -1,7 +1,8 @@
-require("dotenv").config();
-const mkdirp = require("mkdirp");
-const exec = require("exec-then");
-const os = require("os");
+import dotenv from "dotenv";
+dotenv.config();
+import mkdirp from "mkdirp";
+import exec from "exec-then";
+import os from "os";
 
 mkdirp.sync("./build/Release");
 
