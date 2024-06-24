@@ -1,4 +1,4 @@
 import { writeFileSync } from "fs";
-import pkg, { version } from "../package.json";
+import pkg from "../package.json";
 
 writeFileSync("./package.json", JSON.stringify(pkg), "utf8");
