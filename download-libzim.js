@@ -1,10 +1,11 @@
-require("dotenv").config();
-const axios = require("axios");
-const mkdirp = require("mkdirp");
-const exec = require("exec-then");
-const os = require("os");
-const fs = require("fs");
-const urlParser = require("url");
+import dotenv from "dotenv";
+dotenv.config();
+import axios from "axios";
+import mkdirp from "mkdirp";
+import exec from "exec-then";
+import os from "os";
+import fs from "fs";
+import urlParser from "url";
 
 mkdirp.sync("./download");
 
@@ -51,7 +52,7 @@ for (let url of urls) {
   try {
     fs.statSync(dlFile);
     console.warn(`File [${dlFile}] already exists, not downloading`);
-    return;
+    break;
   } catch (err) {
     //
   }
