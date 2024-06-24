@@ -55,11 +55,11 @@ jobs:
       run: npm run test
 
     - name: running codecov
-      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-20.04' }}
+      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
       run: npm run codecov
 
     - name: codecov action
-      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-20.04' }}
+      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
