@@ -14,8 +14,9 @@
     "build": "node-gyp rebuild -v && npm run bundle",
     "download": "node ./download-libzim.js",
     "bundle": "node ./bundle-libzim.js",
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns=test/dist.test.ts",
     "test-mem-leak": "node -r ts-node/register test/makeLargeZim.ts",
+    "test:dist": "npm run build && jest",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix"
   },

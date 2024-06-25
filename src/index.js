@@ -1,6 +1,6 @@
 import bindings from "bindings";
 
-const {
+export const {
   Archive,
   Entry,
   IntegrityCheck,
@@ -15,19 +15,3 @@ const {
   StringItem,
   FileItem,
 } = bindings("zim_binding");
-
-module.exports = {
-  Archive,
-  Entry,
-  IntegrityCheck,
-  Compression,
-  Blob,
-  Searcher,
-  Query,
-  SuggestionSearcher,
-  Creator,
-  StringProvider,
-  FileProvider,
-  StringItem,
-  FileItem,
-};
