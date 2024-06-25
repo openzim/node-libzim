@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import mkdirp from "mkdirp";
+import { mkdirp } from "mkdirp";
 import exec from "exec-then";
 import os from "os";
 

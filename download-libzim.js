@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import axios from "axios";
-import mkdirp from "mkdirp";
+import { mkdirp } from "mkdirp";
 import exec from "exec-then";
 import os from "os";
 import fs from "fs";
