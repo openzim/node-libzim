@@ -1,3 +1,6 @@
+3.2.3
+* FIX: Module (finally) properly in ESM format
+
 3.2.2
 * FIX: Module properly in ESM format
 * FIX: Upgrade version of node-gyp
