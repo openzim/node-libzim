@@ -66,7 +66,7 @@ export class StringItem {
     mimeType: string,
     title: string,
     hint: Hint,
-    content: ArrayBuffer | Buffer | string
+    content: ArrayBuffer | Buffer | string,
   );
   readonly path: string;
   readonly title: string;
@@ -81,7 +81,7 @@ export class FileItem {
     mimeType: string,
     title: string,
     hints: Hint,
-    filePath: string
+    filePath: string,
   );
   readonly path: string;
   readonly title: string;
@@ -102,14 +102,14 @@ export class Creator {
   addMetadata(
     name: string,
     content: string | ContentProvider,
-    mimetype?: string
+    mimetype?: string,
   ): void;
   addIllustration(size: number, content: string | ContentProvider): void;
   addRedirection(
     path: string,
     title: string,
     targetPath: string,
-    hints?: Hint
+    hints?: Hint,
   ): void;
   setMainPath(mainPath: string): void;
   setUuid(uuid: string): void;
