@@ -1,3 +1,8 @@
+3.2.2
+* FIX: Module properly in ESM format
+* FIX: Upgrade version of node-gyp
+* NEW: macOS14 in the CI
+
 3.2.1
 * NEW: Use libzim 9.2.1
 * FIX: Module properly in ESM format
