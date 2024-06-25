@@ -53,7 +53,7 @@ jobs:
       run: npm run lint
 
     - name: running test
-      run: npm run test
+      run: npm run test:dist
 
     - name: running codecov
       if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
