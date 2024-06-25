@@ -39,7 +39,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
       "text/html",
       title,
       { FRONT_ARTICLE: 1 },
-      data
+      data,
     );
 
     /*

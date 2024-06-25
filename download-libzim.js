@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import axios from "axios";
-import mkdirp from "mkdirp";
+import { mkdirp } from "mkdirp";
 import exec from "exec-then";
 import os from "os";
 import fs from "fs";
@@ -20,12 +20,12 @@ const isAvailableArch =
 
 if (!isMacOS && !isLinux) {
   console.warn(
-    `\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux and MacOS for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`
+    `\x1b[41m\n================================ README \n\nPre-built binaries only available on Linux and MacOS for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`,
   );
 }
 if (!isAvailableArch) {
   console.warn(
-    `\x1b[41m\n================================ README \n\nPre-built binaries only available on x86_64, arm and arm64 for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`
+    `\x1b[41m\n================================ README \n\nPre-built binaries only available on x86_64, arm and arm64 for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`,
   );
 }
 

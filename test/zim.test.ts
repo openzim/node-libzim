@@ -152,7 +152,7 @@ describe("Creator", () => {
           "text/plain",
           `Hello world ${i}`,
           { FRONT_ARTICLE: 1, COMPRESS: 1 },
-          `Hello world ${i}!`
+          `Hello world ${i}!`,
         );
         await expect(creator.addItem(item)).resolves.toEqual(undefined);
       }
@@ -183,12 +183,12 @@ describe("Creator", () => {
       creator.addMetadata("test string", "A test string");
       creator.addMetadata(
         "test provider",
-        new StringProvider("A string provider")
+        new StringProvider("A string provider"),
       );
 
       const png = Buffer.from(
         "789c626001000000ffff030000060005",
-        "hex"
+        "hex",
       ).toString("utf8");
       creator.addIllustration(1, png);
       creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {
@@ -213,8 +213,8 @@ describe("Archive", () => {
         "text/html",
         `${testText} ${i}`,
         { FRONT_ARTICLE: 1 },
-        `Hello world ${i}!`
-      )
+        `Hello world ${i}!`,
+      ),
   );
 
   // test blobs via StringItem
@@ -225,8 +225,8 @@ describe("Archive", () => {
         "application/octet-stream",
         `blob title ${i}`,
         {},
-        crypto.createHash("md5").update(`blob title ${i}`).digest()
-      )
+        crypto.createHash("md5").update(`blob title ${i}`).digest(),
+      ),
   );
 
   // test blobs containing null bytes
@@ -236,14 +236,14 @@ describe("Archive", () => {
       "application/octet-stream",
       "null blob title 1",
       {},
-      "\xffabc\x00123"
+      "\xffabc\x00123",
     ),
     new StringItem(
       "null_blob_2",
       "application/octet-stream",
       "null blob title 2",
       {},
-      "abc 123 \x00"
+      "abc 123 \x00",
     ),
   ];
 
@@ -270,7 +270,7 @@ describe("Archive", () => {
             },
           };
         },
-      }))
+      })),
   );
 
   // all entries
@@ -283,7 +283,7 @@ describe("Archive", () => {
 
   const png_size = 1;
   const png = Buffer.from("789c626001000000ffff030000060005", "hex").toString(
-    "utf8"
+    "utf8",
   );
 
   // TODO: DRY
@@ -339,7 +339,7 @@ describe("Archive", () => {
 
     // test metadata
     expect(archive.metadataKeys).toEqual(
-      expect.arrayContaining(Object.keys(meta))
+      expect.arrayContaining(Object.keys(meta)),
     );
     for (const [k, v] of Object.entries(meta)) {
       expect(archive.getMetadata(k)).toEqual(v);
@@ -414,12 +414,12 @@ describe("Archive", () => {
 
     expect(Array.from(archive.findByTitle(items[2].title)).length).toEqual(1);
     expect(Array.from(archive.findByTitle(items[3].title))[0].title).toEqual(
-      items[3].title
+      items[3].title,
     );
 
     expect(Array.from(archive.findByPath(items[2].path)).length).toEqual(1);
     expect(Array.from(archive.findByPath(items[3].path))[0].path).toEqual(
-      items[3].path
+      items[3].path,
     );
 
     expect(archive.hasChecksum).toBe(true);
