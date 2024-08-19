@@ -10,6 +10,7 @@ This is the Node.js binding to the
 [![codecov](https://codecov.io/gh/openzim/node-libzim/branch/main/graph/badge.svg)](https://codecov.io/gh/openzim/node-libzim)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/node-libzim/badge)](https://www.codefactor.io/repository/github/openzim/node-libzim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Join Slack](https://img.shields.io/badge/Join%20us%20on%20Slack%20%23mwoffliner-2EB67D)](https://slack.kiwix.org)
 
 ## Dependencies
 
