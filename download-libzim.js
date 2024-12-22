@@ -22,7 +22,7 @@ const isAvailableArch =
 
 if (!isMacOS && !isLinux && !isWindows) {
   console.warn(
-      `\x1b[41m\n================================ README \n\nPre-built binaries only available on GNU/Linux, macOS and Windows for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`,
+    `\x1b[41m\n================================ README \n\nPre-built binaries only available on GNU/Linux, macOS and Windows for now...\nPlease ensure you have libzim installed globally on this machine:\n\n\thttps://github.com/openzim/libzim/\n\n================================\x1b[0m\n`,
   );
 }
 if (!isAvailableArch) {
@@ -45,7 +45,7 @@ if (rawArch !== "x64") {
 let fileExtension = isWindows ? "zip" : "tar.gz";
 
 const urls = [
-    `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${osArch}-${process.env.LIBZIM_VERSION}.${fileExtension}`,
+  `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${osArch}-${process.env.LIBZIM_VERSION}.${fileExtension}`,
 ].filter((a) => a);
 
 for (let url of urls) {
@@ -73,7 +73,9 @@ for (let url of urls) {
       });
     })
     .then(() => {
-        const cmd = isWindows ? `unzip ${dlFile} -d ./download` : `tar --strip-components 1 -xf ${dlFile} -C ./download`;
+      const cmd = isWindows
+        ? `unzip ${dlFile} -d ./download`
+        : `tar --strip-components 1 -xf ${dlFile} -C ./download`;
       console.log(`Running Extract:`, `[${cmd}]`);
       return exec(cmd);
     })
