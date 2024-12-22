@@ -1,4 +1,4 @@
-name: Publish to npmjs.com
+name: CD
 
 on:
   release:
