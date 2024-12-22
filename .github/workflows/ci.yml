@@ -40,6 +40,7 @@ jobs:
       run: brew install ossp-uuid
 
     - name: setting path
+      if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
       run: PATH=$PATH:$HOME/bin
 
     - name: installing dependencies
