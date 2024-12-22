@@ -51,7 +51,7 @@ const urls = [
 for (let url of urls) {
   console.info(`Downloading Libzim from: `, url);
   const filename = urlParser.parse(url).pathname.split("/").slice(-1)[0];
-  const dlFile = `./download/${filename}`;
+  const dlFile = isWindows ? `download\\${filename}` : `./download/${filename}`;
 
   try {
     fs.statSync(dlFile);
@@ -74,9 +74,9 @@ for (let url of urls) {
     })
     .then(() => {
       const cmd = isWindows
-        ? `unzip -v ${dlFile} -d ./download`
+        ? `unzip.exe -v ${dlFile} -d download`
         : `tar --strip-components 1 -xf ${dlFile} -C ./download`;
-      console.log(`Running Extract:`, `[${cmd}]`);
+      console.log(`Running Extract:`, `${cmd}`);
       return exec(cmd);
     })
     .then(() => {
