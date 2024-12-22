@@ -30,11 +30,11 @@ if (!isAvailableArch) {
 }
 
 let osPrefix = isMacOS ? "macos" : "linux";
-let osArch = isLinux ? "x86_64-bionic" : "x86_64";
+let osArch = isLinux ? "x86_64" : "x86_64";
 
 if (rawArch !== "x64") {
   if (isLinux) {
-    osArch = rawArch === "arm64" ? "aarch64-bionic" : "armhf";
+    osArch = rawArch === "arm64" ? "aarch64-manylinux" : "armhf";
   } else {
     osArch = rawArch;
   }
