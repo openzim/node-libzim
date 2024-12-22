@@ -74,7 +74,7 @@ for (let url of urls) {
     })
     .then(() => {
       const cmd = isWindows
-        ? `unzip ${dlFile} -d ./download`
+        ? `unzip -v ${dlFile} -d ./download`
         : `tar --strip-components 1 -xf ${dlFile} -C ./download`;
       console.log(`Running Extract:`, `[${cmd}]`);
       return exec(cmd);
