@@ -31,7 +31,7 @@ if (!isAvailableArch) {
   );
 }
 
-let osPrefix = isWindows ? "win" : (isMacOS ? "macos" : "linux");
+let osPrefix = isWindows ? "win" : isMacOS ? "macos" : "linux";
 let osArch = "x86_64";
 
 if (rawArch !== "x64") {
