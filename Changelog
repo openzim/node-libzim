@@ -1,4 +1,5 @@
 Unreleased
+* NEW: Add new libzim 9.3.0 APIs around cache management
 
 3.3.0
 * NEW: Use libzim 9.3.0
