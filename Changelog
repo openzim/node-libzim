@@ -2,7 +2,7 @@ Unreleased
 * NEW: Use libzim 9.3.0
 * UPDATE: Upgrade many dependencies versions
 * UPDATE: drop macOS12, add macOS15 in the CI
-* UPDATE: add ubuntu-24.04 in the CI
+* UPDATE: drop ubuntu-20.04, add ubuntu-24.04 in the CI
 
 3.2.3
 * FIX: Module (finally) properly in ESM format
