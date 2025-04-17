@@ -1,4 +1,4 @@
-Unreleased
+3.3.0
 * NEW: Use libzim 9.3.0
 * UPDATE: Upgrade many dependencies versions
 * UPDATE: drop macOS12, add macOS15 in the CI
