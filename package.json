@@ -2,7 +2,7 @@
   "name": "@openzim/libzim",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
-  "version": "3.3.1-dev0",
+  "version": "3.4.0",
   "description": "Libzim bindings for NodeJS",
   "type": "module",
   "scripts": {
