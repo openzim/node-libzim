@@ -182,6 +182,14 @@ export class Archive {
   checkIntegrity(checkType: symbol): boolean; // one of IntegrityCheck
   get isMultiPart(): boolean;
   get hasNewNamespaceScheme(): boolean;
+  getClusterCacheMaxSize(): number;
+  getClusterCacheCurrentSize(): number;
+  setClusterCacheMaxSize(nbClusters: number): void;
+  getDirentCacheMaxSize(): number;
+  getDirentCacheCurrentSize(): number;
+  setDirentCacheMaxSize(nbDirents: number): void;
+  getDirentLookupCacheMaxSize(): number;
+  setDirentLookupCacheMaxSize(nbRanges: number): void;
 
   static validate(zimPath: string, checksToRun: symbol[]): boolean; // list of IntegrityCheck
 }

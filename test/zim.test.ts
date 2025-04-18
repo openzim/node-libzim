@@ -336,6 +336,11 @@ describe("Archive", () => {
     expect(archive.articleCount).toBe(items.length);
     expect(archive.mediaCount).toBe(0);
     expect(archive.uuid).toBeDefined();
+    expect(archive.getClusterCacheMaxSize()).toBeDefined();
+    expect(archive.getClusterCacheCurrentSize()).toBeDefined();
+    expect(archive.getDirentCacheMaxSize()).toBeDefined();
+    expect(archive.getDirentCacheCurrentSize()).toBeDefined();
+    expect(archive.getDirentLookupCacheMaxSize()).toBeDefined();
 
     // test metadata
     expect(archive.metadataKeys).toEqual(
@@ -531,6 +536,32 @@ describe("Archive", () => {
         expect(item.entry).toBeDefined();
         expect(item.title).toMatch(new RegExp(`^${testText} \\d+\$`));
       }
+    });
+  });
+
+  describe("Cache sizes", () => {
+    it("Manipulate cluster cache max size", () => {
+      const archive = new Archive(outFile);
+      archive.setClusterCacheMaxSize(10);
+      expect(archive.getClusterCacheMaxSize()).toBe(10);
+      expect(archive.getClusterCacheCurrentSize()).toBe(1); // there is only one cluser in test ZIM
+      archive.setClusterCacheMaxSize(2);
+      expect(archive.getClusterCacheMaxSize()).toBe(2);
+      expect(archive.getClusterCacheCurrentSize()).toBe(1);
+    });
+    it("Manipulate dirent cache max size", () => {
+      const archive = new Archive(outFile);
+      archive.setDirentCacheMaxSize(10);
+      expect(archive.getDirentCacheMaxSize()).toBe(10);
+      expect(archive.getDirentCacheCurrentSize()).toBe(10);
+      archive.setDirentCacheMaxSize(5);
+      expect(archive.getDirentCacheMaxSize()).toBe(5);
+      expect(archive.getDirentCacheCurrentSize()).toBe(5);
+    });
+    it("Manipulate dirent lookup cache max size", () => {
+      const archive = new Archive(outFile);
+      archive.setDirentLookupCacheMaxSize(6);
+      expect(archive.getDirentLookupCacheMaxSize()).toBe(6);
     });
   });
 });
