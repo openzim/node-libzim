@@ -39,7 +39,7 @@
     "url": "https://github.com/openzim/node-libzim/issues"
   },
   "engines": {
-    "node": ">=20 <=24"
+    "node": ">=20 <25"
   },
   "homepage": "https://github.com/openzim/node-libzim#readme",
   "gypfile": true,
