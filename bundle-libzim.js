@@ -16,11 +16,19 @@ if (!isMacOS && !isLinux) {
 }
 
 if (isLinux) {
-  console.info("Copying libzim.so.9 to build folder");
-  exec(
-    "cp download/lib/x86_64-linux-gnu/libzim.so.9 build/Release/libzim.so.9",
-  );
-  exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so"); // convienience only, not required
+  const rawArch = os.arch();
+  let libDir;
+  if (rawArch === "arm64") {
+    libDir = "aarch64-linux-gnu";
+  } else if (rawArch === "arm") {
+    libDir = "arm-linux-gnueabihf";
+  } else {
+    libDir = "x86_64-linux-gnu";
+  }
+
+  console.info(`Copying libzim.so.9 from ${libDir} to build folder`);
+  exec(`cp download/lib/${libDir}/libzim.so.9 build/Release/libzim.so.9`);
+  exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so"); // convenience only, not required
 }
 if (isMacOS) {
   console.info("Copying libzim.9.dylib to build folder");
