@@ -1,4 +1,6 @@
 Unreleased
+* NEW: Build now supports ARM64 (`aarch64`) and ARM (32‑bit)
+* UPDATE: CI matrix extended with ARM64 Ubuntu runners
 
 3.4.0
 * NEW: Add new libzim 9.3.0 APIs around cache management

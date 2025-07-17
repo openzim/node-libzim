@@ -11,13 +11,14 @@
                 "link_settings": {
                   "ldflags": [
                       "<!(pkg-config --libs-only-other --libs-only-L libzim)",
+                      "-Wl,-rpath,<!(pkg-config --variable=libdir libzim)>"
                   ],
                   "libraries": [
                       "<!(pkg-config --libs-only-l libzim)",
                   ],
                 },
               }],
-              ["libzim_local!='true' and OS=='linux'", {
+              ["libzim_local!='true' and OS=='linux' and target_arch=='x64'", {
                 "include_dirs": [
                   "<(libzim_include)",
                 ],
@@ -25,6 +26,26 @@
                   "-Wl,-rpath,'$$ORIGIN'",
                   "-L<(libzim_dir)/lib/x86_64-linux-gnu",
                   "<(libzim_dir)/lib/x86_64-linux-gnu/libzim.so.9",
+                ],
+              }],
+              ["libzim_local!='true' and OS=='linux' and target_arch=='arm64'", {
+                "include_dirs": [
+                  "<(libzim_include)",
+                ],
+                "libraries": [
+                  "-Wl,-rpath,'$$ORIGIN'",
+                  "-L<(libzim_dir)/lib/aarch64-linux-gnu",
+                  "<(libzim_dir)/lib/aarch64-linux-gnu/libzim.so.9",
+                ],
+              }],
+              ["libzim_local!='true' and OS=='linux' and target_arch=='arm'", {
+                "include_dirs": [
+                  "<(libzim_include)",
+                ],
+                "libraries": [
+                  "-Wl,-rpath,'$$ORIGIN'",
+                  "-L<(libzim_dir)/lib/arm-linux-gnueabihf",
+                  "<(libzim_dir)/lib/arm-linux-gnueabihf/libzim.so.9",
                 ],
               }],
               ["libzim_local!='true' and OS=='mac'", {
