@@ -3,6 +3,7 @@
 #include <napi.h>
 #include <zim/archive.h>
 #include <exception>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
