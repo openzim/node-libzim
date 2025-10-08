@@ -3,6 +3,7 @@
 #include <napi.h>
 #include <zim/archive.h>
 #include <exception>
+#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -132,6 +133,7 @@ class Archive : public Napi::ObjectWrap<Archive> {
               static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
           return Item::New(info.Env(), archive_->getIllustrationItem(size));
         } else if (info[0].IsObject()) {
+          // TODO: deduplicate this code, it is also present in src/creator.h
           auto obj = info[0].As<Napi::Object>();
           zim::IllustrationInfo illus{
               .width = obj.Has("width")
