@@ -14,6 +14,9 @@ import {
   Searcher,
   SuggestionSearcher,
   WriterItem,
+  getClusterCacheMaxSize,
+  getClusterCacheCurrentSize,
+  setClusterCacheMaxSize,
 } from "../src";
 
 describe("IntegrityCheck", () => {
@@ -336,11 +339,8 @@ describe("Archive", () => {
     expect(archive.articleCount).toBe(items.length);
     expect(archive.mediaCount).toBe(0);
     expect(archive.uuid).toBeDefined();
-    expect(archive.getClusterCacheMaxSize()).toBeDefined();
-    expect(archive.getClusterCacheCurrentSize()).toBeDefined();
     expect(archive.getDirentCacheMaxSize()).toBeDefined();
     expect(archive.getDirentCacheCurrentSize()).toBeDefined();
-    expect(archive.getDirentLookupCacheMaxSize()).toBeDefined();
 
     // test metadata
     expect(archive.metadataKeys).toEqual(
@@ -541,13 +541,12 @@ describe("Archive", () => {
 
   describe("Cache sizes", () => {
     it("Manipulate cluster cache max size", () => {
-      const archive = new Archive(outFile);
-      archive.setClusterCacheMaxSize(10);
-      expect(archive.getClusterCacheMaxSize()).toBe(10);
-      expect(archive.getClusterCacheCurrentSize()).toBe(1); // there is only one cluser in test ZIM
-      archive.setClusterCacheMaxSize(2);
-      expect(archive.getClusterCacheMaxSize()).toBe(2);
-      expect(archive.getClusterCacheCurrentSize()).toBe(1);
+      setClusterCacheMaxSize(10);
+      expect(getClusterCacheMaxSize()).toBe(10);
+      expect(getClusterCacheCurrentSize()).toEqual(expect.any(Number));
+      setClusterCacheMaxSize(2);
+      expect(getClusterCacheMaxSize()).toBe(2);
+      expect(getClusterCacheCurrentSize()).toEqual(expect.any(Number));
     });
     it("Manipulate dirent cache max size", () => {
       const archive = new Archive(outFile);
@@ -557,11 +556,6 @@ describe("Archive", () => {
       archive.setDirentCacheMaxSize(5);
       expect(archive.getDirentCacheMaxSize()).toBe(5);
       expect(archive.getDirentCacheCurrentSize()).toBe(5);
-    });
-    it("Manipulate dirent lookup cache max size", () => {
-      const archive = new Archive(outFile);
-      archive.setDirentLookupCacheMaxSize(6);
-      expect(archive.getDirentLookupCacheMaxSize()).toBe(6);
     });
   });
 });

@@ -1,3 +1,8 @@
+
+export declare function getClusterCacheMaxSize(): number;
+export declare function getClusterCacheCurrentSize(): number;
+export declare function setClusterCacheMaxSize(nbClusters: number): void;
+
 export class IntegrityCheck {
   static CHECKSUM: symbol;
   static DIRENT_PTRS: symbol;
@@ -182,14 +187,9 @@ export class Archive {
   checkIntegrity(checkType: symbol): boolean; // one of IntegrityCheck
   get isMultiPart(): boolean;
   get hasNewNamespaceScheme(): boolean;
-  getClusterCacheMaxSize(): number;
-  getClusterCacheCurrentSize(): number;
-  setClusterCacheMaxSize(nbClusters: number): void;
   getDirentCacheMaxSize(): number;
   getDirentCacheCurrentSize(): number;
   setDirentCacheMaxSize(nbDirents: number): void;
-  getDirentLookupCacheMaxSize(): number;
-  setDirentLookupCacheMaxSize(nbRanges: number): void;
 
   static validate(zimPath: string, checksToRun: symbol[]): boolean; // list of IntegrityCheck
 }

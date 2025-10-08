@@ -127,8 +127,40 @@ class Archive : public Napi::ObjectWrap<Archive> {
   Napi::Value getIllustrationItem(const Napi::CallbackInfo &info) {
     try {
       if (info.Length() > 0) {
-        auto size = static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
-        return Item::New(info.Env(), archive_->getIllustrationItem(size));
+        if (info[0].IsNumber()) {
+          auto size =
+              static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
+          return Item::New(info.Env(), archive_->getIllustrationItem(size));
+        } else if (info[0].IsObject()) {
+          auto obj = info[0].As<Napi::Object>();
+          zim::IllustrationInfo illus{
+              .width = obj.Has("width")
+                           ? obj.Get("width").ToNumber().Uint32Value()
+                           : 0,
+              .height = obj.Has("height")
+                            ? obj.Get("height").ToNumber().Uint32Value()
+                            : 0,
+              .scale = obj.Has("scale")
+                           ? obj.Get("scale").ToNumber().FloatValue()
+                           : 0.0f,
+              .extraAttributes = std::map<std::string, std::string>{},
+          };
+
+          if (obj.Has("extraAttributes") &&
+              obj.Get("extraAttributes").IsObject()) {
+            auto extraAttributes = obj.Get("extraAttributes").ToObject();
+            auto keys = extraAttributes.GetPropertyNames();
+            for (const auto &e : keys) {
+              auto key = static_cast<Napi::Value>(e.second)
+                             .As<Napi::String>()
+                             .Utf8Value();
+              auto value = extraAttributes.Get(key).ToString().Utf8Value();
+              illus.extraAttributes[key] = value;
+            }
+          }
+
+          return Item::New(info.Env(), archive_->getIllustrationItem(illus));
+        }
       }
       return Item::New(info.Env(), archive_->getIllustrationItem());
     } catch (const std::exception &err) {
@@ -137,6 +169,10 @@ class Archive : public Napi::ObjectWrap<Archive> {
   }
 
   Napi::Value getIllustrationSizes(const Napi::CallbackInfo &info) {
+    // Warn: Deprecated, use illustrationSizes property instead.
+    std::cerr << "Warning: getIllustrationSizes() is deprecated, use "
+                 "illustrationSizes property instead."
+              << std::endl;
     try {
       auto env = info.Env();
       Napi::HandleScope scope(env);
@@ -411,35 +447,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
     }
   }
 
-  Napi::Value getClusterCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(), archive_->getClusterCacheMaxSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  Napi::Value getClusterCacheCurrentSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(),
-                               archive_->getClusterCacheCurrentSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  void setClusterCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      if (!info[0].IsNumber()) {
-        throw Napi::Error::New(info.Env(), "Expected a number");
-      }
-      auto nbClusters = info[0].As<Napi::Number>().Uint32Value();
-      archive_->setClusterCacheMaxSize(nbClusters);
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
   Napi::Value getDirentCacheMaxSize(const Napi::CallbackInfo &info) {
     try {
       return Napi::Value::From(info.Env(), archive_->getDirentCacheMaxSize());
@@ -459,32 +466,12 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   void setDirentCacheMaxSize(const Napi::CallbackInfo &info) {
     try {
-      if (!info[0].IsNumber()) {
-        throw Napi::Error::New(info.Env(), "Expected a number");
+      if (info.Length() < 1 || !info[0].IsNumber()) {
+        throw Napi::TypeError::New(info.Env(),
+                                   "setDirentCacheMaxSize expects a number");
       }
       auto nbDirents = info[0].As<Napi::Number>().Uint32Value();
       archive_->setDirentCacheMaxSize(nbDirents);
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  Napi::Value getDirentLookupCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(),
-                               archive_->getDirentLookupCacheMaxSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  void setDirentLookupCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      if (!info[0].IsNumber()) {
-        throw Napi::Error::New(info.Env(), "Expected a number");
-      }
-      auto nbRanges = info[0].As<Napi::Number>().Uint32Value();
-      archive_->setDirentLookupCacheMaxSize(nbRanges);
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -564,22 +551,12 @@ class Archive : public Napi::ObjectWrap<Archive> {
             InstanceAccessor<&Archive::getChecksum>("checksum"),
             InstanceMethod<&Archive::check>("check"),
             InstanceMethod<&Archive::checkIntegrity>("checkIntegrity"),
-            InstanceMethod<&Archive::getClusterCacheMaxSize>(
-                "getClusterCacheMaxSize"),
-            InstanceMethod<&Archive::getClusterCacheCurrentSize>(
-                "getClusterCacheCurrentSize"),
-            InstanceMethod<&Archive::setClusterCacheMaxSize>(
-                "setClusterCacheMaxSize"),
             InstanceMethod<&Archive::getDirentCacheMaxSize>(
                 "getDirentCacheMaxSize"),
             InstanceMethod<&Archive::getDirentCacheCurrentSize>(
                 "getDirentCacheCurrentSize"),
             InstanceMethod<&Archive::setDirentCacheMaxSize>(
                 "setDirentCacheMaxSize"),
-            InstanceMethod<&Archive::getDirentLookupCacheMaxSize>(
-                "getDirentLookupCacheMaxSize"),
-            InstanceMethod<&Archive::setDirentLookupCacheMaxSize>(
-                "setDirentLookupCacheMaxSize"),
             InstanceAccessor<&Archive::isMultiPart>("isMultiPart"),
             InstanceAccessor<&Archive::hasNewNamespaceScheme>(
                 "hasNewNamespaceScheme"),

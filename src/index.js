@@ -14,4 +14,7 @@ export const {
   FileProvider,
   StringItem,
   FileItem,
+  getClusterCacheMaxSize,
+  getClusterCacheCurrentSize,
+  setClusterCacheMaxSize,
 } = bindings("zim_binding");

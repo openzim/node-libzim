@@ -1,6 +1,7 @@
 #pragma once
 
 #include <napi.h>
+#include <zim/illustration.h>
 #include <zim/writer/creator.h>
 
 #include <exception>
@@ -245,15 +246,53 @@ class Creator : public Napi::ObjectWrap<Creator> {
   void addIllustration(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
-      auto size = info[0].ToNumber().Uint32Value();
-      auto content = info[1];
-      if (content.IsObject()) {
-        std::unique_ptr<zim::writer::ContentProvider> provider =
-            std::make_unique<ContentProviderWrapper>(env, content.ToObject());
-        creator_->addIllustration(size, std::move(provider));
+
+      // Inline template function to handle both size and IllustrationInfo
+      const auto addIllusWithContent = [&](auto &opt1) {
+        auto content = info[1];
+        if (content.IsObject()) {
+          std::unique_ptr<zim::writer::ContentProvider> provider =
+              std::make_unique<ContentProviderWrapper>(env, content.ToObject());
+          creator_->addIllustration(opt1, std::move(provider));
+        } else {
+          auto str = content.ToString().Utf8Value();
+          creator_->addIllustration(opt1, str);
+        }
+      };
+
+      auto arg0 = info[0];
+      if (arg0.IsNumber()) {
+        auto size = arg0.ToNumber().Uint32Value();
+        addIllusWithContent(size);
       } else {
-        auto str = content.ToString().Utf8Value();
-        creator_->addIllustration(size, str);
+        // Parse as IllustrationInfo
+        auto obj = arg0.ToObject();
+        zim::IllustrationInfo illus{
+            .width = obj.Has("width")
+                         ? obj.Get("width").ToNumber().Uint32Value()
+                         : 0,
+            .height = obj.Has("height")
+                          ? obj.Get("height").ToNumber().Uint32Value()
+                          : 0,
+            .scale = obj.Has("scale") ? obj.Get("scale").ToNumber().FloatValue()
+                                      : 0.0f,
+            .extraAttributes = std::map<std::string, std::string>{},
+        };
+
+        if (obj.Has("extraAttributes") &&
+            obj.Get("extraAttributes").IsObject()) {
+          auto extraAttributes = obj.Get("extraAttributes").ToObject();
+          auto keys = extraAttributes.GetPropertyNames();
+          for (const auto &e : keys) {
+            auto key = static_cast<Napi::Value>(e.second)
+                           .As<Napi::String>()
+                           .Utf8Value();
+            auto value = extraAttributes.Get(key).ToString().Utf8Value();
+            illus.extraAttributes[key] = value;
+          }
+        }
+
+        addIllusWithContent(illus);
       }
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());

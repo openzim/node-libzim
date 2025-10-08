@@ -45,6 +45,28 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
   StringItem::Init(env, exports, *constructors);
   FileItem::Init(env, exports, *constructors);
 
+  // Extra helper functions from libzim
+  exports.Set("getClusterCacheMaxSize",
+              Napi::Function::New(env, [](const Napi::CallbackInfo &info) {
+                return Napi::Value::From(info.Env(),
+                                         zim::getClusterCacheMaxSize());
+              }));
+  exports.Set("getClusterCacheCurrentSize",
+              Napi::Function::New(env, [](const Napi::CallbackInfo &info) {
+                return Napi::Value::From(info.Env(),
+                                         zim::getClusterCacheCurrentSize());
+              }));
+  exports.Set("setClusterCacheMaxSize",
+              Napi::Function::New(env, [](const Napi::CallbackInfo &info) {
+                if (info.Length() < 1 || !info[0].IsNumber()) {
+                  throw Napi::TypeError::New(
+                      info.Env(),
+                      "First argument must be a number for max size.");
+                }
+                auto size = info[0].As<Napi::Number>().Int64Value();
+                zim::setClusterCacheMaxSize(size);
+              }));
+
   return exports;
 }
 
