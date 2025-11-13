@@ -5,7 +5,6 @@ import { mkdirp } from "mkdirp";
 import exec from "exec-then";
 import os from "os";
 import fs from "fs";
-import urlParser from "url";
 
 mkdirp.sync("./download");
 
@@ -46,7 +45,7 @@ const urls = [
 
 for (let url of urls) {
   console.info(`Downloading Libzim from: `, url);
-  const filename = urlParser.parse(url).pathname.split("/").slice(-1)[0];
+  const filename = new URL(url).pathname.split("/").slice(-1)[0];
   const dlFile = `./download/${filename}`;
 
   try {
