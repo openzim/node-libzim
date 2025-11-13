@@ -96,7 +96,43 @@ import { Archive, SuggestionSearcher, Searcher } from "@openzim/libzim";
     delete archive;
 })();
 
+## Local Development
+
+### Important Files
+`.env` - Set environment variables for local development. Only LIBZIM_VERSION for now
+`bindings.gyp` - Node-gyp build configuration file
+`src/` - Source code for the Node.js bindings
+`test/` - Test cases
+
+### Setup
+
+```bash
+git clone git@github.com:openzim/node-libzim.git
+cd node-libzim
+
+# Will install dependencies, download libzim binary and build the bindings
+npm run install
+
+# Required in order for local binding and tests to work.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/download/lib/x86_64-linux-gnu
 ```
+
+### Iterating during development
+
+Make your changes in `src/` and then run:
+```bash
+node-gyp rebuild --debug -v && npx jest ./test/zim.test.ts
+```
+
+### Updating libzim version
+To update the libzim version used, change the `LIBZIM_VERSION` variable in
+`.env` file to the desired version and run:
+```bash
+npm run install
+```
+
+If you are upgrading libzim from a major version you will need to edit the `bundle-libzim.js` file
+and change the `libzim.so*` file names to match the new version.
 
 ## License
 
