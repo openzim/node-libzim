@@ -7,6 +7,7 @@
 #include "contentProvider.h"
 #include "creator.h"
 #include "entry.h"
+#include "illustration.h"
 #include "item.h"
 #include "search.h"
 #include "suggestion.h"
@@ -21,6 +22,7 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
 
   IntegrityCheck::Init(env, exports, *constructors);
   Compression::Init(env, exports, *constructors);
+  IllustrationI::Init(env, exports, *constructors);
 
   Blob::Init(env, exports, *constructors);
   Item::Init(env, exports, *constructors);
