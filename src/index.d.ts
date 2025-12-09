@@ -159,7 +159,7 @@ export interface IIllustrationInfo {
 }
 
 export class IllustrationInfo implements IIllustrationInfo {
-  constructor(info?: IIllustrationInfo);
+  constructor(info?: IIllustrationInfo | IllustrationInfo);
   get width(): number;
   get height(): number;
   get scale(): number;
@@ -190,8 +190,10 @@ export class Archive {
   getMetadata(name: string): string;
   getMetadataItem(name: string): Item;
   get metadataKeys(): string[];
-  getIllustrationItem(size: number): Item;
+  getIllustrationItem(sizeOrInfo?: number | IIllustrationInfo): Item;
   get illustrationSizes(): Set<number>;
+  getIllustrationInfos(width?: number, height?: number, minScale?: number): IllustrationInfo[];
+  get illustrationInfos(): IllustrationInfo[];
   getEntryByPath(path_or_idx: string | number): Entry;
   getEntryByTitle(title_or_idx: string | number): Entry;
   getEntryByClusterOrder(idx: number): Entry;

@@ -19,7 +19,7 @@ class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
       return;
     }
 
-    // IllustrationInfo(ii: External<IllustrationInfo>)
+    // IllustrationInfo(ii: External<zim::IllustrationInfo>)
     // Construct from external, used internally
     if (info[0].IsExternal()) {
       auto ext = info[0].As<Napi::External<zim::IllustrationInfo>>();
@@ -45,6 +45,14 @@ class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
     // IllustrationInfo(ii: object)
     // Construct from object
     ii_ = infoFrom(value.As<Napi::Object>());
+  }
+
+  static Napi::Object New(Napi::Env env, const zim::IllustrationInfo &ii) {
+    Napi::FunctionReference &constructor = GetConstructor(env);
+    auto &&data = Napi::External<zim::IllustrationInfo>::New(
+        env, new zim::IllustrationInfo(ii),
+        [](Napi::BasicEnv /*env*/, zim::IllustrationInfo *ptr) { delete ptr; });
+    return constructor.New({data});
   }
 
   /**
@@ -114,10 +122,7 @@ class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
 
     auto name = info[0].As<Napi::String>().Utf8Value();
     auto ii = zim::IllustrationInfo::fromMetadataItemName(name);
-    Napi::FunctionReference &constructor = GetConstructor(env);
-    auto &&data = Napi::External<zim::IllustrationInfo>::New(
-        env, new zim::IllustrationInfo(ii));
-    return constructor.New({data});
+    return New(env, ii);
   }
 
   static bool InstanceOf(Napi::Env env, Napi::Value value) {

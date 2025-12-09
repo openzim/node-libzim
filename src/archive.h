@@ -10,6 +10,7 @@
 #include <string>
 
 #include "entry.h"
+#include "illustration.h"
 #include "item.h"
 #include "openconfig.h"
 
@@ -152,44 +153,38 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   Napi::Value getIllustrationItem(const Napi::CallbackInfo &info) {
     try {
-      if (info.Length() > 0) {
-        if (info[0].IsNumber()) {
-          auto size =
-              static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
-          return Item::New(info.Env(), archive_->getIllustrationItem(size));
-        } else if (info[0].IsObject()) {
-          // TODO: deduplicate this code, it is also present in src/creator.h
-          auto obj = info[0].As<Napi::Object>();
-          zim::IllustrationInfo illus{
-              .width = obj.Has("width")
-                           ? obj.Get("width").ToNumber().Uint32Value()
-                           : 0,
-              .height = obj.Has("height")
-                            ? obj.Get("height").ToNumber().Uint32Value()
-                            : 0,
-              .scale = obj.Has("scale")
-                           ? obj.Get("scale").ToNumber().FloatValue()
-                           : 0.0f,
-              .extraAttributes = std::map<std::string, std::string>{},
-          };
-
-          if (obj.Has("extraAttributes") &&
-              obj.Get("extraAttributes").IsObject()) {
-            auto extraAttributes = obj.Get("extraAttributes").ToObject();
-            auto keys = extraAttributes.GetPropertyNames();
-            for (const auto &e : keys) {
-              auto key = static_cast<Napi::Value>(e.second)
-                             .As<Napi::String>()
-                             .Utf8Value();
-              auto value = extraAttributes.Get(key).ToString().Utf8Value();
-              illus.extraAttributes[key] = value;
-            }
-          }
-
-          return Item::New(info.Env(), archive_->getIllustrationItem(illus));
-        }
+      // getIllustrationItem()
+      if (info.Length() < 1) {
+        return Item::New(info.Env(), archive_->getIllustrationItem());
       }
-      return Item::New(info.Env(), archive_->getIllustrationItem());
+
+      // getIllustrationItem(size: number)
+      if (info[0].IsNumber()) {
+        auto size = static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
+        return Item::New(info.Env(), archive_->getIllustrationItem(size));
+      }
+
+      /// getIllustration(illusInfo: object)
+      if (info[0].IsObject()) {
+        auto obj = info[0].As<Napi::Object>();
+
+        // getIllustrationItem(illusInfo: IllustrationInfo)
+        if (IllustrationInfo::InstanceOf(info.Env(), obj)) {
+          auto illusInfo =
+              IllustrationInfo::Unwrap(obj)->getInternalIllustrationInfo();
+          return Item::New(info.Env(),
+                           archive_->getIllustrationItem(illusInfo));
+        }
+
+        // getIllustrationItem(illusInfo: object)
+        auto illusInfo = IllustrationInfo::infoFrom(obj);
+        return Item::New(info.Env(), archive_->getIllustrationItem(illusInfo));
+      }
+
+      throw Napi::TypeError::New(
+          info.Env(),
+          "getIllustrationItem expects no arguments, a number size, or an "
+          "IllustrationInfo object.");
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -215,6 +210,34 @@ class Archive : public Napi::ObjectWrap<Archive> {
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
+  }
+
+  Napi::Value getIllustrationInfos(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
+    Napi::HandleScope scope(env);
+
+    // getIllustrationInfos(w: number, h: number, minScale: number)
+    if (info.Length() >= 3) {
+      auto w = info[0].ToNumber().Uint32Value();
+      auto h = info[1].ToNumber().Uint32Value();
+      auto minScale = info[2].ToNumber().FloatValue();
+
+      auto infos = archive_->getIllustrationInfos(w, h, minScale);
+      auto array = Napi::Array::New(env, infos.size());
+      for (size_t i = 0; i < infos.size(); i++) {
+        array.Set(i, IllustrationInfo::New(env, infos[i]));
+      }
+      return array;
+    }
+
+    // getIllustrationInfos()
+    auto infos = archive_->getIllustrationInfos();
+    auto array = Napi::Array::New(env, infos.size());
+    for (size_t i = 0; i < infos.size(); i++) {
+      array.Set(i, IllustrationInfo::New(env, infos[i]));
+    }
+
+    return array;
   }
 
   Napi::Value getEntryByPath(const Napi::CallbackInfo &info) {
@@ -556,6 +579,10 @@ class Archive : public Napi::ObjectWrap<Archive> {
                 "getIllustrationItem"),
             InstanceAccessor<&Archive::getIllustrationSizes>(
                 "illustrationSizes"),
+            InstanceMethod<&Archive::getIllustrationInfos>(
+                "getIllustrationInfos"),
+            InstanceAccessor<&Archive::getIllustrationInfos>(
+                "illustrationInfos"),
             InstanceMethod<&Archive::getEntryByPath>("getEntryByPath"),
             InstanceMethod<&Archive::getEntryByTitle>("getEntryByTitle"),
             InstanceMethod<&Archive::getEntryByClusterOrder>(

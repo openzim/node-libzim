@@ -428,6 +428,30 @@ describe("Archive", () => {
     expect(illustration.size).toBeGreaterThanOrEqual(png.length);
     expect(archive.illustrationSizes).toContain(png_size);
 
+    // Only 1 png added
+    const infos = archive.illustrationInfos;
+    expect(infos.length).toEqual(1);
+    expect(infos[0].width).toBeGreaterThan(0);
+    expect(infos[0].height).toBeGreaterThan(0);
+
+    // That 1 png should be retrievable again using the info
+    const il1 = archive.getIllustrationItem(infos[0]);
+    expect(il1).toBeDefined();
+    expect(il1).toEqual(illustration);
+    expect(il1.data.data.toString()).toEqual(png);
+
+    // Matching illustration
+    expect(
+      archive.getIllustrationInfos(
+        infos[0].width,
+        infos[0].height,
+        infos[0].scale,
+      ).length,
+    ).toEqual(1);
+
+    // Not matching illustrationInfos
+    expect(archive.getIllustrationInfos(100, 100, 3).length).toEqual(0);
+
     for (const item of items) {
       const bypath = archive.getEntryByPath(item.path);
       expect(bypath).toBeDefined();
