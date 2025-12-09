@@ -11,6 +11,7 @@
 
 #include "entry.h"
 #include "item.h"
+#include "openconfig.h"
 
 class Archive : public Napi::ObjectWrap<Archive> {
  public:
@@ -23,9 +24,32 @@ class Archive : public Napi::ObjectWrap<Archive> {
       throw Napi::Error::New(info.Env(), "Archive requires arguments filepath");
     }
 
+    if (!info[0].IsString()) {
+      throw Napi::TypeError::New(info.Env(),
+                                 "First argument must be a string filepath.");
+    }
+
+    // Archive(filename: string)
+    // Archive(filepath: string, config: OpenConfig)
+    std::string filepath = info[0].As<Napi::String>();
+    zim::OpenConfig config{};
+    if (info[1].IsObject()) {
+      // @note: no bounds checking on info because it returns Undefined when out
+      // of bounds
+      auto obj = info[1].As<Napi::Object>();
+      // Check that the object is an instance of OpenConfig
+      // TODO(kelvinhammond): Update use of Unwrap everywhere to use
+      // InstanceOf and GetConstructor pattern
+      if (obj.InstanceOf(OpenConfig::GetConstructor(env).Value())) {
+        config = Napi::ObjectWrap<OpenConfig>::Unwrap(obj)->getInternalConfig();
+      } else {
+        throw Napi::TypeError::New(
+            info.Env(), "Second argument must be an instance of OpenConfig.");
+      }
+    }
+
     try {
-      std::string filepath = info[0].ToString();
-      archive_ = std::make_shared<zim::Archive>(filepath);
+      archive_ = std::make_shared<zim::Archive>(filepath, config);
     } catch (const std::exception &e) {
       throw Napi::Error::New(env, e.what());
     }

@@ -162,7 +162,7 @@ export class OpenConfig {
 }
 
 export class Archive {
-  constructor(filepath: string);
+  constructor(filepath: string, config?: OpenConfig);
   get filename(): string;
   get filesize(): number | bigint;
   get allEntryCount(): number;

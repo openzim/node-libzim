@@ -349,6 +349,16 @@ describe("Archive", () => {
     expect(Archive.validate(outFile, checks)).toBe(true);
   });
 
+  it("Opens an archive with OpenConfig", () => {
+    const config = new OpenConfig()
+      .preloadXapianDb(true)
+      .preloadDirentRanges(512);
+    const archive = new Archive(outFile, config);
+    expect(archive).toBeDefined();
+    expect(archive.filename).toBe(outFile);
+    expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
+  });
+
   it("Reads items from an archive", () => {
     const archive = new Archive(outFile);
     expect(archive).toBeDefined();

@@ -48,6 +48,11 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
     return Napi::Value::From(env, config_.m_preloadDirentRanges);
   }
 
+  static Napi::FunctionReference& GetConstructor(Napi::Env env) {
+    auto& constructor = env.GetInstanceData<ModuleConstructors>()->openConfig;
+    return constructor;
+  }
+
   const zim::OpenConfig& getInternalConfig() const { return config_; }
 
   static void Init(Napi::Env env, Napi::Object exports,
