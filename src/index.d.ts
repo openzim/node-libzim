@@ -151,6 +151,16 @@ export interface EntryRange extends Iterable<Entry> {
   offset(start: number, maxResults: number): EntryRange;
 }
 
+export class OpenConfig {
+  constructor();
+
+  preloadXapianDb(preload: boolean): this;
+  preloadDirentRanges(nbRanges: number): this;
+
+  get m_preloadXapianDb(): boolean;
+  get m_preloadDirentRanges(): number;
+}
+
 export class Archive {
   constructor(filepath: string);
   get filename(): string;

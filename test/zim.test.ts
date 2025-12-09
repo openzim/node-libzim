@@ -4,6 +4,7 @@ import crypto from "crypto";
 import * as fs from "fs";
 import {
   Archive,
+  OpenConfig,
   IntegrityCheck,
   Compression,
   Blob,
@@ -202,6 +203,25 @@ describe("Creator", () => {
     } finally {
       await creator.finishZimCreation();
     }
+  });
+});
+
+describe("OpenConfig", () => {
+  it("Creates an OpenConfig which functions", () => {
+    const config = new OpenConfig();
+    expect(config).toBeDefined();
+
+    // Integration tests, these are set to the defaults
+    expect(config.m_preloadXapianDb).toBe(true);
+    expect(config.m_preloadDirentRanges).toBe(1024);
+
+    let res = config.preloadXapianDb(false);
+    expect(res).toBe(config);
+    expect(config.m_preloadXapianDb).toBe(false);
+
+    res = config.preloadDirentRanges(5);
+    expect(res).toBe(config);
+    expect(config.m_preloadDirentRanges).toBe(5);
   });
 });
 

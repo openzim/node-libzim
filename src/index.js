@@ -2,6 +2,7 @@ import bindings from "bindings";
 
 export const {
   Archive,
+  OpenConfig,
   Entry,
   IntegrityCheck,
   Compression,

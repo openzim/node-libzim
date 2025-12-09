@@ -8,6 +8,7 @@
 #include "creator.h"
 #include "entry.h"
 #include "item.h"
+#include "openconfig.h"
 #include "search.h"
 #include "suggestion.h"
 #include "writerItem.h"
@@ -26,6 +27,7 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
   Item::Init(env, exports, *constructors);
   Entry::Init(env, exports, *constructors);
   Archive::Init(env, exports, *constructors);
+  OpenConfig::Init(env, exports, *constructors);
 
   Searcher::Init(env, exports, *constructors);
   Query::Init(env, exports, *constructors);
