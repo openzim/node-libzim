@@ -1,4 +1,3 @@
-
 export declare function getClusterCacheMaxSize(): number;
 export declare function getClusterCacheCurrentSize(): number;
 export declare function setClusterCacheMaxSize(nbClusters: number): void;
@@ -109,7 +108,10 @@ export class Creator {
     content: string | ContentProvider,
     mimetype?: string,
   ): void;
-  addIllustration(sizeOrInfo: number | IIllustrationInfo, content: string | ContentProvider): void;
+  addIllustration(
+    sizeOrInfo: number | IIllustrationInfo,
+    content: string | ContentProvider,
+  ): void;
   addRedirection(
     path: string,
     title: string,
@@ -192,7 +194,11 @@ export class Archive {
   get metadataKeys(): string[];
   getIllustrationItem(sizeOrInfo?: number | IIllustrationInfo): Item;
   get illustrationSizes(): Set<number>;
-  getIllustrationInfos(width?: number, height?: number, minScale?: number): IllustrationInfo[];
+  getIllustrationInfos(
+    width?: number,
+    height?: number,
+    minScale?: number,
+  ): IllustrationInfo[];
   get illustrationInfos(): IllustrationInfo[];
   getEntryByPath(path_or_idx: string | number): Entry;
   getEntryByTitle(title_or_idx: string | number): Entry;

@@ -218,11 +218,11 @@ describe("IllustrationInfo", () => {
     expect(info.width).toBe(0);
     expect(info.height).toBe(0);
     expect(info.scale).toBe(0);
-    expect(info.extraAttributes).toEqual({ });
+    expect(info.extraAttributes).toEqual({});
   });
 
   it("Creates an empty IllustrationInfo", () => {
-    const info = new IllustrationInfo({ });
+    const info = new IllustrationInfo({});
     expect(info).toBeDefined();
     expect(info.width).toBe(0);
     expect(info.height).toBe(0);
