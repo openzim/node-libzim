@@ -18,7 +18,7 @@ using CompressionMap =
 struct ModuleConstructors {
   Napi::FunctionReference archive;
   Napi::FunctionReference openConfig;
-  Napi::FunctionReference illustration;
+  Napi::FunctionReference illustrationInfo;
   Napi::FunctionReference entry;
   Napi::FunctionReference item;
   Napi::FunctionReference blob;

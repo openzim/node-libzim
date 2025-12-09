@@ -6,6 +6,7 @@ export const {
   Entry,
   IntegrityCheck,
   Compression,
+  IllustrationInfo,
   Blob,
   Searcher,
   Query,

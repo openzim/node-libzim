@@ -151,6 +151,23 @@ export interface EntryRange extends Iterable<Entry> {
   offset(start: number, maxResults: number): EntryRange;
 }
 
+export interface IIllustrationInfo {
+  width?: number;
+  height?: number;
+  scale?: number;
+  extraAttributes?: Record<string, string>;
+}
+
+export class IllustrationInfo implements IIllustrationInfo {
+  constructor(info?: IIllustrationInfo);
+  get width(): number;
+  get height(): number;
+  get scale(): number;
+  get extraAttributes(): Record<string, string>;
+  asMetadataItemName(): string;
+  static fromMetadataItemName(name: string): IllustrationInfo;
+}
+
 export class OpenConfig {
   constructor();
 

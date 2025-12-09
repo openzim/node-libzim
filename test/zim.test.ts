@@ -5,6 +5,7 @@ import * as fs from "fs";
 import {
   Archive,
   OpenConfig,
+  IllustrationInfo,
   IntegrityCheck,
   Compression,
   Blob,
@@ -203,6 +204,40 @@ describe("Creator", () => {
     } finally {
       await creator.finishZimCreation();
     }
+  });
+});
+
+describe("IllustrationInfo", () => {
+  it("Creates a default IllustrationInfo", () => {
+    const info = new IllustrationInfo();
+    expect(info).toBeDefined();
+    expect(info.width).toBe(0);
+    expect(info.height).toBe(0);
+    expect(info.scale).toBe(0.0);
+    expect(info.extraAttributes).toEqual({ });
+  });
+
+  it("Creates an empty IllustrationInfo", () => {
+    const info = new IllustrationInfo({ });
+    expect(info).toBeDefined();
+    expect(info.width).toBe(0);
+    expect(info.height).toBe(0);
+    expect(info.scale).toBe(0.0);
+    expect(info.extraAttributes).toEqual({});
+  });
+
+  it("Creates an IllustrationInfo which functions", () => {
+    const info = new IllustrationInfo({
+      width: 100,
+      height: 200,
+      scale: 2.0,
+      extraAttributes: { test: "value" },
+    });
+    expect(info).toBeDefined();
+    expect(info.width).toBe(100);
+    expect(info.height).toBe(200);
+    expect(info.scale).toBe(2.0);
+    expect(info.extraAttributes).toEqual({ test: "value" });
   });
 });
 
