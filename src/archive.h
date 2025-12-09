@@ -152,16 +152,17 @@ class Archive : public Napi::ObjectWrap<Archive> {
   }
 
   Napi::Value getIllustrationItem(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
     try {
       // getIllustrationItem()
       if (info.Length() < 1) {
-        return Item::New(info.Env(), archive_->getIllustrationItem());
+        return Item::New(env, archive_->getIllustrationItem());
       }
 
       // getIllustrationItem(size: number)
       if (info[0].IsNumber()) {
         auto size = static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
-        return Item::New(info.Env(), archive_->getIllustrationItem(size));
+        return Item::New(env, archive_->getIllustrationItem(size));
       }
 
       /// getIllustration(illusInfo: object)
@@ -169,24 +170,23 @@ class Archive : public Napi::ObjectWrap<Archive> {
         auto obj = info[0].As<Napi::Object>();
 
         // getIllustrationItem(illusInfo: IllustrationInfo)
-        if (IllustrationInfo::InstanceOf(info.Env(), obj)) {
+        if (IllustrationInfo::InstanceOf(env, obj)) {
           auto illusInfo =
               IllustrationInfo::Unwrap(obj)->getInternalIllustrationInfo();
-          return Item::New(info.Env(),
-                           archive_->getIllustrationItem(illusInfo));
+          return Item::New(env, archive_->getIllustrationItem(illusInfo));
         }
 
         // getIllustrationItem(illusInfo: object)
         auto illusInfo = IllustrationInfo::infoFrom(obj);
-        return Item::New(info.Env(), archive_->getIllustrationItem(illusInfo));
+        return Item::New(env, archive_->getIllustrationItem(illusInfo));
       }
 
       throw Napi::TypeError::New(
-          info.Env(),
+          env,
           "getIllustrationItem expects no arguments, a number size, or an "
           "IllustrationInfo object.");
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 

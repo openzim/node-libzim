@@ -196,6 +196,7 @@ describe("Creator", () => {
         "hex",
       ).toString("utf8");
       creator.addIllustration(1, png);
+      creator.addIllustration(new IllustrationInfo({ width: 10, height: 10 }), png);
       creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {
         COMPRESS: 1,
       });

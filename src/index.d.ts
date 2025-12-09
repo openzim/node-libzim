@@ -109,7 +109,7 @@ export class Creator {
     content: string | ContentProvider,
     mimetype?: string,
   ): void;
-  addIllustration(size: number, content: string | ContentProvider): void;
+  addIllustration(sizeOrInfo: number | IIllustrationInfo, content: string | ContentProvider): void;
   addRedirection(
     path: string,
     title: string,

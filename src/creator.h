@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "common.h"
+#include "illustration.h"
 #include "writerItem.h"
 
 // Handles creator_->finishZimCreation() operations in the background off the
@@ -265,35 +266,22 @@ class Creator : public Napi::ObjectWrap<Creator> {
       if (arg0.IsNumber()) {
         auto size = arg0.ToNumber().Uint32Value();
         addIllusWithContent(size);
-      } else {
+      } else if (arg0.IsObject()) {
         // Parse as IllustrationInfo
         auto obj = arg0.ToObject();
-        zim::IllustrationInfo illus{
-            .width = obj.Has("width")
-                         ? obj.Get("width").ToNumber().Uint32Value()
-                         : 0,
-            .height = obj.Has("height")
-                          ? obj.Get("height").ToNumber().Uint32Value()
-                          : 0,
-            .scale = obj.Has("scale") ? obj.Get("scale").ToNumber().FloatValue()
-                                      : 0.0f,
-            .extraAttributes = std::map<std::string, std::string>{},
-        };
 
-        if (obj.Has("extraAttributes") &&
-            obj.Get("extraAttributes").IsObject()) {
-          auto extraAttributes = obj.Get("extraAttributes").ToObject();
-          auto keys = extraAttributes.GetPropertyNames();
-          for (const auto &e : keys) {
-            auto key = static_cast<Napi::Value>(e.second)
-                           .As<Napi::String>()
-                           .Utf8Value();
-            auto value = extraAttributes.Get(key).ToString().Utf8Value();
-            illus.extraAttributes[key] = value;
-          }
-        }
-
-        addIllusWithContent(illus);
+        // getIllustrationItem(illusInfo: IllustrationInfo)
+        // getIllustrationItem(illusInfo: object)
+        auto illusInfo =
+            IllustrationInfo::InstanceOf(env, obj)
+                ? IllustrationInfo::Unwrap(obj)->getInternalIllustrationInfo()
+                : IllustrationInfo::infoFrom(obj);
+        addIllusWithContent(illusInfo);
+      } else {
+        throw Napi::Error::New(
+            env,
+            "addIllustration first argument must be size[number] or "
+            "IllustrationInfo[object]");
       }
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
