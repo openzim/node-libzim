@@ -53,6 +53,15 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
     return constructor;
   }
 
+  static bool InstanceOf(Napi::Env env, Napi::Value value) {
+    if (!value.IsObject()) {
+      return false;
+    }
+    Napi::Object obj = value.As<Napi::Object>();
+    Napi::FunctionReference& constructor = GetConstructor(env);
+    return obj.InstanceOf(constructor.Value());
+  }
+
   const zim::OpenConfig& getInternalConfig() const { return config_; }
 
   static void Init(Napi::Env env, Napi::Object exports,

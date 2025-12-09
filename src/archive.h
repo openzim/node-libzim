@@ -40,8 +40,8 @@ class Archive : public Napi::ObjectWrap<Archive> {
       // Check that the object is an instance of OpenConfig
       // TODO(kelvinhammond): Update use of Unwrap everywhere to use
       // InstanceOf and GetConstructor pattern
-      if (obj.InstanceOf(OpenConfig::GetConstructor(env).Value())) {
-        config = Napi::ObjectWrap<OpenConfig>::Unwrap(obj)->getInternalConfig();
+      if (OpenConfig::InstanceOf(env, obj)) {
+        config = OpenConfig::Unwrap(obj)->getInternalConfig();
       } else {
         throw Napi::TypeError::New(
             info.Env(), "Second argument must be an instance of OpenConfig.");
