@@ -19,7 +19,7 @@ if (isLinux) {
   const rawArch = os.arch();
   let libDir;
   if (rawArch === "arm64") {
-    libDir = "aarch64-linux-gnu";
+    libDir = "aarch64-rpi3-linux-gnu";
   } else if (rawArch === "arm") {
     libDir = "arm-linux-gnueabihf";
   } else {

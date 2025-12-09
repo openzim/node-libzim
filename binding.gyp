@@ -34,8 +34,8 @@
                 ],
                 "libraries": [
                   "-Wl,-rpath,'$$ORIGIN'",
-                  "-L<(libzim_dir)/lib/aarch64-linux-gnu",
-                  "<(libzim_dir)/lib/aarch64-linux-gnu/libzim.so.9",
+                  "-L<(libzim_dir)/lib/aarch64-rpi3-linux-gnu",
+                  "<(libzim_dir)/lib/aarch64-rpi3-linux-gnu/libzim.so.9",
                 ],
               }],
               ["libzim_local!='true' and OS=='linux' and target_arch=='arm'", {
