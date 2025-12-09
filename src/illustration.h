@@ -4,7 +4,8 @@
 #include <zim/illustration.h>
 
 #include <exception>
-#include <memory>
+#include <map>
+#include <string>
 
 class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
  public:

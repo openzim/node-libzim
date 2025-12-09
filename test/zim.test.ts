@@ -196,7 +196,10 @@ describe("Creator", () => {
         "hex",
       ).toString("utf8");
       creator.addIllustration(1, png);
-      creator.addIllustration(new IllustrationInfo({ width: 10, height: 10 }), png);
+      creator.addIllustration(
+        new IllustrationInfo({ width: 10, height: 10 }),
+        png,
+      );
       creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {
         COMPRESS: 1,
       });
@@ -214,7 +217,7 @@ describe("IllustrationInfo", () => {
     expect(info).toBeDefined();
     expect(info.width).toBe(0);
     expect(info.height).toBe(0);
-    expect(info.scale).toBe(0.0);
+    expect(info.scale).toBe(0);
     expect(info.extraAttributes).toEqual({ });
   });
 
@@ -223,7 +226,7 @@ describe("IllustrationInfo", () => {
     expect(info).toBeDefined();
     expect(info.width).toBe(0);
     expect(info.height).toBe(0);
-    expect(info.scale).toBe(0.0);
+    expect(info.scale).toBe(0);
     expect(info.extraAttributes).toEqual({});
   });
 
