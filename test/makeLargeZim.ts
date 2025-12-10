@@ -34,7 +34,6 @@ console.log(`Making ZIM file (${outFile}) with [${numArticles}] articles`);
     // const data = faker.lorem.paragraphs(10);
     const data = `hello world ${i}`;
 
-    /*
     const stringItem = new StringItem(
       url,
       "text/html",
@@ -42,24 +41,26 @@ console.log(`Making ZIM file (${outFile}) with [${numArticles}] articles`);
       { FRONT_ARTICLE: 1 },
       data,
     );
-    */
+    await creator.addItem(stringItem);
 
-    const customItem = { // custom item
+    const customItem = {
+      // custom item
       path: url,
       mimeType: "text/html",
       title: title,
-      hints: {FRONT_ARTICLE: 1},
-      getContentProvider() { // custom content provider
+      hints: { FRONT_ARTICLE: 1 },
+      getContentProvider() {
+        // custom content provider
         let sent = false;
         return {
           size: data.length,
           feed() {
-            if(!sent) {
+            if (!sent) {
               sent = true;
               return new Blob(data);
             }
             return new Blob();
-          }
+          },
         };
       },
     };
