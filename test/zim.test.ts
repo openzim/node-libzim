@@ -59,6 +59,25 @@ describe("Blob", () => {
   });
 });
 
+describe("StringProvider", () => {
+  it("constructs a StringProvider", () => {
+    const str = "hello world";
+    const provider = new StringProvider(str);
+    expect(provider).toBeDefined();
+    expect(provider.size).toBe(str.length);
+
+    let feed = provider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(str.length);
+    expect(feed.data.toString()).toBe(str);
+
+    feed = provider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(0);
+    expect(feed.data.toString()).toBe("");
+  });
+});
+
 describe("StringItem", () => {
   const path = "test";
   const mimeType = "text/plain";

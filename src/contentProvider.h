@@ -15,29 +15,91 @@
 #include "common.h"
 
 /**
+ * Thread Safe Function wrapper for calling the ContentProvider.feed function
+ * asynchronously from libzim
+ */
+class FeedTSFN {
+ public:
+  using BlobPtr = zim::Blob;
+
+  FeedTSFN() = delete;
+
+  FeedTSFN(Napi::Env &env, Napi::Function &feedFunc) {
+    tsfn_ = TSFN::New(env,
+                      feedFunc,    // JavaScript function called asynchronously
+                      "FeedTSFN",  // name
+                      0,           // max queue size (0 = unlimited).
+                      1,           // initial thread count
+                      nullptr      // context
+    );
+  }
+
+  ~FeedTSFN() { tsfn_.Release(); }
+
+  BlobPtr feed() {
+    try {
+      DataType promise;
+      auto future = promise.get_future();
+      tsfn_.NonBlockingCall(&promise);
+      return future.get();
+    } catch (const std::exception &e) {
+      std::cerr << "FeedTSFN feed() exception: " << e.what() << std::endl;
+      throw std::runtime_error(std::string("Error in FeedTSFN feed(): ") +
+                               e.what());
+    }
+  }
+
+ private:
+  using DataType = std::promise<BlobPtr>;
+  using Context = void;
+
+  static void CallJs(Napi::Env env, Napi::Function callback, Context *context,
+                     DataType *data) {
+    // Is the JavaScript environment still available to call into, eg. the TSFN
+    // is not aborted
+    if (env != nullptr) {
+      try {
+        // call feed(): object
+        auto result = callback.Call({});
+        if (Blob::InstanceOf(env, result)) {
+          auto blob = Blob::Unwrap(result.As<Napi::Object>())->blob();
+          // Note: Cannot move, blob could be used in nodejs world still
+          data->set_value(blob);
+        } else {
+          data->set_exception(std::make_exception_ptr(std::runtime_error(
+              "Expected an object of type Blob from feed()")));
+        }
+      } catch (const std::exception &e) {
+        data->set_exception(std::make_exception_ptr(e));
+      }
+    } else {
+      data->set_exception(std::make_exception_ptr(
+          std::runtime_error("Environment is shut down")));
+    }
+  }
+
+  using TSFN = Napi::TypedThreadSafeFunction<Context, DataType, CallJs>;
+
+ private:
+  TSFN tsfn_;
+};
+
+/**
  * Wraps the js world ObjectWrap and Objects to a proper content provider for
  * use with libzim
  */
 class ContentProviderWrapper : public zim::writer::ContentProvider {
  public:
-  explicit ContentProviderWrapper(Napi::Env env, const Napi::Object &provider)
-      : MAIN_THREAD_ID{} {
-    MAIN_THREAD_ID = std::this_thread::get_id();
+  explicit ContentProviderWrapper(Napi::Env env, const Napi::Object &provider) {
+    size_ = parseSize(provider.Get("size"));
 
     if (!provider.Get("feed").IsFunction()) {
       throw std::runtime_error("ContentProvider.feed must be a function.");
     }
 
     auto feedFunc = provider.Get("feed").As<Napi::Function>();
-    feed_ = Napi::Persistent(feedFunc);
-    size_ = parseSize(provider.Get("size"));
-    provider_ = Napi::Persistent(provider);
-
-    tsfn_ = Napi::ThreadSafeFunction::New(env, feedFunc,
-                                          "getContentProvider.feed", 0, 1);
+    feedTSFN_ = std::make_unique<FeedTSFN>(env, feedFunc);
   }
-
-  ~ContentProviderWrapper() { tsfn_.Release(); }
 
   zim::size_type getSize() const override { return size_; }
 
@@ -60,46 +122,13 @@ class ContentProviderWrapper : public zim::writer::ContentProvider {
     return static_cast<uint64_t>(val);
   }
 
-  zim::Blob feed() override {
-    if (MAIN_THREAD_ID == std::this_thread::get_id()) {
-      // on main thread for some reason, do it here
-      auto blobObj = feed_.Call(provider_.Value(), {});
-      if (!blobObj.IsObject()) {
-        throw std::runtime_error("ContentProvider.feed must return a blob");
-      }
-      auto blob = Napi::ObjectWrap<Blob>::Unwrap(blobObj.ToObject());
-      return *(blob->blob());
-    }
-
-    // called from a thread
-    std::promise<zim::Blob> promise;
-    auto future = promise.get_future();
-
-    auto callback = [&promise, this](Napi::Env env, Napi::Function feedFunc) {
-      auto blobObj = feedFunc.Call(provider_.Value(), {});
-      if (!blobObj.IsObject()) {
-        throw std::runtime_error("ContentProvider.feed must return a blob");
-      }
-      auto blob = Napi::ObjectWrap<Blob>::Unwrap(blobObj.ToObject());
-      promise.set_value(*(blob->blob()));
-    };
-
-    auto status = tsfn_.BlockingCall(callback);
-    if (status != napi_ok) {
-      throw std::runtime_error("Error calling ThreadSafeFunction");
-    }
-
-    return future.get();
-  }
+  zim::Blob feed() override { return feedTSFN_->feed(); }
 
  private:
-  // track the main thread
-  std::thread::id MAIN_THREAD_ID;
-  // js world reference, could be an ObjectWrap provider or custom js object
-  Napi::ObjectReference provider_;
-  Napi::FunctionReference feed_;
-  Napi::ThreadSafeFunction tsfn_;
   zim::size_type size_;
+  // Unique pointer so that it isn't copied and the destructor will only be
+  // called once
+  std::unique_ptr<FeedTSFN> feedTSFN_;
 };
 
 class StringProvider : public Napi::ObjectWrap<StringProvider> {
@@ -144,6 +173,12 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
   }
 
   Napi::Value getSize(const Napi::CallbackInfo &info) {
+    if (!provider_) {
+      std::cerr << "StringProvider has been moved and is no longer valid."
+                << std::endl;
+      return info.Env().Undefined();
+    }
+
     try {
       return Napi::Value::From(info.Env(), provider_->getSize());
     } catch (const std::exception &err) {
@@ -152,12 +187,30 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
   }
 
   Napi::Value feed(const Napi::CallbackInfo &info) {
+    if (!provider_) {
+      throw Napi::Error::New(
+          info.Env(), "StringProvider has been moved and is no longer valid.");
+    }
+
     try {
       auto blob = provider_->feed();
       return Blob::New(info.Env(), blob);
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
+  }
+
+  static bool InstanceOf(Napi::Env env, Napi::Value value) {
+    if (!value.IsObject()) {
+      return false;
+    }
+    Napi::Object obj = value.As<Napi::Object>();
+    Napi::FunctionReference &constructor = GetConstructor(env);
+    return obj.InstanceOf(constructor.Value());
+  }
+
+  static Napi::FunctionReference &GetConstructor(Napi::Env env) {
+    return env.GetInstanceData<ModuleConstructors>()->stringProvider;
   }
 
   static void Init(Napi::Env env, Napi::Object exports,
@@ -172,6 +225,11 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
 
     exports.Set("StringProvider", func);
     constructors.stringProvider = Napi::Persistent(func);
+  }
+
+  // Internal use only
+  std::unique_ptr<zim::writer::StringProvider> &&unwrapProvider() {
+    return std::move(provider_);
   }
 
  private:
@@ -218,6 +276,12 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
   }
 
   Napi::Value getSize(const Napi::CallbackInfo &info) {
+    if (!provider_) {
+      std::cerr << "FileProvider has been moved and is no longer valid."
+                << std::endl;
+      return info.Env().Undefined();
+    }
+
     try {
       return Napi::Value::From(info.Env(), provider_->getSize());
     } catch (const std::exception &err) {
@@ -226,12 +290,30 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
   }
 
   Napi::Value feed(const Napi::CallbackInfo &info) {
+    if (!provider_) {
+      throw Napi::Error::New(
+          info.Env(), "FileProvider has been moved and is no longer valid.");
+    }
+
     try {
       auto blob = provider_->feed();
       return Blob::New(info.Env(), blob);
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
+  }
+
+  static bool InstanceOf(Napi::Env env, Napi::Value value) {
+    if (!value.IsObject()) {
+      return false;
+    }
+    Napi::Object obj = value.As<Napi::Object>();
+    Napi::FunctionReference &constructor = GetConstructor(env);
+    return obj.InstanceOf(constructor.Value());
+  }
+
+  static Napi::FunctionReference &GetConstructor(Napi::Env env) {
+    return env.GetInstanceData<ModuleConstructors>()->fileProvider;
   }
 
   static void Init(Napi::Env env, Napi::Object exports,
@@ -246,6 +328,11 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
 
     exports.Set("FileProvider", func);
     constructors.fileProvider = Napi::Persistent(func);
+  }
+
+  // Internal use only
+  std::unique_ptr<zim::writer::FileProvider> &&unwrapProvider() {
+    return std::move(provider_);
   }
 
  private:

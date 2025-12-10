@@ -143,8 +143,6 @@ class SearchIterator : public Napi::ObjectWrap<SearchIterator> {
  public:
   explicit SearchIterator(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SearchIterator>(info), searchIterator_{} {
-    Napi::Env env = info.Env();
-
     if (info[0].IsExternal()) {
       searchIterator_ =
           *info[0].As<Napi::External<zim::SearchIterator>>().Data();

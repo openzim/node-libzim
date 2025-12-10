@@ -17,8 +17,6 @@ class SuggestionIterator : public Napi::ObjectWrap<SuggestionIterator> {
  public:
   explicit SuggestionIterator(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SuggestionIterator>(info), iterator_{} {
-    Napi::Env env = info.Env();
-
     if (info[0].IsExternal()) {
       iterator_ = *info[0].As<Napi::External<decltype(iterator_)>>().Data();
     }

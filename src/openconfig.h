@@ -7,8 +7,6 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
  public:
   explicit OpenConfig(const Napi::CallbackInfo& info)
       : Napi::ObjectWrap<OpenConfig>(info), config_{zim::OpenConfig()} {
-    Napi::Env env = info.Env();
-
     if (info.Length() > 0) {
       throw Napi::Error::New(
           info.Env(), "OpenConfig constructor does not take any arguments.");

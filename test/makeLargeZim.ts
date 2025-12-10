@@ -1,19 +1,19 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import { Creator, Archive, StringItem } from "../src";
+import { Creator, Archive, StringItem, Blob } from "../src";
 
-const tqdm = require("tqdm");
+import tqdm from "tqdm";
 
 const numArticles = 1000000;
 // const numArticles = 10000;
-const outFile = path.join(__dirname, "../largeZim.zim");
+const outFile = path.join(import.meta.dirname, "../largeZim.zim");
 
-console.log(`Making ZIM file with [${numArticles}] articles`);
+console.log(`Making ZIM file (${outFile}) with [${numArticles}] articles`);
 
 (async () => {
   console.info("Starting");
   const creator = new Creator()
-    .configNbWorkers(1)
+    .configNbWorkers(5)
     .configIndexing(true, "en")
     .configClusterSize(2048)
     .startZimCreation(outFile);
@@ -34,6 +34,7 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
     // const data = faker.lorem.paragraphs(10);
     const data = `hello world ${i}`;
 
+    /*
     const stringItem = new StringItem(
       url,
       "text/html",
@@ -41,8 +42,8 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
       { FRONT_ARTICLE: 1 },
       data,
     );
+    */
 
-    /*
     const customItem = { // custom item
       path: url,
       mimeType: "text/html",
@@ -62,9 +63,8 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
         };
       },
     };
-    */
 
-    await creator.addItem(stringItem);
+    await creator.addItem(customItem);
   }
 
   console.log("Finalizing...");

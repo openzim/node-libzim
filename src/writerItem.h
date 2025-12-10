@@ -90,17 +90,157 @@ class IndexDataWrapper : public zim::writer::IndexData {
 };
 
 /**
+ * Wraps a the getIndexData JS function to a ThreadSafeFunction
+ */
+class GetIndexDataTSFN {
+ public:
+  using IndexDataWrapperPtr = std::shared_ptr<IndexDataWrapper>;
+
+  GetIndexDataTSFN() = delete;
+
+  GetIndexDataTSFN(Napi::Env &env, Napi::Function &indexDataFunc) {
+    tsfn_ =
+        TSFN::New(env,
+                  indexDataFunc,  // JavaScript function called asynchronously
+                  "GetIndexDataTSFN",  // name
+                  0,                   // max queue size (0 = unlimited).
+                  1,                   // initial thread count
+                  nullptr              // context
+        );
+  }
+
+  ~GetIndexDataTSFN() { tsfn_.Release(); }
+
+  IndexDataWrapperPtr getIndexData() {
+    try {
+      DataType promise;
+      auto future = promise.get_future();
+      tsfn_.NonBlockingCall(&promise);
+      return future.get();
+    } catch (const std::exception &e) {
+      std::cerr << "GetIndexDataTSFN getIndexData() exception: " << e.what()
+                << std::endl;
+      throw std::runtime_error(
+          std::string("Error in GetIndexDataTSFN getIndexData(): ") + e.what());
+    }
+  }
+
+ private:
+  using DataType = std::promise<IndexDataWrapperPtr>;
+  using Context = void;
+
+  static void CallJs(Napi::Env env, Napi::Function callback, Context *context,
+                     DataType *data) {
+    // Is the JavaScript environment still available to call into, eg. the TSFN
+    // is not aborted
+    if (env != nullptr) {
+      try {
+        // call getIndexData(): object
+        auto result = callback.Call({});
+        if (result.IsObject()) {
+          auto indexData =
+              std::make_shared<IndexDataWrapper>(result.As<Napi::Object>());
+          data->set_value(indexData);
+        } else {
+          data->set_exception(std::make_exception_ptr(
+              std::runtime_error("Expected an object from getIndexData")));
+        }
+      } catch (const std::exception &e) {
+        data->set_exception(std::make_exception_ptr(e));
+      }
+    } else {
+      data->set_exception(std::make_exception_ptr(
+          std::runtime_error("Environment is shut down")));
+    }
+  }
+
+  using TSFN = Napi::TypedThreadSafeFunction<Context, DataType, CallJs>;
+
+ private:
+  TSFN tsfn_;
+};
+
+/**
+ * Wraps a the getContentProvider JS function to a ThreadSafeFunction
+ */
+class GetContentProviderTSFN {
+ public:
+  using ContentProviderWrapperPtr = std::unique_ptr<ContentProviderWrapper>;
+
+  GetContentProviderTSFN() = delete;
+
+  GetContentProviderTSFN(Napi::Env &env, Napi::Function &providerFunc) {
+    tsfn_ =
+        TSFN::New(env,
+                  providerFunc,  // JavaScript function called asynchronously
+                  "GetContentProviderTSFN",  // name
+                  0,                         // max queue size (0 = unlimited).
+                  1,                         // initial thread count
+                  nullptr                    // context
+        );
+  }
+
+  ~GetContentProviderTSFN() { tsfn_.Release(); }
+
+  ContentProviderWrapperPtr getContentProvider() {
+    try {
+      DataType promise;
+      auto future = promise.get_future();
+      tsfn_.NonBlockingCall(&promise);
+      return future.get();
+    } catch (const std::exception &e) {
+      std::cerr << "GetContentProviderTSFN getContentProvider() exception: "
+                << e.what() << std::endl;
+      throw std::runtime_error(
+          std::string(
+              "Error in GetContentProviderTSFN getContentProvider(): ") +
+          e.what());
+    }
+  }
+
+ private:
+  using DataType = std::promise<ContentProviderWrapperPtr>;
+  using Context = void;
+
+  static void CallJs(Napi::Env env, Napi::Function callback, Context *context,
+                     DataType *data) {
+    // Is the JavaScript environment still available to call into, eg. the
+    // TSFN is not aborted
+    if (env != nullptr) {
+      try {
+        // call getContentProvider(): object
+        auto result = callback.Call({});
+        if (result.IsObject()) {
+          auto provider = std::make_unique<ContentProviderWrapper>(
+              env, result.As<Napi::Object>());
+          data->set_value(std::move(provider));
+        } else {
+          data->set_exception(std::make_exception_ptr(std::runtime_error(
+              "Expected an object from getContentProvider")));
+        }
+      } catch (const std::exception &e) {
+        data->set_exception(std::make_exception_ptr(e));
+      }
+    } else {
+      data->set_exception(std::make_exception_ptr(
+          std::runtime_error("Environment is shut down")));
+    }
+  }
+
+  using TSFN = Napi::TypedThreadSafeFunction<Context, DataType, CallJs>;
+
+ private:
+  TSFN tsfn_;
+};
+
+/**
  * Wraps a JS World Item to a zim::writer::Item
  *
- * NOTE: should be initialized on the main thread
+ * NOTE: MUST BE initialized on the main thread
  */
 class ItemWrapper : public zim::writer::Item {
  public:
-  ItemWrapper(Napi::Env env, Napi::Object item)
-      : MAIN_THREAD_ID{}, item_{}, hasIndexDataImpl_{false} {
-    MAIN_THREAD_ID = std::this_thread::get_id();
-    item_ = Napi::Persistent(item);
-
+  ItemWrapper(Napi::Env env, Napi::Object item) {
     path_ = item.Get("path").ToString();
     title_ = item.Get("title").ToString();
     mimeType_ = item.Get("mimeType").ToString();
@@ -118,9 +258,8 @@ class ItemWrapper : public zim::writer::Item {
       }
 
       auto indexDataFunc = indexDataFuncValue.As<Napi::Function>();
-      indexDataFunc_ = Napi::Persistent(indexDataFunc);
-      indexDataTSNF_ = Napi::ThreadSafeFunction::New(
-          env, indexDataFunc, "ItemWrapper.indexData", 0, 1);
+      getIndexDataTSFN_ =
+          std::make_unique<GetIndexDataTSFN>(env, indexDataFunc);
     }
 
     auto providerFuncValue = item.Get("getContentProvider");
@@ -128,16 +267,8 @@ class ItemWrapper : public zim::writer::Item {
       throw std::runtime_error("getContentProvider must be a function");
     }
     auto providerFunc = providerFuncValue.As<Napi::Function>();
-    contentProviderFunc_ = Napi::Persistent(providerFunc);
-    contentProviderTSNF_ = Napi::ThreadSafeFunction::New(
-        env, providerFunc, "ItemWrapper.contentProvider", 5, 1);
-  }
-
-  ~ItemWrapper() {
-    if (hasIndexDataImpl_) {
-      indexDataTSNF_.Release();
-    }
-    contentProviderTSNF_.Release();
+    getContentProviderTSFN_ =
+        std::make_unique<GetContentProviderTSFN>(env, providerFunc);
   }
 
   std::string getPath() const override { return path_; }
@@ -154,31 +285,11 @@ class ItemWrapper : public zim::writer::Item {
       return zim::writer::Item::getIndexData();
     }
 
-    if (MAIN_THREAD_ID == std::this_thread::get_id()) {
-      auto data = indexDataFunc_.Call(item_.Value(), {});
-      return data.IsObject()
-                 ? std::make_shared<IndexDataWrapper>(data.ToObject())
-                 : nullptr;
+    if (getIndexDataTSFN_ == nullptr) {
+      throw std::runtime_error("Error: getIndexDataTSFN_ is null");
     }
 
-    // called from a thread
-    using IndexDataWrapperPtr = std::shared_ptr<IndexDataWrapper>;
-    std::promise<IndexDataWrapperPtr> promise;
-    auto future = promise.get_future();
-
-    auto callback = [&promise, this](Napi::Env env, Napi::Function idxFunc) {
-      auto data = idxFunc.Call(item_.Value(), {});
-      promise.set_value(
-          data.IsObject() ? std::make_shared<IndexDataWrapper>(data.ToObject())
-                          : nullptr);
-    };
-
-    auto status = indexDataTSNF_.BlockingCall(callback);
-    if (status != napi_ok) {
-      throw std::runtime_error("Error calling indexData ThreadSafeFunction");
-    }
-
-    return future.get();
+    return getIndexDataTSFN_->getIndexData();
   }
 
   /**
@@ -187,65 +298,23 @@ class ItemWrapper : public zim::writer::Item {
    */
   std::unique_ptr<zim::writer::ContentProvider> getContentProvider()
       const override {
-    if (MAIN_THREAD_ID == std::this_thread::get_id()) {
-      auto env = contentProviderFunc_.Env();
-      auto provider = contentProviderFunc_.Call(item_.Value(), {});
-      if (provider.IsObject()) {
-        return std::make_unique<ContentProviderWrapper>(env,
-                                                        provider.ToObject());
-      } else if (provider.IsNull() || provider.IsUndefined()) {
-        return nullptr;
-      }
-
-      throw std::runtime_error(
-          "getContentProvider must return an object or null");
-    }
-
-    using ContentProviderWrapperPtr = std::unique_ptr<ContentProviderWrapper>;
-    std::promise<ContentProviderWrapperPtr> promise;
-    auto future = promise.get_future();
-
-    auto callback = [&promise, this](Napi::Env env,
-                                     Napi::Function providerFunc) {
-      auto provider = providerFunc.Call(item_.Value(), {});
-      if (provider.IsObject()) {
-        auto ptr =
-            std::make_unique<ContentProviderWrapper>(env, provider.ToObject());
-        promise.set_value(std::move(ptr));
-      } else if (provider.IsNull() || provider.IsUndefined()) {
-        promise.set_value(nullptr);
-      } else {
-        throw std::runtime_error(
-            "getContentProvider must return an object or null");
-      }
-    };
-
-    auto status = contentProviderTSNF_.BlockingCall(callback);
-    if (status != napi_ok) {
-      throw std::runtime_error(
-          "Error calling contentProvider ThreadSafeFunction");
-    }
-
-    return future.get();
+    return getContentProviderTSFN_->getContentProvider();
   }
 
  private:
-  std::thread::id MAIN_THREAD_ID;
-  // js world reference, could be an ObjectWrap provider or custom js object
-  Napi::ObjectReference item_;
-
   std::string path_;
   std::string title_;
   std::string mimeType_;
   zim::writer::Hints hints_;
   bool hasIndexDataImpl_;
 
-  Napi::FunctionReference indexDataFunc_;
-  Napi::ThreadSafeFunction indexDataTSNF_;
-  Napi::FunctionReference contentProviderFunc_;
-  Napi::ThreadSafeFunction contentProviderTSNF_;
+  std::unique_ptr<GetContentProviderTSFN> getContentProviderTSFN_;
+  std::unique_ptr<GetIndexDataTSFN> getIndexDataTSFN_;
 };
 
+/**
+ * Wraps a zim::writer::StringItem
+ */
 class StringItem : public Napi::ObjectWrap<StringItem> {
  public:
   explicit StringItem(const Napi::CallbackInfo &info)
@@ -340,9 +409,17 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
 
   // TODO(kelvinhammond): implement getIndexData for StringItem and FileItem
 
+  static bool InstanceOf(Napi::Env env, Napi::Object obj) {
+    Napi::FunctionReference &constructor = GetConstructor(env);
+    return obj.InstanceOf(constructor.Value());
+  }
+
+  static Napi::FunctionReference &GetConstructor(Napi::Env env) {
+    return env.GetInstanceData<ModuleConstructors>()->stringItem;
+  }
+
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "StringItem",
                     {
