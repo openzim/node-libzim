@@ -6,7 +6,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include "entry.h"
@@ -106,13 +105,8 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   Napi::Value getUuid(const Napi::CallbackInfo &info) {
     try {
-      // TODO(kelvinhammond): convert this to
-      // static_cast<std::string>(archive_->getUuid()) This didn't work when
-      // building because of the below error undefined symbol:
-      // _ZNK3zim4UuidcvNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEv
-      std::ostringstream out;
-      out << archive_->getUuid();
-      return Napi::Value::From(info.Env(), out.str());
+      return Napi::Value::From(info.Env(),
+                               static_cast<std::string>(archive_->getUuid()));
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
