@@ -88,7 +88,6 @@ class EntryRange : public Napi::ObjectWrap<EntryRange> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ConstructorsMap &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "EntryRange",
                     {
