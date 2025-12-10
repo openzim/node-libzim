@@ -362,6 +362,9 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
   std::shared_ptr<zim::writer::StringItem> item_;
 };
 
+/**
+ * Wraps a zim::writer::FileItem
+ */
 class FileItem : public Napi::ObjectWrap<FileItem> {
  public:
   explicit FileItem(const Napi::CallbackInfo &info)
@@ -439,9 +442,17 @@ class FileItem : public Napi::ObjectWrap<FileItem> {
     }
   }
 
+  static bool InstanceOf(Napi::Env env, Napi::Object obj) {
+    Napi::FunctionReference &constructor = GetConstructor(env);
+    return obj.InstanceOf(constructor.Value());
+  }
+
+  static Napi::FunctionReference &GetConstructor(Napi::Env env) {
+    return env.GetInstanceData<ModuleConstructors>()->fileItem;
+  }
+
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "FileItem",
         {

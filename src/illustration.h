@@ -12,7 +12,6 @@ class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
   explicit IllustrationInfo(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<IllustrationInfo>(info), ii_{} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (info.Length() == 0) {
       // Default constructor
@@ -144,7 +143,6 @@ class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "IllustrationInfo",
         {

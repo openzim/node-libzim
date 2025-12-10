@@ -97,7 +97,6 @@ class Blob : public Napi::ObjectWrap<Blob> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "Blob",
                     {

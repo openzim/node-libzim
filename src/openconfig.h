@@ -8,7 +8,6 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
   explicit OpenConfig(const Napi::CallbackInfo& info)
       : Napi::ObjectWrap<OpenConfig>(info), config_{zim::OpenConfig()} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (info.Length() > 0) {
       throw Napi::Error::New(
@@ -49,8 +48,7 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
   }
 
   static Napi::FunctionReference& GetConstructor(Napi::Env env) {
-    auto& constructor = env.GetInstanceData<ModuleConstructors>()->openConfig;
-    return constructor;
+    return env.GetInstanceData<ModuleConstructors>()->openConfig;
   }
 
   static bool InstanceOf(Napi::Env env, Napi::Value value) {
@@ -66,7 +64,6 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors& constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "OpenConfig",
         {

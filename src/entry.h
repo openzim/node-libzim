@@ -93,7 +93,6 @@ class Entry : public Napi::ObjectWrap<Entry> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Entry",
         {

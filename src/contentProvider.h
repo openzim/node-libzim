@@ -153,7 +153,6 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
 
   Napi::Value feed(const Napi::CallbackInfo &info) {
     try {
-      // TODO(kelvinhammond): need a way to move this to avoid copying
       auto blob = provider_->feed();
       return Blob::New(info.Env(), blob);
     } catch (const std::exception &err) {
@@ -163,7 +162,6 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "StringProvider",
                     {
@@ -229,7 +227,6 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
 
   Napi::Value feed(const Napi::CallbackInfo &info) {
     try {
-      // TODO(kelvinhammond): need a way to move this to avoid copying
       auto blob = provider_->feed();
       return Blob::New(info.Env(), blob);
     } catch (const std::exception &err) {
@@ -239,7 +236,6 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "FileProvider",
                     {

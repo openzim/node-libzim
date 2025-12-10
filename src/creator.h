@@ -343,7 +343,6 @@ class Creator : public Napi::ObjectWrap<Creator> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Creator",
         {

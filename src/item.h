@@ -12,7 +12,6 @@ class Item : public Napi::ObjectWrap<Item> {
   explicit Item(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Item>(info), item_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (!info[0].IsExternal()) {
       throw Napi::Error::New(
@@ -130,7 +129,6 @@ class Item : public Napi::ObjectWrap<Item> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "Item",
                     {

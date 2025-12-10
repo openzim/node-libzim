@@ -18,14 +18,13 @@ class Archive : public Napi::ObjectWrap<Archive> {
   explicit Archive(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Archive>(info), archive_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (info.Length() < 1) {
-      throw Napi::Error::New(info.Env(), "Archive requires arguments filepath");
+      throw Napi::Error::New(env, "Archive requires arguments filepath");
     }
 
     if (!info[0].IsString()) {
-      throw Napi::TypeError::New(info.Env(),
+      throw Napi::TypeError::New(env,
                                  "First argument must be a string filepath.");
     }
 
@@ -44,7 +43,7 @@ class Archive : public Napi::ObjectWrap<Archive> {
         config = OpenConfig::Unwrap(obj)->getInternalConfig();
       } else {
         throw Napi::TypeError::New(
-            info.Env(), "Second argument must be an instance of OpenConfig.");
+            env, "Second argument must be an instance of OpenConfig.");
       }
     }
 
@@ -133,7 +132,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
   Napi::Value getMetadataKeys(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
-      Napi::HandleScope scope(env);
       auto res = Napi::Array::New(env);
       size_t idx = 0;
       for (const auto &key : archive_->getMetadataKeys()) {
@@ -189,10 +187,8 @@ class Archive : public Napi::ObjectWrap<Archive> {
     std::cerr << "Warning: getIllustrationSizes() is deprecated, use "
                  "illustrationSizes property instead."
               << std::endl;
+    auto env = info.Env();
     try {
-      auto env = info.Env();
-      Napi::HandleScope scope(env);
-
       // returns a native Set object
       auto SetConstructor = env.Global().Get("Set").As<Napi::Function>();
       auto result = SetConstructor.New({});
@@ -202,13 +198,12 @@ class Archive : public Napi::ObjectWrap<Archive> {
       }
       return result;
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
   Napi::Value getIllustrationInfos(const Napi::CallbackInfo &info) {
     auto env = info.Env();
-    Napi::HandleScope scope(env);
 
     // getIllustrationInfos(w: number, h: number, minScale: number)
     if (info.Length() >= 3) {
@@ -235,19 +230,20 @@ class Archive : public Napi::ObjectWrap<Archive> {
   }
 
   Napi::Value getEntryByPath(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
     try {
       if (info[0].IsNumber()) {
         auto &&idx = info[0].ToNumber();
-        return Entry::New(info.Env(), archive_->getEntryByPath(idx));
+        return Entry::New(env, archive_->getEntryByPath(idx));
       } else if (info[0].IsString()) {
         auto &&path = info[0].ToString();
-        return Entry::New(info.Env(), archive_->getEntryByPath(path));
+        return Entry::New(env, archive_->getEntryByPath(path));
       }
 
       throw Napi::Error::New(
-          info.Env(), "Entry index must be a string (path) or number (index).");
+          env, "Entry index must be a string (path) or number (index).");
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
@@ -466,12 +462,12 @@ class Archive : public Napi::ObjectWrap<Archive> {
   }
 
   Napi::Value checkIntegrity(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
     try {
-      auto env = info.Env();
       const auto &&checkType = IntegrityCheck::symbolToEnum(env, info[0]);
       return Napi::Value::From(env, archive_->checkIntegrity(checkType));
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
@@ -523,7 +519,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   static Napi::Value validate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
     try {
       if (info.Length() < 2) {
         throw Napi::Error::New(
@@ -555,7 +550,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Archive",
         {

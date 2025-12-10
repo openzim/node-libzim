@@ -18,7 +18,6 @@ class SuggestionIterator : public Napi::ObjectWrap<SuggestionIterator> {
   explicit SuggestionIterator(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SuggestionIterator>(info), iterator_{} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (info[0].IsExternal()) {
       iterator_ = *info[0].As<Napi::External<decltype(iterator_)>>().Data();
@@ -75,7 +74,6 @@ class SuggestionIterator : public Napi::ObjectWrap<SuggestionIterator> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "SuggestionIterator",
         {
@@ -99,7 +97,6 @@ class SuggestionResultSet : public Napi::ObjectWrap<SuggestionResultSet> {
   explicit SuggestionResultSet(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SuggestionResultSet>(info), resultSet_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (!info[0].IsExternal()) {
       throw Napi::Error::New(env,
@@ -163,7 +160,6 @@ class SuggestionResultSet : public Napi::ObjectWrap<SuggestionResultSet> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "SuggestionResultSet",
                     {
@@ -185,7 +181,6 @@ class SuggestionSearch : public Napi::ObjectWrap<SuggestionSearch> {
   explicit SuggestionSearch(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SuggestionSearch>(info), search_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (!info[0].IsExternal()) {
       throw Napi::Error::New(env, "Search must be created internally.");
@@ -232,7 +227,6 @@ class SuggestionSearch : public Napi::ObjectWrap<SuggestionSearch> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "SuggestionSearch",
         {
@@ -255,7 +249,6 @@ class SuggestionSearcher : public Napi::ObjectWrap<SuggestionSearcher> {
       : Napi::ObjectWrap<SuggestionSearcher>(info),
         suggestionSearcher_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     // TODO(kelvinhammond): Ask about support for suggestions from multiple
     // archives
@@ -340,7 +333,6 @@ class SuggestionSearcher : public Napi::ObjectWrap<SuggestionSearcher> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "SuggestionSearcher",
         {
