@@ -7,11 +7,13 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 #include "blob.h"
 #include "common.h"
@@ -105,8 +107,7 @@ class GetIndexDataTSFN {
                   "GetIndexDataTSFN",  // name
                   0,                   // max queue size (0 = unlimited).
                   1,                   // initial thread count
-                  nullptr              // context
-        );
+                  nullptr);            // context
   }
 
   ~GetIndexDataTSFN() { tsfn_.Release(); }
@@ -176,8 +177,7 @@ class GetContentProviderTSFN {
                   "GetContentProviderTSFN",  // name
                   0,                         // max queue size (0 = unlimited).
                   1,                         // initial thread count
-                  nullptr                    // context
-        );
+                  nullptr);                  // context
   }
 
   ~GetContentProviderTSFN() { tsfn_.Release(); }
