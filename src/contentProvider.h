@@ -175,9 +175,8 @@ class StringProvider : public Napi::ObjectWrap<StringProvider> {
 
   Napi::Value getSize(const Napi::CallbackInfo &info) {
     if (!provider_) {
-      std::cerr << "StringProvider has been moved and is no longer valid."
-                << std::endl;
-      return info.Env().Undefined();
+      throw Napi::Error::New(
+          info.Env(), "StringProvider has been moved and is no longer valid.");
     }
 
     try {
@@ -278,9 +277,8 @@ class FileProvider : public Napi::ObjectWrap<FileProvider> {
 
   Napi::Value getSize(const Napi::CallbackInfo &info) {
     if (!provider_) {
-      std::cerr << "FileProvider has been moved and is no longer valid."
-                << std::endl;
-      return info.Env().Undefined();
+      throw Napi::Error::New(
+          info.Env(), "FileProvider has been moved and is no longer valid.");
     }
 
     try {

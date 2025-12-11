@@ -19,7 +19,7 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
       throw Napi::TypeError::New(
           env, "First argument must be a boolean for preloadXapianDb.");
     }
-    bool&& value = info[0].As<Napi::Boolean>().Value();
+    bool value = info[0].As<Napi::Boolean>().Value();
     config_.preloadXapianDb(value);
     return info.This();
   }
@@ -30,7 +30,7 @@ class OpenConfig : public Napi::ObjectWrap<OpenConfig> {
       throw Napi::TypeError::New(
           env, "First argument must be a number for preloadDirentRanges.");
     }
-    int&& value = info[0].As<Napi::Number>().Int32Value();
+    int value = info[0].As<Napi::Number>().Int32Value();
     config_.preloadDirentRanges(value);
     return info.This();
   }

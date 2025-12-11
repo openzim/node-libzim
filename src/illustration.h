@@ -49,7 +49,7 @@ class IllustrationInfo : public Napi::ObjectWrap<IllustrationInfo> {
 
   static Napi::Object New(Napi::Env env, const zim::IllustrationInfo &ii) {
     Napi::FunctionReference &constructor = GetConstructor(env);
-    auto &&data = Napi::External<zim::IllustrationInfo>::New(
+    auto data = Napi::External<zim::IllustrationInfo>::New(
         env, new zim::IllustrationInfo(ii),
         [](Napi::BasicEnv /*env*/, zim::IllustrationInfo *ptr) { delete ptr; });
     return constructor.New({data});
