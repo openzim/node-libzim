@@ -1,19 +1,19 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import { Creator, Archive, StringItem } from "../src";
+import { Creator, Archive, StringItem, Blob } from "../src";
 
-const tqdm = require("tqdm");
+import tqdm from "tqdm";
 
 const numArticles = 1000000;
 // const numArticles = 10000;
-const outFile = path.join(__dirname, "../largeZim.zim");
+const outFile = path.join(import.meta.dirname, "../largeZim.zim");
 
-console.log(`Making ZIM file with [${numArticles}] articles`);
+console.log(`Making ZIM file (${outFile}) with [${numArticles}] articles`);
 
 (async () => {
   console.info("Starting");
   const creator = new Creator()
-    .configNbWorkers(1)
+    .configNbWorkers(5)
     .configIndexing(true, "en")
     .configClusterSize(2048)
     .startZimCreation(outFile);
@@ -41,30 +41,31 @@ console.log(`Making ZIM file with [${numArticles}] articles`);
       { FRONT_ARTICLE: 1 },
       data,
     );
+    await creator.addItem(stringItem);
 
-    /*
-    const customItem = { // custom item
+    const customItem = {
+      // custom item
       path: url,
       mimeType: "text/html",
       title: title,
-      hints: {FRONT_ARTICLE: 1},
-      getContentProvider() { // custom content provider
+      hints: { FRONT_ARTICLE: 1 },
+      getContentProvider() {
+        // custom content provider
         let sent = false;
         return {
           size: data.length,
           feed() {
-            if(!sent) {
+            if (!sent) {
               sent = true;
               return new Blob(data);
             }
             return new Blob();
-          }
+          },
         };
       },
     };
-    */
 
-    await creator.addItem(stringItem);
+    await creator.addItem(customItem);
   }
 
   console.log("Finalizing...");

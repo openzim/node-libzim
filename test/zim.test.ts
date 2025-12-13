@@ -4,6 +4,8 @@ import crypto from "crypto";
 import * as fs from "fs";
 import {
   Archive,
+  OpenConfig,
+  IllustrationInfo,
   IntegrityCheck,
   Compression,
   Blob,
@@ -14,6 +16,9 @@ import {
   Searcher,
   SuggestionSearcher,
   WriterItem,
+  getClusterCacheMaxSize,
+  getClusterCacheCurrentSize,
+  setClusterCacheMaxSize,
 } from "../src";
 
 describe("IntegrityCheck", () => {
@@ -51,6 +56,25 @@ describe("Blob", () => {
     expect(blob.size).toBe(str.length);
     expect(blob.data.length).toBe(str.length);
     expect(blob.data.toString()).toBe(str);
+  });
+});
+
+describe("StringProvider", () => {
+  it("constructs a StringProvider", () => {
+    const str = "hello world";
+    const provider = new StringProvider(str);
+    expect(provider).toBeDefined();
+    expect(provider.size).toBe(str.length);
+
+    let feed = provider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(str.length);
+    expect(feed.data.toString()).toBe(str);
+
+    feed = provider.feed();
+    expect(feed).toBeDefined();
+    expect(feed.size).toBe(0);
+    expect(feed.data.toString()).toBe("");
   });
 });
 
@@ -191,6 +215,10 @@ describe("Creator", () => {
         "hex",
       ).toString("utf8");
       creator.addIllustration(1, png);
+      creator.addIllustration(
+        new IllustrationInfo({ width: 10, height: 10 }),
+        png,
+      );
       creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {
         COMPRESS: 1,
       });
@@ -199,6 +227,59 @@ describe("Creator", () => {
     } finally {
       await creator.finishZimCreation();
     }
+  });
+});
+
+describe("IllustrationInfo", () => {
+  it("Creates a default IllustrationInfo", () => {
+    const info = new IllustrationInfo();
+    expect(info).toBeDefined();
+    expect(info.width).toBe(0);
+    expect(info.height).toBe(0);
+    expect(info.scale).toBe(0);
+    expect(info.extraAttributes).toEqual({});
+  });
+
+  it("Creates an empty IllustrationInfo", () => {
+    const info = new IllustrationInfo({});
+    expect(info).toBeDefined();
+    expect(info.width).toBe(0);
+    expect(info.height).toBe(0);
+    expect(info.scale).toBe(0);
+    expect(info.extraAttributes).toEqual({});
+  });
+
+  it("Creates an IllustrationInfo which functions", () => {
+    const info = new IllustrationInfo({
+      width: 100,
+      height: 200,
+      scale: 2.0,
+      extraAttributes: { test: "value" },
+    });
+    expect(info).toBeDefined();
+    expect(info.width).toBe(100);
+    expect(info.height).toBe(200);
+    expect(info.scale).toBe(2.0);
+    expect(info.extraAttributes).toEqual({ test: "value" });
+  });
+});
+
+describe("OpenConfig", () => {
+  it("Creates an OpenConfig which functions", () => {
+    const config = new OpenConfig();
+    expect(config).toBeDefined();
+
+    // Integration tests, these are set to the defaults
+    expect(config.m_preloadXapianDb).toBe(true);
+    expect(config.m_preloadDirentRanges).toBe(1024);
+
+    let res = config.preloadXapianDb(false);
+    expect(res).toBe(config);
+    expect(config.m_preloadXapianDb).toBe(false);
+
+    res = config.preloadDirentRanges(5);
+    expect(res).toBe(config);
+    expect(config.m_preloadDirentRanges).toBe(5);
   });
 });
 
@@ -326,6 +407,16 @@ describe("Archive", () => {
     expect(Archive.validate(outFile, checks)).toBe(true);
   });
 
+  it("Opens an archive with OpenConfig", () => {
+    const config = new OpenConfig()
+      .preloadXapianDb(true)
+      .preloadDirentRanges(512);
+    const archive = new Archive(outFile, config);
+    expect(archive).toBeDefined();
+    expect(archive.filename).toBe(outFile);
+    expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
+  });
+
   it("Reads items from an archive", () => {
     const archive = new Archive(outFile);
     expect(archive).toBeDefined();
@@ -336,11 +427,8 @@ describe("Archive", () => {
     expect(archive.articleCount).toBe(items.length);
     expect(archive.mediaCount).toBe(0);
     expect(archive.uuid).toBeDefined();
-    expect(archive.getClusterCacheMaxSize()).toBeDefined();
-    expect(archive.getClusterCacheCurrentSize()).toBeDefined();
     expect(archive.getDirentCacheMaxSize()).toBeDefined();
     expect(archive.getDirentCacheCurrentSize()).toBeDefined();
-    expect(archive.getDirentLookupCacheMaxSize()).toBeDefined();
 
     // test metadata
     expect(archive.metadataKeys).toEqual(
@@ -362,6 +450,30 @@ describe("Archive", () => {
     expect(illustration.data.data.toString()).toEqual(png);
     expect(illustration.size).toBeGreaterThanOrEqual(png.length);
     expect(archive.illustrationSizes).toContain(png_size);
+
+    // Only 1 png added
+    const infos = archive.illustrationInfos;
+    expect(infos.length).toEqual(1);
+    expect(infos[0].width).toBeGreaterThan(0);
+    expect(infos[0].height).toBeGreaterThan(0);
+
+    // That 1 png should be retrievable again using the info
+    const il1 = archive.getIllustrationItem(infos[0]);
+    expect(il1).toBeDefined();
+    expect(il1).toEqual(illustration);
+    expect(il1.data.data.toString()).toEqual(png);
+
+    // Matching illustration
+    expect(
+      archive.getIllustrationInfos(
+        infos[0].width,
+        infos[0].height,
+        infos[0].scale,
+      ).length,
+    ).toEqual(1);
+
+    // Not matching illustrationInfos
+    expect(archive.getIllustrationInfos(100, 100, 3).length).toEqual(0);
 
     for (const item of items) {
       const bypath = archive.getEntryByPath(item.path);
@@ -541,13 +653,12 @@ describe("Archive", () => {
 
   describe("Cache sizes", () => {
     it("Manipulate cluster cache max size", () => {
-      const archive = new Archive(outFile);
-      archive.setClusterCacheMaxSize(10);
-      expect(archive.getClusterCacheMaxSize()).toBe(10);
-      expect(archive.getClusterCacheCurrentSize()).toBe(1); // there is only one cluser in test ZIM
-      archive.setClusterCacheMaxSize(2);
-      expect(archive.getClusterCacheMaxSize()).toBe(2);
-      expect(archive.getClusterCacheCurrentSize()).toBe(1);
+      setClusterCacheMaxSize(10);
+      expect(getClusterCacheMaxSize()).toBe(10);
+      expect(getClusterCacheCurrentSize()).toEqual(expect.any(Number));
+      setClusterCacheMaxSize(2);
+      expect(getClusterCacheMaxSize()).toBe(2);
+      expect(getClusterCacheCurrentSize()).toEqual(expect.any(Number));
     });
     it("Manipulate dirent cache max size", () => {
       const archive = new Archive(outFile);
@@ -557,11 +668,6 @@ describe("Archive", () => {
       archive.setDirentCacheMaxSize(5);
       expect(archive.getDirentCacheMaxSize()).toBe(5);
       expect(archive.getDirentCacheCurrentSize()).toBe(5);
-    });
-    it("Manipulate dirent lookup cache max size", () => {
-      const archive = new Archive(outFile);
-      archive.setDirentLookupCacheMaxSize(6);
-      expect(archive.getDirentLookupCacheMaxSize()).toBe(6);
     });
   });
 });

@@ -17,6 +17,8 @@ using CompressionMap =
 
 struct ModuleConstructors {
   Napi::FunctionReference archive;
+  Napi::FunctionReference openConfig;
+  Napi::FunctionReference illustrationInfo;
   Napi::FunctionReference entry;
   Napi::FunctionReference item;
   Napi::FunctionReference blob;
@@ -60,7 +62,6 @@ class Compression : public Napi::ObjectWrap<Compression> {
 
     auto& compressionMap =
         env.GetInstanceData<ModuleConstructors>()->compressionMap;
-    Napi::HandleScope scope(env);
     for (const auto& [bit, symbolRef] : compressionMap) {
       if (!symbolRef.IsEmpty() && symbolRef.Value() == value) {
         return bit;
@@ -71,8 +72,6 @@ class Compression : public Napi::ObjectWrap<Compression> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors& constructors) {
-    Napi::HandleScope scope(env);
-
     constexpr auto attrs =
         static_cast<napi_property_attributes>(napi_default | napi_enumerable);
     std::vector<PropertyDescriptor> props;
@@ -107,7 +106,6 @@ class IntegrityCheck : public Napi::ObjectWrap<IntegrityCheck> {
     }
     auto& integrityCheckMap =
         env.GetInstanceData<ModuleConstructors>()->integrityCheckMap;
-    Napi::HandleScope scope(env);
     for (const auto& [bit, symbolRef] : integrityCheckMap) {
       if (!symbolRef.IsEmpty() && symbolRef.Value() == value) {
         return bit;
@@ -118,8 +116,6 @@ class IntegrityCheck : public Napi::ObjectWrap<IntegrityCheck> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors& constructors) {
-    Napi::HandleScope scope(env);
-
     constexpr auto attrs =
         static_cast<napi_property_attributes>(napi_default | napi_enumerable);
     std::vector<PropertyDescriptor> props;

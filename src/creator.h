@@ -1,15 +1,19 @@
 #pragma once
 
 #include <napi.h>
+#include <zim/illustration.h>
 #include <zim/writer/creator.h>
 
 #include <exception>
 #include <functional>
+#include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "common.h"
+#include "illustration.h"
 #include "writerItem.h"
 
 // Handles creator_->finishZimCreation() operations in the background off the
@@ -24,7 +28,14 @@ class CreatorAsyncWorker : public Napi::AsyncWorker {
 
   ~CreatorAsyncWorker() {}
 
-  void Execute() override { creator_->finishZimCreation(); }
+  void Execute() override {
+    try {
+      creator_->finishZimCreation();
+    } catch (const std::exception &e) {
+      std::cerr << "Error: finishZimCreation failed: " << e.what() << std::endl;
+      SetError(e.what());
+    }
+  }
 
   void OnOK() override {
     auto env = Env();
@@ -54,7 +65,15 @@ class AddItemAsyncWorker : public Napi::AsyncWorker {
 
   Napi::Promise Promise() const { return promise_.Promise(); };
 
-  void Execute() override { creator_->addItem(item_); }
+  void Execute() override {
+    try {
+      creator_->addItem(item_);
+    } catch (const std::exception &e) {
+      std::cerr << "Error: AddItemAsyncWorker failed: " << e.what()
+                << std::endl;
+      SetError(e.what());
+    }
+  }
 
   void OnOK() override {
     auto env = Env();
@@ -163,16 +182,11 @@ class Creator : public Napi::ObjectWrap<Creator> {
         throw Napi::Error::New(env, "addItem requires an item object");
       }
 
-      const auto &stringItem =
-          env.GetInstanceData<ModuleConstructors>()->stringItem.Value();
-      const auto &fileItem =
-          env.GetInstanceData<ModuleConstructors>()->fileItem.Value();
-
       std::shared_ptr<zim::writer::Item> item{};
-      auto obj = info[0].ToObject();
-      if (obj.InstanceOf(stringItem)) {
+      auto obj = info[0].As<Napi::Object>();
+      if (StringItem::InstanceOf(env, obj)) {
         item = Napi::ObjectWrap<StringItem>::Unwrap(obj)->getItem();
-      } else if (obj.InstanceOf(fileItem)) {
+      } else if (FileItem::InstanceOf(env, obj)) {
         item = Napi::ObjectWrap<FileItem>::Unwrap(obj)->getItem();
       } else {
         item = std::make_shared<ItemWrapper>(env, info[0].ToObject());
@@ -218,9 +232,28 @@ class Creator : public Napi::ObjectWrap<Creator> {
 
       auto name = info[0].ToString().Utf8Value();
       auto content = info[1];
-      if (content.IsObject()) {  // content provider
-        std::unique_ptr<zim::writer::ContentProvider> provider =
-            std::make_unique<ContentProviderWrapper>(env, content.ToObject());
+      if (content.IsObject()) {
+        // addMetadata(name: string, content: ContentProvider, [mimetype])
+        auto obj = content.As<Napi::Object>();
+        std::unique_ptr<zim::writer::ContentProvider> provider{nullptr};
+
+        // Determine the type of ContentProvider
+        if (StringProvider::InstanceOf(env, content)) {
+          auto wrapped = Napi::ObjectWrap<StringProvider>::Unwrap(obj);
+          provider = wrapped->unwrapProvider();
+        } else if (FileProvider::InstanceOf(env, content)) {
+          auto wrapped = Napi::ObjectWrap<FileProvider>::Unwrap(obj);
+          provider = wrapped->unwrapProvider();
+        } else {
+          // Fallback to generic ContentProviderWrapper
+          provider = std::make_unique<ContentProviderWrapper>(env, obj);
+        }
+
+        if (provider == nullptr) {
+          throw Napi::Error::New(
+              env, "addMetadata failed to create ContentProvider from object");
+        }
+
         if (info.Length() > 2) {  // preserves default argument
           auto mimetype = info[2].ToString().Utf8Value();
           creator_->addMetadata(name, std::move(provider), mimetype);
@@ -228,7 +261,7 @@ class Creator : public Napi::ObjectWrap<Creator> {
           const std::string mimetype = "text/plain;charset=utf-8";
           creator_->addMetadata(name, std::move(provider), mimetype);
         }
-      } else {  // string version
+      } else {  // addMetadata(name: string, content: string, [mimetype])
         auto str = content.ToString().Utf8Value();
         if (info.Length() > 2) {
           auto mimetype = info[2].ToString().Utf8Value();
@@ -238,6 +271,7 @@ class Creator : public Napi::ObjectWrap<Creator> {
         }
       }
     } catch (const std::exception &err) {
+      std::cerr << "Error: addMetadata failed: " << err.what() << std::endl;
       throw Napi::Error::New(info.Env(), err.what());
     }
   }
@@ -245,15 +279,40 @@ class Creator : public Napi::ObjectWrap<Creator> {
   void addIllustration(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
-      auto size = info[0].ToNumber().Uint32Value();
-      auto content = info[1];
-      if (content.IsObject()) {
-        std::unique_ptr<zim::writer::ContentProvider> provider =
-            std::make_unique<ContentProviderWrapper>(env, content.ToObject());
-        creator_->addIllustration(size, std::move(provider));
+
+      // Inline template function to handle both size and IllustrationInfo
+      const auto addIllusWithContent = [&](auto &opt1) {
+        auto content = info[1];
+        if (content.IsObject()) {
+          std::unique_ptr<zim::writer::ContentProvider> provider =
+              std::make_unique<ContentProviderWrapper>(env, content.ToObject());
+          creator_->addIllustration(opt1, std::move(provider));
+        } else {
+          auto str = content.ToString().Utf8Value();
+          creator_->addIllustration(opt1, str);
+        }
+      };
+
+      auto arg0 = info[0];
+      if (arg0.IsNumber()) {
+        auto size = arg0.ToNumber().Uint32Value();
+        addIllusWithContent(size);
+      } else if (arg0.IsObject()) {
+        // Parse as IllustrationInfo
+        auto obj = arg0.ToObject();
+
+        // getIllustrationItem(illusInfo: IllustrationInfo)
+        // getIllustrationItem(illusInfo: object)
+        auto illusInfo =
+            IllustrationInfo::InstanceOf(env, obj)
+                ? IllustrationInfo::Unwrap(obj)->getInternalIllustrationInfo()
+                : IllustrationInfo::infoFrom(obj);
+        addIllusWithContent(illusInfo);
       } else {
-        auto str = content.ToString().Utf8Value();
-        creator_->addIllustration(size, str);
+        throw Napi::Error::New(
+            env,
+            "addIllustration first argument must be size[number] or "
+            "IllustrationInfo[object]");
       }
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
@@ -315,7 +374,6 @@ class Creator : public Napi::ObjectWrap<Creator> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Creator",
         {

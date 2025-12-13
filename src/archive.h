@@ -3,27 +3,52 @@
 #include <napi.h>
 #include <zim/archive.h>
 #include <exception>
+#include <iostream>
+#include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include "entry.h"
+#include "illustration.h"
 #include "item.h"
+#include "openconfig.h"
 
 class Archive : public Napi::ObjectWrap<Archive> {
  public:
   explicit Archive(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Archive>(info), archive_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (info.Length() < 1) {
-      throw Napi::Error::New(info.Env(), "Archive requires arguments filepath");
+      throw Napi::Error::New(env, "Archive requires arguments filepath");
+    }
+
+    if (!info[0].IsString()) {
+      throw Napi::TypeError::New(env,
+                                 "First argument must be a string filepath.");
+    }
+
+    // Archive(filename: string)
+    // Archive(filepath: string, config: OpenConfig)
+    std::string filepath = info[0].As<Napi::String>();
+    zim::OpenConfig config{};
+    if (info[1].IsObject()) {
+      // @note: no bounds checking on info because it returns Undefined when out
+      // of bounds
+      auto obj = info[1].As<Napi::Object>();
+      // Check that the object is an instance of OpenConfig
+      // TODO(kelvinhammond): Update use of Unwrap everywhere to use
+      // InstanceOf and GetConstructor pattern
+      if (OpenConfig::InstanceOf(env, obj)) {
+        config = OpenConfig::Unwrap(obj)->getInternalConfig();
+      } else {
+        throw Napi::TypeError::New(
+            env, "Second argument must be an instance of OpenConfig.");
+      }
     }
 
     try {
-      std::string filepath = info[0].ToString();
-      archive_ = std::make_shared<zim::Archive>(filepath);
+      archive_ = std::make_shared<zim::Archive>(filepath, config);
     } catch (const std::exception &e) {
       throw Napi::Error::New(env, e.what());
     }
@@ -79,13 +104,8 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   Napi::Value getUuid(const Napi::CallbackInfo &info) {
     try {
-      // TODO(kelvinhammond): convert this to
-      // static_cast<std::string>(archive_->getUuid()) This didn't work when
-      // building because of the below error undefined symbol:
-      // _ZNK3zim4UuidcvNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEv
-      std::ostringstream out;
-      out << archive_->getUuid();
-      return Napi::Value::From(info.Env(), out.str());
+      return Napi::Value::From(info.Env(),
+                               static_cast<std::string>(archive_->getUuid()));
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -112,7 +132,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
   Napi::Value getMetadataKeys(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
-      Napi::HandleScope scope(env);
       auto res = Napi::Array::New(env);
       size_t idx = 0;
       for (const auto &key : archive_->getMetadataKeys()) {
@@ -125,22 +144,51 @@ class Archive : public Napi::ObjectWrap<Archive> {
   }
 
   Napi::Value getIllustrationItem(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
     try {
-      if (info.Length() > 0) {
-        auto size = static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
-        return Item::New(info.Env(), archive_->getIllustrationItem(size));
+      // getIllustrationItem()
+      if (info.Length() < 1) {
+        return Item::New(env, archive_->getIllustrationItem());
       }
-      return Item::New(info.Env(), archive_->getIllustrationItem());
+
+      // getIllustrationItem(size: number)
+      if (info[0].IsNumber()) {
+        auto size = static_cast<unsigned int>(info[0].ToNumber().Uint32Value());
+        return Item::New(env, archive_->getIllustrationItem(size));
+      }
+
+      /// getIllustration(illusInfo: object)
+      if (info[0].IsObject()) {
+        auto obj = info[0].As<Napi::Object>();
+
+        // getIllustrationItem(illusInfo: IllustrationInfo)
+        if (IllustrationInfo::InstanceOf(env, obj)) {
+          auto illusInfo =
+              IllustrationInfo::Unwrap(obj)->getInternalIllustrationInfo();
+          return Item::New(env, archive_->getIllustrationItem(illusInfo));
+        }
+
+        // getIllustrationItem(illusInfo: object)
+        auto illusInfo = IllustrationInfo::infoFrom(obj);
+        return Item::New(env, archive_->getIllustrationItem(illusInfo));
+      }
+
+      throw Napi::TypeError::New(
+          env,
+          "getIllustrationItem expects no arguments, a number size, or an "
+          "IllustrationInfo object.");
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
   Napi::Value getIllustrationSizes(const Napi::CallbackInfo &info) {
+    // Warn: Deprecated, use illustrationSizes property instead.
+    std::cerr << "Warning: getIllustrationSizes() is deprecated, use "
+                 "illustrationSizes property instead."
+              << std::endl;
+    auto env = info.Env();
     try {
-      auto env = info.Env();
-      Napi::HandleScope scope(env);
-
       // returns a native Set object
       auto SetConstructor = env.Global().Get("Set").As<Napi::Function>();
       auto result = SetConstructor.New({});
@@ -150,24 +198,52 @@ class Archive : public Napi::ObjectWrap<Archive> {
       }
       return result;
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
+  Napi::Value getIllustrationInfos(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
+
+    // getIllustrationInfos(w: number, h: number, minScale: number)
+    if (info.Length() >= 3) {
+      auto w = info[0].ToNumber().Uint32Value();
+      auto h = info[1].ToNumber().Uint32Value();
+      auto minScale = info[2].ToNumber().FloatValue();
+
+      auto infos = archive_->getIllustrationInfos(w, h, minScale);
+      auto array = Napi::Array::New(env, infos.size());
+      for (size_t i = 0; i < infos.size(); i++) {
+        array.Set(i, IllustrationInfo::New(env, infos[i]));
+      }
+      return array;
+    }
+
+    // getIllustrationInfos()
+    auto infos = archive_->getIllustrationInfos();
+    auto array = Napi::Array::New(env, infos.size());
+    for (size_t i = 0; i < infos.size(); i++) {
+      array.Set(i, IllustrationInfo::New(env, infos[i]));
+    }
+
+    return array;
+  }
+
   Napi::Value getEntryByPath(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
     try {
       if (info[0].IsNumber()) {
         auto &&idx = info[0].ToNumber();
-        return Entry::New(info.Env(), archive_->getEntryByPath(idx));
+        return Entry::New(env, archive_->getEntryByPath(idx));
       } else if (info[0].IsString()) {
         auto &&path = info[0].ToString();
-        return Entry::New(info.Env(), archive_->getEntryByPath(path));
+        return Entry::New(env, archive_->getEntryByPath(path));
       }
 
       throw Napi::Error::New(
-          info.Env(), "Entry index must be a string (path) or number (index).");
+          env, "Entry index must be a string (path) or number (index).");
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
@@ -386,12 +462,12 @@ class Archive : public Napi::ObjectWrap<Archive> {
   }
 
   Napi::Value checkIntegrity(const Napi::CallbackInfo &info) {
+    auto env = info.Env();
     try {
-      auto env = info.Env();
       const auto &&checkType = IntegrityCheck::symbolToEnum(env, info[0]);
       return Napi::Value::From(env, archive_->checkIntegrity(checkType));
     } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
+      throw Napi::Error::New(env, err.what());
     }
   }
 
@@ -406,35 +482,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
   Napi::Value hasNewNamespaceScheme(const Napi::CallbackInfo &info) {
     try {
       return Napi::Value::From(info.Env(), archive_->hasNewNamespaceScheme());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  Napi::Value getClusterCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(), archive_->getClusterCacheMaxSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  Napi::Value getClusterCacheCurrentSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(),
-                               archive_->getClusterCacheCurrentSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  void setClusterCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      if (!info[0].IsNumber()) {
-        throw Napi::Error::New(info.Env(), "Expected a number");
-      }
-      auto nbClusters = info[0].As<Napi::Number>().Uint32Value();
-      archive_->setClusterCacheMaxSize(nbClusters);
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -459,8 +506,9 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   void setDirentCacheMaxSize(const Napi::CallbackInfo &info) {
     try {
-      if (!info[0].IsNumber()) {
-        throw Napi::Error::New(info.Env(), "Expected a number");
+      if (info.Length() < 1 || !info[0].IsNumber()) {
+        throw Napi::TypeError::New(info.Env(),
+                                   "setDirentCacheMaxSize expects a number");
       }
       auto nbDirents = info[0].As<Napi::Number>().Uint32Value();
       archive_->setDirentCacheMaxSize(nbDirents);
@@ -469,30 +517,8 @@ class Archive : public Napi::ObjectWrap<Archive> {
     }
   }
 
-  Napi::Value getDirentLookupCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      return Napi::Value::From(info.Env(),
-                               archive_->getDirentLookupCacheMaxSize());
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
-  void setDirentLookupCacheMaxSize(const Napi::CallbackInfo &info) {
-    try {
-      if (!info[0].IsNumber()) {
-        throw Napi::Error::New(info.Env(), "Expected a number");
-      }
-      auto nbRanges = info[0].As<Napi::Number>().Uint32Value();
-      archive_->setDirentLookupCacheMaxSize(nbRanges);
-    } catch (const std::exception &err) {
-      throw Napi::Error::New(info.Env(), err.what());
-    }
-  }
-
   static Napi::Value validate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
     try {
       if (info.Length() < 2) {
         throw Napi::Error::New(
@@ -524,7 +550,6 @@ class Archive : public Napi::ObjectWrap<Archive> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Archive",
         {
@@ -542,6 +567,10 @@ class Archive : public Napi::ObjectWrap<Archive> {
                 "getIllustrationItem"),
             InstanceAccessor<&Archive::getIllustrationSizes>(
                 "illustrationSizes"),
+            InstanceMethod<&Archive::getIllustrationInfos>(
+                "getIllustrationInfos"),
+            InstanceAccessor<&Archive::getIllustrationInfos>(
+                "illustrationInfos"),
             InstanceMethod<&Archive::getEntryByPath>("getEntryByPath"),
             InstanceMethod<&Archive::getEntryByTitle>("getEntryByTitle"),
             InstanceMethod<&Archive::getEntryByClusterOrder>(
@@ -564,22 +593,12 @@ class Archive : public Napi::ObjectWrap<Archive> {
             InstanceAccessor<&Archive::getChecksum>("checksum"),
             InstanceMethod<&Archive::check>("check"),
             InstanceMethod<&Archive::checkIntegrity>("checkIntegrity"),
-            InstanceMethod<&Archive::getClusterCacheMaxSize>(
-                "getClusterCacheMaxSize"),
-            InstanceMethod<&Archive::getClusterCacheCurrentSize>(
-                "getClusterCacheCurrentSize"),
-            InstanceMethod<&Archive::setClusterCacheMaxSize>(
-                "setClusterCacheMaxSize"),
             InstanceMethod<&Archive::getDirentCacheMaxSize>(
                 "getDirentCacheMaxSize"),
             InstanceMethod<&Archive::getDirentCacheCurrentSize>(
                 "getDirentCacheCurrentSize"),
             InstanceMethod<&Archive::setDirentCacheMaxSize>(
                 "setDirentCacheMaxSize"),
-            InstanceMethod<&Archive::getDirentLookupCacheMaxSize>(
-                "getDirentLookupCacheMaxSize"),
-            InstanceMethod<&Archive::setDirentLookupCacheMaxSize>(
-                "setDirentLookupCacheMaxSize"),
             InstanceAccessor<&Archive::isMultiPart>("isMultiPart"),
             InstanceAccessor<&Archive::hasNewNamespaceScheme>(
                 "hasNewNamespaceScheme"),

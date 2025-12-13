@@ -12,7 +12,6 @@ class Item : public Napi::ObjectWrap<Item> {
   explicit Item(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Item>(info), item_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (!info[0].IsExternal()) {
       throw Napi::Error::New(
@@ -108,10 +107,12 @@ class Item : public Napi::ObjectWrap<Item> {
   Napi::Value getDirectAccessInformation(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
-      const auto valPair = item_->getDirectAccessInformation();
+      const auto dai = item_->getDirectAccessInformation();
       auto res = Napi::Object::New(env);
-      res["filename"] = Napi::Value::From(env, valPair.first);
-      res["offset"] = Napi::Value::From(env, valPair.second);
+      res["filename"] = Napi::Value::From(env, dai.filename);
+      res["offset"] = Napi::Value::From(env, dai.offset);
+      res["isValid"] = Napi::Value::From(env, dai.isValid());
+      res.Freeze();
       return res;
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
@@ -128,7 +129,6 @@ class Item : public Napi::ObjectWrap<Item> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "Item",
                     {

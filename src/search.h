@@ -118,7 +118,6 @@ class Query : public Napi::ObjectWrap<Query> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Query",
         {
@@ -144,9 +143,6 @@ class SearchIterator : public Napi::ObjectWrap<SearchIterator> {
  public:
   explicit SearchIterator(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SearchIterator>(info), searchIterator_{} {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
     if (info[0].IsExternal()) {
       searchIterator_ =
           *info[0].As<Napi::External<zim::SearchIterator>>().Data();
@@ -233,7 +229,6 @@ class SearchIterator : public Napi::ObjectWrap<SearchIterator> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "SearchIterator",
         {
@@ -260,7 +255,6 @@ class SearchResultSet : public Napi::ObjectWrap<SearchResultSet> {
   explicit SearchResultSet(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<SearchResultSet>(info), searchResultSet_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (!info[0].IsExternal()) {
       throw Napi::Error::New(env,
@@ -326,7 +320,6 @@ class SearchResultSet : public Napi::ObjectWrap<SearchResultSet> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "SearchResultSet",
                     {
@@ -347,11 +340,8 @@ class Search : public Napi::ObjectWrap<Search> {
  public:
   explicit Search(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Search>(info), search_{nullptr} {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
     if (!info[0].IsExternal()) {
-      throw Napi::Error::New(env, "Search must be created internally.");
+      throw Napi::Error::New(info.Env(), "Search must be created internally.");
     }
 
     search_ = std::make_shared<zim::Search>(
@@ -393,7 +383,6 @@ class Search : public Napi::ObjectWrap<Search> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func = DefineClass(
         env, "Search",
         {
@@ -414,7 +403,6 @@ class Searcher : public Napi::ObjectWrap<Searcher> {
   explicit Searcher(const Napi::CallbackInfo &info)
       : Napi::ObjectWrap<Searcher>(info), searcher_{nullptr} {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
 
     if (info[0].IsArray()) {
       auto array = info[0].As<Napi::Array>();
@@ -499,7 +487,6 @@ class Searcher : public Napi::ObjectWrap<Searcher> {
 
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "Searcher",
                     {

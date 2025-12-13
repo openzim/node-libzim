@@ -12,13 +12,11 @@
 class Blob : public Napi::ObjectWrap<Blob> {
  public:
   explicit Blob(const Napi::CallbackInfo &info)
-      : Napi::ObjectWrap<Blob>(info), blob_{std::make_shared<zim::Blob>()} {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
-    if (info[0].IsExternal()) {  // handle internal zim::Blob
-      blob_ = std::make_shared<zim::Blob>(
-          *info[0].As<Napi::External<zim::Blob>>().Data());
+      : Napi::ObjectWrap<Blob>(info), blob_{} {
+    if (info[0].IsExternal()) {
+      // handle internal zim::Blob
+      // Copy blob (shared_ptr) from external
+      blob_ = zim::Blob(*info[0].As<Napi::External<zim::Blob>>().Data());
     } else if (info.Length() > 0) {  // use refcontent_ and copy content
       // TODO(kelvinhammond): avoid copying content somehow in certain scenarios
       // if possible Maybe use a reference object??? What is the lifecycle of
@@ -38,28 +36,31 @@ class Blob : public Napi::ObjectWrap<Blob> {
         data = std::shared_ptr<char>(new char[size],
                                      std::default_delete<char[]>());
         memcpy(data.get(), buf.Data(), size);
-      } else {                                      // all others toString()
-        auto str = info[0].ToString().Utf8Value();  // coerce to string
+      } else if (info[0].IsString()) {  // all others toString()
+        auto str = info[0].As<Napi::String>().Utf8Value();  // coerce to string
         size = str.size();
         data = std::shared_ptr<char>(new char[size],
                                      std::default_delete<char[]>());
         memcpy(data.get(), str.c_str(), size);
+      } else {
+        throw Napi::Error::New(
+            info.Env(),
+            "Blob constructor expects an ArrayBuffer, Buffer, or String");
       }
 
-      blob_ = std::make_shared<zim::Blob>(data, size);  // blob takes ownership
+      blob_ = zim::Blob(data, size);  // blob takes ownership
     }
   }
 
   static Napi::Object New(Napi::Env env, zim::Blob &blob) {
     auto external = Napi::External<zim::Blob>::New(env, &blob);
-    auto &constructor = env.GetInstanceData<ModuleConstructors>()->blob;
-    return constructor.New({external});
+    return GetConstructor(env).New({external});
   }
 
   Napi::Value getData(const Napi::CallbackInfo &info) {
     try {
       // TODO(kelvinhammond): find a way to have a readonly buffer in NodeJS
-      return Napi::Buffer<char>::Copy(info.Env(), blob_->data(), blob_->size());
+      return Napi::Buffer<char>::Copy(info.Env(), blob_.data(), blob_.size());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -67,7 +68,7 @@ class Blob : public Napi::ObjectWrap<Blob> {
 
   Napi::Value toString(const Napi::CallbackInfo &info) {
     try {
-      return Napi::Value::From(info.Env(), (std::string)*blob_);
+      return Napi::Value::From(info.Env(), (std::string)blob_);
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
@@ -75,15 +76,27 @@ class Blob : public Napi::ObjectWrap<Blob> {
 
   Napi::Value getSize(const Napi::CallbackInfo &info) {
     try {
-      return Napi::Value::From(info.Env(), blob_->size());
+      return Napi::Value::From(info.Env(), blob_.size());
     } catch (const std::exception &err) {
       throw Napi::Error::New(info.Env(), err.what());
     }
   }
 
+  static bool InstanceOf(Napi::Env env, Napi::Value value) {
+    if (!value.IsObject()) {
+      return false;
+    }
+    Napi::Object obj = value.As<Napi::Object>();
+    Napi::FunctionReference &constructor = GetConstructor(env);
+    return obj.InstanceOf(constructor.Value());
+  }
+
+  static Napi::FunctionReference &GetConstructor(Napi::Env env) {
+    return env.GetInstanceData<ModuleConstructors>()->blob;
+  }
+
   static void Init(Napi::Env env, Napi::Object exports,
                    ModuleConstructors &constructors) {
-    Napi::HandleScope scope(env);
     Napi::Function func =
         DefineClass(env, "Blob",
                     {
@@ -97,8 +110,8 @@ class Blob : public Napi::ObjectWrap<Blob> {
   }
 
   // internal module methods
-  std::shared_ptr<zim::Blob> blob() const { return blob_; }
+  const zim::Blob &blob() const { return blob_; }
 
  private:
-  std::shared_ptr<zim::Blob> blob_;
+  zim::Blob blob_;
 };

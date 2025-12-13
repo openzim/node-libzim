@@ -1,3 +1,7 @@
+export declare function getClusterCacheMaxSize(): number;
+export declare function getClusterCacheCurrentSize(): number;
+export declare function setClusterCacheMaxSize(nbClusters: number): void;
+
 export class IntegrityCheck {
   static CHECKSUM: symbol;
   static DIRENT_PTRS: symbol;
@@ -104,7 +108,10 @@ export class Creator {
     content: string | ContentProvider,
     mimetype?: string,
   ): void;
-  addIllustration(size: number, content: string | ContentProvider): void;
+  addIllustration(
+    sizeOrInfo: number | IIllustrationInfo,
+    content: string | ContentProvider,
+  ): void;
   addRedirection(
     path: string,
     title: string,
@@ -146,8 +153,35 @@ export interface EntryRange extends Iterable<Entry> {
   offset(start: number, maxResults: number): EntryRange;
 }
 
+export interface IIllustrationInfo {
+  width?: number;
+  height?: number;
+  scale?: number;
+  extraAttributes?: Record<string, string>;
+}
+
+export class IllustrationInfo implements IIllustrationInfo {
+  constructor(info?: IIllustrationInfo | IllustrationInfo);
+  get width(): number;
+  get height(): number;
+  get scale(): number;
+  get extraAttributes(): Record<string, string>;
+  asMetadataItemName(): string;
+  static fromMetadataItemName(name: string): IllustrationInfo;
+}
+
+export class OpenConfig {
+  constructor();
+
+  preloadXapianDb(preload: boolean): this;
+  preloadDirentRanges(nbRanges: number): this;
+
+  get m_preloadXapianDb(): boolean;
+  get m_preloadDirentRanges(): number;
+}
+
 export class Archive {
-  constructor(filepath: string);
+  constructor(filepath: string, config?: OpenConfig);
   get filename(): string;
   get filesize(): number | bigint;
   get allEntryCount(): number;
@@ -158,8 +192,14 @@ export class Archive {
   getMetadata(name: string): string;
   getMetadataItem(name: string): Item;
   get metadataKeys(): string[];
-  getIllustrationItem(size: number): Item;
+  getIllustrationItem(sizeOrInfo?: number | IIllustrationInfo): Item;
   get illustrationSizes(): Set<number>;
+  getIllustrationInfos(
+    width?: number,
+    height?: number,
+    minScale?: number,
+  ): IllustrationInfo[];
+  get illustrationInfos(): IllustrationInfo[];
   getEntryByPath(path_or_idx: string | number): Entry;
   getEntryByTitle(title_or_idx: string | number): Entry;
   getEntryByClusterOrder(idx: number): Entry;
@@ -182,14 +222,9 @@ export class Archive {
   checkIntegrity(checkType: symbol): boolean; // one of IntegrityCheck
   get isMultiPart(): boolean;
   get hasNewNamespaceScheme(): boolean;
-  getClusterCacheMaxSize(): number;
-  getClusterCacheCurrentSize(): number;
-  setClusterCacheMaxSize(nbClusters: number): void;
   getDirentCacheMaxSize(): number;
   getDirentCacheCurrentSize(): number;
   setDirentCacheMaxSize(nbDirents: number): void;
-  getDirentLookupCacheMaxSize(): number;
-  setDirentLookupCacheMaxSize(nbRanges: number): void;
 
   static validate(zimPath: string, checksToRun: symbol[]): boolean; // list of IntegrityCheck
 }

@@ -7,7 +7,9 @@
 #include "contentProvider.h"
 #include "creator.h"
 #include "entry.h"
+#include "illustration.h"
 #include "item.h"
+#include "openconfig.h"
 #include "search.h"
 #include "suggestion.h"
 #include "writerItem.h"
@@ -26,6 +28,8 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
   Item::Init(env, exports, *constructors);
   Entry::Init(env, exports, *constructors);
   Archive::Init(env, exports, *constructors);
+  OpenConfig::Init(env, exports, *constructors);
+  IllustrationInfo::Init(env, exports, *constructors);
 
   Searcher::Init(env, exports, *constructors);
   Query::Init(env, exports, *constructors);
@@ -44,6 +48,28 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
 
   StringItem::Init(env, exports, *constructors);
   FileItem::Init(env, exports, *constructors);
+
+  // Extra helper functions from libzim
+  exports.Set("getClusterCacheMaxSize",
+              Napi::Function::New(env, [](const Napi::CallbackInfo &info) {
+                return Napi::Value::From(info.Env(),
+                                         zim::getClusterCacheMaxSize());
+              }));
+  exports.Set("getClusterCacheCurrentSize",
+              Napi::Function::New(env, [](const Napi::CallbackInfo &info) {
+                return Napi::Value::From(info.Env(),
+                                         zim::getClusterCacheCurrentSize());
+              }));
+  exports.Set("setClusterCacheMaxSize",
+              Napi::Function::New(env, [](const Napi::CallbackInfo &info) {
+                if (info.Length() < 1 || !info[0].IsNumber()) {
+                  throw Napi::TypeError::New(
+                      info.Env(),
+                      "First argument must be a number for max size.");
+                }
+                auto size = info[0].As<Napi::Number>().Int64Value();
+                zim::setClusterCacheMaxSize(size);
+              }));
 
   return exports;
 }

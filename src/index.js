@@ -2,9 +2,11 @@ import bindings from "bindings";
 
 export const {
   Archive,
+  OpenConfig,
   Entry,
   IntegrityCheck,
   Compression,
+  IllustrationInfo,
   Blob,
   Searcher,
   Query,
@@ -14,4 +16,7 @@ export const {
   FileProvider,
   StringItem,
   FileItem,
+  getClusterCacheMaxSize,
+  getClusterCacheCurrentSize,
+  setClusterCacheMaxSize,
 } = bindings("zim_binding");
