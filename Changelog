@@ -1,3 +1,5 @@
+Unreleased
+
 4.0.0
 * NEW: Use libzim 9.4.0
 * FIX: Segmentation Fault issues
