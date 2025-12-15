@@ -14,56 +14,65 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm, ubuntu-24.04, ubuntu-24.04-arm, macos-14, macos-15, macos-15-intel]
+        os:
+          [
+            ubuntu-22.04,
+            ubuntu-22.04-arm,
+            ubuntu-24.04,
+            ubuntu-24.04-arm,
+            macos-14,
+            macos-15,
+            macos-15-intel,
+          ]
         node: [20, 22, 24]
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-    - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node }}
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
 
-    - name: Update apt and install packages
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt-get update -y
-        sudo apt-get install -y \
-          gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
+      - name: Update apt and install packages
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            gcc g++ python3-pip libbz2-dev ccache zlib1g-dev uuid-dev
 
-    - name: Setup Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
 
-    - name: installing add on packages
-      if: startsWith(matrix.os, 'macos')
-      run: brew install ossp-uuid
+      - name: installing add on packages
+        if: startsWith(matrix.os, 'macos')
+        run: brew install ossp-uuid
 
-    - name: setting path
-      run: PATH=$PATH:$HOME/bin
+      - name: setting path
+        run: PATH=$PATH:$HOME/bin
 
-    - name: installing dependencies
-      run: |
-        npm install
-        npm i -g eslint
-        npm i -g codecov
-        npm i -g typescript
+      - name: installing dependencies
+        run: |
+          npm install
+          npm i -g eslint
+          npm i -g codecov
+          npm i -g typescript
 
-    - name: running lint
-      run: npm run lint
+      - name: running lint
+        run: npm run lint
 
-    - name: running test
-      run: npm run test:dist
+      - name: running test
+        run: npm run test:dist
 
-    - name: running codecov
-      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
-      run: npm run codecov
+      - name: running codecov
+        if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
+        run: npm run codecov
 
-    - name: codecov action
-      if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - name: codecov action
+        if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

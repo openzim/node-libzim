@@ -1,4 +1,9 @@
-Unreleased
+4.0.0
+* NEW: Use libzim 9.4.0
+* FIX: Segmentation Fault issues
+* FIX: Ensure addItem operation is thread-safe / protected by a mutex
+* NEW: Use new Illustration APIs
+* FIX: Add prebuilt libzim for Linux aarch64
 
 3.5.0
 * NEW: Build now supports ARM64 (`aarch64`) and ARM (32‑bit)
