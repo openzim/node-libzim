@@ -1,5 +1,6 @@
 Unreleased
 * NEW: Use libzim 9.5.1
+* FIX: Fix lib directories for aarch64
 
 4.0.0
 * NEW: Use libzim 9.4.0
