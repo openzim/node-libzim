@@ -19,15 +19,15 @@ if (isLinux) {
   const rawArch = os.arch();
   let libDir;
   if (rawArch === "arm64") {
-    libDir = "aarch64-rpi3-linux-gnu";
+    libDir = "lib64";
   } else if (rawArch === "arm") {
-    libDir = "arm-linux-gnueabihf";
+    libDir = "lib/arm-linux-gnueabihf";
   } else {
-    libDir = "x86_64-linux-gnu";
+    libDir = "lib/x86_64-linux-gnu";
   }
 
   console.info(`Copying libzim.so.9 from ${libDir} to build folder`);
-  exec(`cp download/lib/${libDir}/libzim.so.9 build/Release/libzim.so.9`);
+  exec(`cp download/${libDir}/libzim.so.9 build/Release/libzim.so.9`);
   exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so"); // convenience only, not required
 }
 if (isMacOS) {
