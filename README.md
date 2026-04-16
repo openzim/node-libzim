@@ -95,6 +95,7 @@ import { Archive, SuggestionSearcher, Searcher } from "@openzim/libzim";
     console.info(`Entry by url (laborum):`, blob.data);
     delete archive;
 })();
+```
 
 ## Local Development
 
