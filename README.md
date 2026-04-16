@@ -61,7 +61,7 @@ import { Creator, StringItem } from "@openzim/libzim";
 ### Reading a ZIM file
 ```javascript
 // read.js
-import { Archive, SuggestionSearcher, Searcher } from "@openzim/libzim";
+import { Archive, Query, SuggestionSearcher, Searcher } from "@openzim/libzim";
 
 (async () => {
     const outFile = "./test.zim";
@@ -89,11 +89,10 @@ import { Archive, SuggestionSearcher, Searcher } from "@openzim/libzim";
     }
 
 
-    const entry = await archive.getEntryByPath("A/laborum");
+    const entry = archive.getEntryByPath("A/laborum");
     const item = entry.item;
     const blob = item.data;
     console.info(`Entry by url (laborum):`, blob.data);
-    delete archive;
 })();
 ```
 
