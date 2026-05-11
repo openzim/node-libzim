@@ -342,6 +342,29 @@ class Creator : public Napi::ObjectWrap<Creator> {
     }
   }
 
+  void addAlias(const Napi::CallbackInfo &info) {
+    try {
+      auto env = info.Env();
+      if (info.Length() < 3) {
+        throw Napi::Error::New(env,
+                               "addAlias requires arguments: path, title, "
+                               "targetPath, [hints]");
+      }
+
+      auto path = info[0].As<Napi::String>().Utf8Value();
+      auto title = info[1].As<Napi::String>().Utf8Value();
+      auto targetPath = info[2].As<Napi::String>().Utf8Value();
+      if (info[3].IsObject()) {
+        auto hints = Object2Hints(info[3].ToObject());
+        creator_->addAlias(path, title, targetPath, hints);
+      } else {
+        creator_->addAlias(path, title, targetPath);
+      }
+    } catch (const std::exception &err) {
+      throw Napi::Error::New(info.Env(), err.what());
+    }
+  }
+
   void setMainPath(const Napi::CallbackInfo &info) {
     try {
       auto env = info.Env();
@@ -387,6 +410,7 @@ class Creator : public Napi::ObjectWrap<Creator> {
             InstanceMethod<&Creator::addMetadata>("addMetadata"),
             InstanceMethod<&Creator::addIllustration>("addIllustration"),
             InstanceMethod<&Creator::addRedirection>("addRedirection"),
+            InstanceMethod<&Creator::addAlias>("addAlias"),
             InstanceMethod<&Creator::setMainPath>("setMainPath"),
             InstanceMethod<&Creator::setUuid>("setUuid"),
 

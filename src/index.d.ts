@@ -118,6 +118,7 @@ export class Creator {
     targetPath: string,
     hints?: Hint,
   ): void;
+  addAlias(path: string, title: string, targetPath: string, hints?: Hint): void;
   setMainPath(mainPath: string): void;
   setUuid(uuid: string): void;
   finishZimCreation(): Promise<void>;

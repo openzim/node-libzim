@@ -1,5 +1,5 @@
 Unreleased
-
+* NEW: Add addAlias method to Creator
 * UPDATE: Change EditorConfig cpp spacing to 2 spaces
 
 4.1.0
