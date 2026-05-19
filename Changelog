@@ -1,4 +1,4 @@
-Unreleased
+4.2.0
 * NEW: Use libzim 9.7.0
 * NEW: Add addAlias method to Creator
 * UPDATE: Change EditorConfig cpp spacing to 2 spaces
