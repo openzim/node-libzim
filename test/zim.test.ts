@@ -222,6 +222,9 @@ describe("Creator", () => {
       creator.addRedirection("redirect/test1", "Redirect to test 1", "test1", {
         COMPRESS: 1,
       });
+      creator.addAlias("alias/test1", "Alias to test 1", "test1", {
+        COMPRESS: 1,
+      });
       creator.setMainPath("redirect/test1");
       creator.setUuid("1234567890ABCDEF");
     } finally {

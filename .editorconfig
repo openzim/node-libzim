@@ -13,7 +13,7 @@ insert_final_newline = true
 indent_style = tab
 
 [*.{c,h,cpp,cpp,hpp}]
-indent_size = 4
+indent_size = 2
 
 [*.{js,ts}]
 indent_size = 2
