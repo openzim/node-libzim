@@ -24,7 +24,7 @@ jobs:
             macos-15,
             macos-15-intel,
           ]
-        node: [20, 22, 24]
+        node: [22, 24, 26]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -68,11 +68,11 @@ jobs:
         run: npm run test:dist
 
       - name: running codecov
-        if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
+        if: ${{ matrix.node == '22' && matrix.os == 'ubuntu-22.04' }}
         run: npm run codecov
 
       - name: codecov action
-        if: ${{ matrix.node == '20' && matrix.os == 'ubuntu-22.04' }}
+        if: ${{ matrix.node == '22' && matrix.os == 'ubuntu-22.04' }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
