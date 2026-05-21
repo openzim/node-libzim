@@ -23,6 +23,8 @@ jobs:
             macos-14,
             macos-15,
             macos-15-intel,
+            macos-26,
+            macos-26-intel
           ]
         node: [22, 24, 26]
     runs-on: ${{ matrix.os }}
