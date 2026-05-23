@@ -1,5 +1,7 @@
 Unreleased
 
+* FIXED: #186 Skip download and symlink when using libzim_local
+
 4.2.0
 * NEW: Use libzim 9.7.0
 * NEW: Add addAlias method to Creator

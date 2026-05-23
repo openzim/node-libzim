@@ -1,10 +1,19 @@
 import dotenv from "dotenv";
 dotenv.config();
+import fs from "fs";
 import { mkdirp } from "mkdirp";
 import exec from "exec-then";
 import os from "os";
 
 mkdirp.sync("./build/Release");
+
+const bindingGypText = fs.readFileSync("binding.gyp", { encoding: "utf8" });
+if (bindingGypText.match(/"libzim_local"\s*:\s*"true"/)) {
+  console.log(
+    "the build is using system libzim -> not bundling libzim, skipping download and copy steps",
+  );
+  process.exit();
+}
 
 const isMacOS = os.type() === "Darwin";
 const isLinux = os.type() === "Linux";
@@ -30,6 +39,7 @@ if (isLinux) {
   exec(`cp download/${libDir}/libzim.so.9 build/Release/libzim.so.9`);
   exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so"); // convenience only, not required
 }
+
 if (isMacOS) {
   console.info("Copying libzim.9.dylib to build folder");
   exec("cp download/lib/libzim.9.dylib build/Release/libzim.9.dylib");
