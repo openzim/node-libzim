@@ -1,4 +1,6 @@
-Unreleased
+4.3.0
+* UPDATE: drop Node.JS 20, add Node.JS 26
+* FIX: Update Node.JS dependencies
 
 4.2.0
 * NEW: Use libzim 9.7.0
