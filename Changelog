@@ -1,4 +1,5 @@
 Unreleased
+* UPDATE: Use libzim 9.8.0
 
 4.3.0
 * UPDATE: drop Node.JS 20, add Node.JS 26
