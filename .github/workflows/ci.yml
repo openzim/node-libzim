@@ -66,6 +66,9 @@ jobs:
       - name: running lint
         run: npm run lint
 
+      - name: running type check
+        run: npm run tsc
+
       - name: running test
         run: npm run test:dist
 

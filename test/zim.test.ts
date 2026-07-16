@@ -520,8 +520,8 @@ describe("Archive", () => {
       expect(entry).toBeDefined();
       const item = entries.find((e) => e.path === entry.path);
       expect(item).toBeDefined();
-      expect(entry.path).toEqual(item.path);
-      expect(entry.title).toEqual(item.title);
+      expect(entry.path).toEqual(item!.path);
+      expect(entry.title).toEqual(item!.title);
       itSpy();
     }
     expect(itSpy).toHaveBeenCalledTimes(entries.length);
