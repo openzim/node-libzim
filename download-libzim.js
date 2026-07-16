@@ -28,7 +28,7 @@ if (!isAvailableArch) {
   );
 }
 
-let osPrefix = isMacOS ? "macos" : "linux";
+const osPrefix = isMacOS ? "macos" : "linux";
 let osArch = isLinux ? "x86_64" : "x86_64";
 
 if (rawArch !== "x64") {
@@ -43,7 +43,7 @@ const urls = [
   `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${osArch}-${process.env.LIBZIM_VERSION}.tar.gz`,
 ].filter((a) => a);
 
-for (let url of urls) {
+for (const url of urls) {
   console.info(`Downloading Libzim from: `, url);
   const filename = new URL(url).pathname.split("/").slice(-1)[0];
   const dlFile = `./download/${filename}`;
@@ -52,7 +52,7 @@ for (let url of urls) {
     fs.statSync(dlFile);
     console.warn(`File [${dlFile}] already exists, not downloading`);
     break;
-  } catch (err) {
+  } catch {
     //
   }
 

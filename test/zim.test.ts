@@ -143,7 +143,7 @@ describe("Creator", () => {
   const removeOutFile = () => {
     try {
       fs.unlinkSync(outFile);
-    } catch (e) {
+    } catch {
       // noop
     }
   };
@@ -374,7 +374,7 @@ describe("Archive", () => {
   const removeOutFile = () => {
     try {
       fs.unlinkSync(outFile);
-    } catch (e) {
+    } catch {
       // noop
     }
   };
