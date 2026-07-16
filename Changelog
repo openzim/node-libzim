@@ -1,5 +1,6 @@
 Unreleased
 * UPDATE: Use libzim 9.8.1
+* FIX: Update Node.JS dependencies
 
 4.4.0
 * UPDATE: Use libzim 9.8.0
