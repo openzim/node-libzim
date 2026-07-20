@@ -1,24 +1,17 @@
 {
   "compilerOptions": {
     "module": "es2022",
-    "lib": [
-      "es6"
-    ],
+    "lib": ["es2022"],
     "allowJs": true,
+    "checkJs": true,
     "declaration": true,
     "noImplicitAny": true,
     "outDir": "dist",
     "noEmit": true,
     "removeComments": false,
-    "target": "es6",
+    "target": "es2022",
     "esModuleInterop": true,
-    "types": [
-      "jest",
-      "node"
-    ]
+    "types": ["jest", "node"]
   },
-  "exclude": [
-    "dist",
-    "eslint.config.js"
-  ]
+  "exclude": ["dist", "eslint.config.js"]
 }
