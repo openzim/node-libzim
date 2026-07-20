@@ -3,10 +3,14 @@ import { loadEnvFile } from "node:process";
 import { promisify } from "node:util";
 import fs from "node:fs";
 import os from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-loadEnvFile();
+const PROJECT_ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 
-fs.mkdirSync("./build/Release", { recursive: true });
+loadEnvFile(join(PROJECT_ROOT_DIR, ".env"));
+
+fs.mkdirSync(join(PROJECT_ROOT_DIR, "build", "Release"), { recursive: true });
 
 const isMacOS = os.type() === "Darwin";
 const isLinux = os.type() === "Linux";
@@ -31,15 +35,24 @@ if (isLinux) {
   }
 
   console.info(`Copying libzim.so.9 from ${libDir} to build folder`);
-  await exec(`cp download/${libDir}/libzim.so.9 build/Release/libzim.so.9`);
-  await exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so"); // convenience only, not required
+  await exec(`cp download/${libDir}/libzim.so.9 build/Release/libzim.so.9`, {
+    cwd: PROJECT_ROOT_DIR,
+  });
+  await exec("ln -sf build/Release/libzim.so.9 build/Release/libzim.so", {
+    cwd: PROJECT_ROOT_DIR,
+  }); // convenience only, not required
 }
 if (isMacOS) {
   console.info("Copying libzim.9.dylib to build folder");
-  await exec("cp download/lib/libzim.9.dylib build/Release/libzim.9.dylib");
-  await exec("ln -sf build/Release/libzim.9.dylib build/Release/libzim.dylib"); // convienience only, not required
+  await exec("cp download/lib/libzim.9.dylib build/Release/libzim.9.dylib", {
+    cwd: PROJECT_ROOT_DIR,
+  });
+  await exec("ln -sf build/Release/libzim.9.dylib build/Release/libzim.dylib", {
+    cwd: PROJECT_ROOT_DIR,
+  }); // convienience only, not required
   console.info("Fixing rpath");
   await exec(
     "install_name_tool -change libzim.9.dylib @loader_path/libzim.9.dylib build/Release/zim_binding.node",
+    { cwd: PROJECT_ROOT_DIR },
   );
 }

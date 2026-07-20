@@ -1,15 +1,19 @@
-import { basename } from "node:path";
 import { exec } from "node:child_process";
-import { loadEnvFile } from "node:process";
-import { pipeline } from "node:stream/promises";
-import { promisify } from "node:util";
-import { Readable } from "node:stream";
 import fs from "node:fs";
 import os from "node:os";
+import { basename, dirname, join } from "node:path";
+import { loadEnvFile } from "node:process";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
-loadEnvFile();
+const PROJECT_ROOT_DIR = dirname(fileURLToPath(import.meta.url));
+const DOWNLOAD_DIR = join(PROJECT_ROOT_DIR, "download");
 
-fs.mkdirSync("./download", { recursive: true });
+loadEnvFile(join(PROJECT_ROOT_DIR, ".env"));
+
+fs.mkdirSync(DOWNLOAD_DIR, { recursive: true });
 
 console.info("os.type() is:", os.type());
 console.info("os.arch() is:", os.arch());
@@ -46,7 +50,7 @@ const url = `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${os
 
 console.info(`Downloading Libzim from: `, url);
 const filename = basename(new URL(url).pathname);
-const dlFile = `./download/${filename}`;
+const dlFile = join(DOWNLOAD_DIR, filename);
 
 try {
   fs.statSync(dlFile);
@@ -63,7 +67,7 @@ if (!response.body) {
 
 await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(dlFile));
 
-const cmd = `tar --strip-components 1 -xf ${dlFile} -C ./download`;
+const cmd = `tar --strip-components 1 -xf ${dlFile} -C ${DOWNLOAD_DIR}`;
 console.log(`Running Extract:`, `[${cmd}]`);
 
 try {
