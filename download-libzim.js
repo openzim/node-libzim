@@ -1,12 +1,15 @@
-import dotenv from "dotenv";
-dotenv.config();
-import axios from "axios";
-import { mkdirp } from "mkdirp";
-import exec from "exec-then";
-import os from "os";
-import fs from "fs";
+import { basename } from "node:path";
+import { exec } from "node:child_process";
+import { loadEnvFile } from "node:process";
+import { pipeline } from "node:stream/promises";
+import { promisify } from "node:util";
+import { Readable } from "node:stream";
+import fs from "node:fs";
+import os from "node:os";
 
-mkdirp.sync("./download");
+loadEnvFile();
+
+fs.mkdirSync("./download", { recursive: true });
 
 console.info("os.type() is:", os.type());
 console.info("os.arch() is:", os.arch());
@@ -39,43 +42,33 @@ if (rawArch !== "x64") {
   }
 }
 
-const urls = [
-  `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${osArch}-${process.env.LIBZIM_VERSION}.tar.gz`,
-].filter((a) => a);
+const url = `https://download.openzim.org/release/libzim/libzim_${osPrefix}-${osArch}-${process.env.LIBZIM_VERSION}.tar.gz`;
 
-for (const url of urls) {
-  console.info(`Downloading Libzim from: `, url);
-  const filename = new URL(url).pathname.split("/").slice(-1)[0];
-  const dlFile = `./download/${filename}`;
+console.info(`Downloading Libzim from: `, url);
+const filename = basename(new URL(url).pathname);
+const dlFile = `./download/${filename}`;
 
-  try {
-    fs.statSync(dlFile);
-    console.warn(`File [${dlFile}] already exists, not downloading`);
-    break;
-  } catch {
-    //
-  }
+try {
+  fs.statSync(dlFile);
+  console.warn(`File [${dlFile}] already exists, not downloading`);
+} catch {
+  //
+}
 
-  axios({
-    url,
-    method: "get",
-    responseType: "stream",
-  })
-    .then(function (response) {
-      const ws = fs.createWriteStream(dlFile);
-      return new Promise((resolve, reject) => {
-        response.data.pipe(ws).on("error", reject).on("close", resolve);
-      });
-    })
-    .then(() => {
-      const cmd = `tar --strip-components 1 -xf ${dlFile} -C ./download`;
-      console.log(`Running Extract:`, `[${cmd}]`);
-      return exec(cmd);
-    })
-    .then(() => {
-      console.info(`Successfully downloaded and extracted file`);
-    })
-    .catch((err) => {
-      console.error(`Failed to download and extract file:`, err);
-    });
+const response = await fetch(url);
+
+if (!response.body) {
+  throw new Error("Response body is missing");
+}
+
+await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(dlFile));
+
+const cmd = `tar --strip-components 1 -xf ${dlFile} -C ./download`;
+console.log(`Running Extract:`, `[${cmd}]`);
+
+try {
+  await promisify(exec)(cmd);
+  console.info(`Successfully downloaded and extracted file`);
+} catch (err) {
+  console.error(`Failed to download and extract file:`, err);
 }
