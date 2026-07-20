@@ -44,19 +44,16 @@
   "homepage": "https://github.com/openzim/node-libzim#readme",
   "gypfile": true,
   "dependencies": {
-    "@types/bindings": "^1.5.5",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^26.1.1",
+    "@types/node": "22 || 24 || 26",
     "bindings": "^1.5.0",
     "node-addon-api": "^8.9.0",
-    "node-gyp": "^13.0.1",
-    "tqdm": "^2.0.3",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "node-gyp": "^13.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.5.0",
+    "@types/bindings": "^1.5.5",
+    "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.64.0",
     "@typescript-eslint/parser": "^8.64.0",
     "eslint": "^10.7.0",
@@ -66,6 +63,9 @@
     "nyc": "^18.0.0",
     "prettier": "^3.9.5",
     "ts-jest": "^29.4.11",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tqdm": "^2.0.3",
     "typescript": "^6.0.3"
   },
   "jest": {
