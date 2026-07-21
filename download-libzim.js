@@ -61,6 +61,12 @@ try {
 
 const response = await fetch(url);
 
+if (!response.ok) {
+  throw new Error(
+    `Fetch returned error response: ${response.status} (${response.statusText})`,
+  );
+}
+
 if (!response.body) {
   throw new Error("Response body is missing");
 }
