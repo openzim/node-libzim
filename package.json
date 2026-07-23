@@ -17,8 +17,8 @@
     "test": "node --test test/zim.test.ts",
     "test-mem-leak": "node test/makeLargeZim.ts",
     "test:dist": "npm run build && node --test test/dist.test.ts",
-    "lint": "npx eslint .",
-    "lint:fix": "npx eslint . --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "nyc": {
     "extension": [
