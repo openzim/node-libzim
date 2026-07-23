@@ -1,6 +1,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import { Creator, Archive, StringItem, Blob } from "../src";
+import { Creator, Archive, StringItem, Blob } from "../src/index.js";
 
 import tqdm from "tqdm";
 

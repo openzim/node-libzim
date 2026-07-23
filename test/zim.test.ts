@@ -1,25 +1,33 @@
-// noinspection ES6UnusedImports
-import {} from "ts-jest";
-import crypto from "crypto";
-import * as fs from "fs";
+import { expect } from "expect";
+import crypto from "node:crypto";
+import * as fs from "node:fs";
+import {
+  after,
+  afterEach,
+  before,
+  beforeEach,
+  describe,
+  it,
+  mock,
+} from "node:test";
 import {
   Archive,
-  OpenConfig,
+  Blob,
+  Compression,
+  Creator,
   IllustrationInfo,
   IntegrityCheck,
-  Compression,
-  Blob,
-  StringItem,
-  StringProvider,
-  Creator,
+  OpenConfig,
   Query,
   Searcher,
+  StringItem,
+  StringProvider,
   SuggestionSearcher,
-  WriterItem,
-  getClusterCacheMaxSize,
+  type WriterItem,
   getClusterCacheCurrentSize,
+  getClusterCacheMaxSize,
   setClusterCacheMaxSize,
-} from "../src";
+} from "../src/index.js";
 
 describe("IntegrityCheck", () => {
   it("is exported with symbols", () => {
@@ -379,7 +387,7 @@ describe("Archive", () => {
     }
   };
 
-  beforeAll(async () => {
+  before(async () => {
     removeOutFile();
 
     const creator = new Creator()
@@ -401,7 +409,7 @@ describe("Archive", () => {
     await creator.finishZimCreation();
   });
 
-  afterAll(() => {
+  after(() => {
     removeOutFile();
   });
 
@@ -515,7 +523,7 @@ describe("Archive", () => {
     expect(iter[Symbol.iterator]().next().value.title).toBeDefined();
     expect(iter[Symbol.iterator]().next().done).toBe(false);
 
-    const itSpy = jest.fn();
+    const itSpy = mock.fn();
     for (const entry of iter) {
       expect(entry).toBeDefined();
       const item = entries.find((e) => e.path === entry.path);
@@ -524,7 +532,7 @@ describe("Archive", () => {
       expect(entry.title).toEqual(item!.title);
       itSpy();
     }
-    expect(itSpy).toHaveBeenCalledTimes(entries.length);
+    expect(itSpy.mock.callCount()).toBe(entries.length);
 
     // NOTE: expects items to be stored by path still
     expect(Array.from(archive.iterByPath().offset(3, 1)).length).toEqual(1);

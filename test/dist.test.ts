@@ -1,18 +1,20 @@
+import { expect } from "expect";
+import { describe, it } from "node:test";
 import {
   Archive,
-  Entry,
-  IntegrityCheck,
-  Compression,
   Blob,
-  Searcher,
-  Query,
-  SuggestionSearcher,
+  Compression,
   Creator,
-  StringProvider,
-  FileProvider,
-  StringItem,
+  Entry,
   FileItem,
-} from "../dist/index";
+  FileProvider,
+  IntegrityCheck,
+  Query,
+  Searcher,
+  StringItem,
+  StringProvider,
+  SuggestionSearcher,
+} from "../dist/index.js";
 
 describe("libzim dist", () => {
   it("should have all the functions", () => {
