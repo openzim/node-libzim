@@ -5,7 +5,6 @@ import { Creator, Archive, StringItem, Blob } from "../src/index.js";
 import tqdm from "tqdm";
 
 const numArticles = 1000000;
-// const numArticles = 10000;
 const outFile = path.join(import.meta.dirname, "../largeZim.zim");
 
 console.log(`Making ZIM file (${outFile}) with [${numArticles}] articles`);
@@ -27,11 +26,8 @@ console.log(`Making ZIM file (${outFile}) with [${numArticles}] articles`);
   }
 
   for (const i of tqdm(rangeGenerator(numArticles), { total: numArticles })) {
-    // for (let i = 0; i < numArticles; i++) {
-    // const title = `${i}_${faker.lorem.words(faker.random.number({min: 1, max: 4}))}`;
     const title = `test ${i}`;
     const url = title.replace(/ /g, "_");
-    // const data = faker.lorem.paragraphs(10);
     const data = `hello world ${i}`;
 
     const stringItem = new StringItem(
