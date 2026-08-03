@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es2022",
+    "module": "nodenext",
     "lib": ["es2022"],
     "allowJs": true,
     "checkJs": true,
@@ -11,7 +11,10 @@
     "removeComments": false,
     "target": "es2022",
     "esModuleInterop": true,
-    "types": ["jest", "node"]
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
   },
   "exclude": ["dist", "eslint.config.js"]
 }
