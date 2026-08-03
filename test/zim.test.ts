@@ -1,4 +1,4 @@
-import { expect } from "expect";
+import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import * as fs from "node:fs";
 import {
@@ -31,22 +31,28 @@ import {
 
 describe("IntegrityCheck", () => {
   it("is exported with symbols", () => {
-    expect(Object.keys(IntegrityCheck)).toHaveLength(7);
-    for (const key of Object.keys(IntegrityCheck)) {
+    const integrityCheckKeys = Object.keys(IntegrityCheck);
+
+    assert.equal(integrityCheckKeys.length, 7);
+
+    for (const key of integrityCheckKeys) {
       const keyTyped = key as keyof typeof IntegrityCheck;
       const sym = IntegrityCheck[keyTyped];
-      expect(typeof sym).toBe("symbol");
+      assert.equal(typeof sym, "symbol");
     }
   });
 });
 
 describe("Compression", () => {
   it("is exported with symbols", () => {
-    expect(Object.keys(Compression)).toHaveLength(2);
-    for (const key of Object.keys(Compression)) {
+    const compressionKeys = Object.keys(Compression);
+
+    assert.equal(compressionKeys.length, 2);
+
+    for (const key of compressionKeys) {
       const keyTyped = key as keyof typeof Compression;
       const sym = Compression[keyTyped];
-      expect(typeof sym).toBe("symbol");
+      assert.equal(typeof sym, "symbol");
     }
   });
 });
@@ -54,16 +60,15 @@ describe("Compression", () => {
 describe("Blob", () => {
   it("constructs a blob", () => {
     const blob = new Blob();
-    expect(blob).toBeDefined();
+    assert(blob);
   });
 
   it("returns proper data", () => {
     const str = "hello world";
     const blob = new Blob(str);
-    expect(blob).toBeDefined();
-    expect(blob.size).toBe(str.length);
-    expect(blob.data.length).toBe(str.length);
-    expect(blob.data.toString()).toBe(str);
+    assert.equal(blob.size, str.length);
+    assert.equal(blob.data.length, str.length);
+    assert.equal(blob.data.toString(), str);
   });
 });
 
@@ -71,18 +76,18 @@ describe("StringProvider", () => {
   it("constructs a StringProvider", () => {
     const str = "hello world";
     const provider = new StringProvider(str);
-    expect(provider).toBeDefined();
-    expect(provider.size).toBe(str.length);
+    assert(provider);
+    assert.equal(provider.size, str.length);
 
     let feed = provider.feed();
-    expect(feed).toBeDefined();
-    expect(feed.size).toBe(str.length);
-    expect(feed.data.toString()).toBe(str);
+    assert(feed);
+    assert.equal(feed.size, str.length);
+    assert.equal(feed.data.toString(), str);
 
     feed = provider.feed();
-    expect(feed).toBeDefined();
-    expect(feed.size).toBe(0);
-    expect(feed.data.toString()).toBe("");
+    assert(feed);
+    assert.equal(feed.size, 0);
+    assert.equal(feed.data.toString(), "");
   });
 });
 
@@ -95,53 +100,53 @@ describe("StringItem", () => {
 
   it("constructs a StringItem with proper data", () => {
     const item = new StringItem(path, mimeType, title, hints, content);
-    expect(item).toBeDefined();
-    expect(item.path).toBe(path);
-    expect(item.mimeType).toBe(mimeType);
-    expect(item.title).toBe(title);
-    expect(item.hints).toEqual(hints);
+    assert(item);
+    assert.equal(item.path, path);
+    assert.equal(item.mimeType, mimeType);
+    assert.equal(item.title, title);
+    assert.deepEqual(item.hints, hints);
 
-    expect(typeof item.getContentProvider).toBe("function");
+    assert.equal(typeof item.getContentProvider, "function");
 
     const contentProvider = item.getContentProvider();
-    expect(contentProvider).toBeDefined();
-    expect(contentProvider.size).toBe(content.length);
+    assert(contentProvider);
+    assert.equal(contentProvider.size, content.length);
 
     let feed = contentProvider.feed();
-    expect(feed).toBeDefined();
-    expect(feed.size).toBe(content.length);
-    expect(feed.data.toString()).toBe(content);
+    assert(feed);
+    assert.equal(feed.size, content.length);
+    assert.equal(feed.data.toString(), content);
 
     feed = contentProvider.feed();
-    expect(feed).toBeDefined();
-    expect(feed.size).toBe(0);
-    expect(feed.data.toString()).toBe("");
+    assert(feed);
+    assert.equal(feed.size, 0);
+    assert.equal(feed.data.toString(), "");
   });
 
   it("constructs a StringItem from a Buffer", () => {
     const content = Buffer.from("abc\0def");
-    expect(content.length).toEqual(7);
+    assert.equal(content.length, 7);
 
     const item = new StringItem(path, mimeType, title, hints, content);
-    expect(item).toBeDefined();
-    expect(item.path).toBe(path);
-    expect(item.mimeType).toBe(mimeType);
-    expect(item.title).toBe(title);
-    expect(item.hints).toEqual(hints);
+    assert(item);
+    assert.equal(item.path, path);
+    assert.equal(item.mimeType, mimeType);
+    assert.equal(item.title, title);
+    assert.deepEqual(item.hints, hints);
 
     const contentProvider = item.getContentProvider();
-    expect(contentProvider).toBeDefined();
-    expect(contentProvider.size).toBe(content.length);
+    assert(contentProvider);
+    assert.equal(contentProvider.size, content.length);
 
     let feed = contentProvider.feed();
-    expect(feed).toBeDefined();
-    expect(feed.size).toBe(content.length);
-    expect(content.equals(feed.data)).toBe(true);
+    assert(feed);
+    assert.equal(feed.size, content.length);
+    assert.equal(content.equals(feed.data), true);
 
     feed = contentProvider.feed();
-    expect(feed).toBeDefined();
-    expect(feed.size).toBe(0);
-    expect(feed.data.toString()).toBe("");
+    assert(feed);
+    assert.equal(feed.size, 0);
+    assert.equal(feed.data.toString(), "");
   });
 });
 
@@ -166,18 +171,18 @@ describe("Creator", () => {
 
   it("Configures", () => {
     const creator = new Creator();
-    expect(creator.configVerbose(true)).toEqual(creator);
-    expect(creator.configCompression(Compression.Zstd)).toEqual(creator);
-    expect(creator.configClusterSize(100)).toEqual(creator);
-    expect(creator.configIndexing(true, "en")).toEqual(creator);
-    expect(creator.configNbWorkers(10)).toEqual(creator);
+    assert.equal(creator.configVerbose(true), creator);
+    assert.equal(creator.configCompression(Compression.Zstd), creator);
+    assert.equal(creator.configClusterSize(100), creator);
+    assert.equal(creator.configIndexing(true, "en"), creator);
+    assert.equal(creator.configNbWorkers(10), creator);
   });
 
   it("Creates a zim file", async () => {
     const creator = new Creator();
     try {
-      expect(creator.configIndexing(true, "en")).toEqual(creator);
-      expect(creator.startZimCreation(outFile)).toEqual(creator);
+      assert.equal(creator.configIndexing(true, "en"), creator);
+      assert.equal(creator.startZimCreation(outFile), creator);
       for (let i = 0; i < 10; i++) {
         const item = new StringItem(
           `test${i}`,
@@ -186,7 +191,7 @@ describe("Creator", () => {
           { FRONT_ARTICLE: 1, COMPRESS: 1 },
           `Hello world ${i}!`,
         );
-        await expect(creator.addItem(item)).resolves.toEqual(undefined);
+        assert.equal(await creator.addItem(item), undefined);
       }
 
       await creator.addItem({
@@ -244,20 +249,20 @@ describe("Creator", () => {
 describe("IllustrationInfo", () => {
   it("Creates a default IllustrationInfo", () => {
     const info = new IllustrationInfo();
-    expect(info).toBeDefined();
-    expect(info.width).toBe(0);
-    expect(info.height).toBe(0);
-    expect(info.scale).toBe(0);
-    expect(info.extraAttributes).toEqual({});
+    assert(info);
+    assert.equal(info.width, 0);
+    assert.equal(info.height, 0);
+    assert.equal(info.scale, 0);
+    assert.deepEqual(info.extraAttributes, {});
   });
 
   it("Creates an empty IllustrationInfo", () => {
     const info = new IllustrationInfo({});
-    expect(info).toBeDefined();
-    expect(info.width).toBe(0);
-    expect(info.height).toBe(0);
-    expect(info.scale).toBe(0);
-    expect(info.extraAttributes).toEqual({});
+    assert(info);
+    assert.equal(info.width, 0);
+    assert.equal(info.height, 0);
+    assert.equal(info.scale, 0);
+    assert.deepEqual(info.extraAttributes, {});
   });
 
   it("Creates an IllustrationInfo which functions", () => {
@@ -267,30 +272,30 @@ describe("IllustrationInfo", () => {
       scale: 2.0,
       extraAttributes: { test: "value" },
     });
-    expect(info).toBeDefined();
-    expect(info.width).toBe(100);
-    expect(info.height).toBe(200);
-    expect(info.scale).toBe(2.0);
-    expect(info.extraAttributes).toEqual({ test: "value" });
+    assert(info);
+    assert.equal(info.width, 100);
+    assert.equal(info.height, 200);
+    assert.equal(info.scale, 2.0);
+    assert.deepEqual(info.extraAttributes, { test: "value" });
   });
 });
 
 describe("OpenConfig", () => {
   it("Creates an OpenConfig which functions", () => {
     const config = new OpenConfig();
-    expect(config).toBeDefined();
+    assert(config);
 
     // Integration tests, these are set to the defaults
-    expect(config.m_preloadXapianDb).toBe(true);
-    expect(config.m_preloadDirentRanges).toBe(1024);
+    assert.equal(config.m_preloadXapianDb, true);
+    assert.equal(config.m_preloadDirentRanges, 1024);
 
     let res = config.preloadXapianDb(false);
-    expect(res).toBe(config);
-    expect(config.m_preloadXapianDb).toBe(false);
+    assert.equal(res, config);
+    assert.equal(config.m_preloadXapianDb, false);
 
     res = config.preloadDirentRanges(5);
-    expect(res).toBe(config);
-    expect(config.m_preloadDirentRanges).toBe(5);
+    assert.equal(res, config);
+    assert.equal(config.m_preloadDirentRanges, 5);
   });
 });
 
@@ -415,7 +420,7 @@ describe("Archive", () => {
 
   it("Validates an archive", () => {
     const checks = [IntegrityCheck.CHECKSUM];
-    expect(Archive.validate(outFile, checks)).toBe(true);
+    assert.equal(Archive.validate(outFile, checks), true);
   });
 
   it("Opens an archive with OpenConfig", () => {
@@ -423,212 +428,213 @@ describe("Archive", () => {
       .preloadXapianDb(true)
       .preloadDirentRanges(512);
     const archive = new Archive(outFile, config);
-    expect(archive).toBeDefined();
-    expect(archive.filename).toBe(outFile);
-    expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
+    assert(archive);
+    assert.equal(archive.filename, outFile);
+    assert.equal(archive.allEntryCount >= items.length, true);
   });
 
   it("Reads items from an archive", () => {
     const archive = new Archive(outFile);
-    expect(archive).toBeDefined();
-    expect(archive.filename).toBe(outFile);
-    expect(archive.filesize).toBeGreaterThan(items.length);
-    expect(archive.allEntryCount).toBeGreaterThanOrEqual(items.length);
-    expect(archive.entryCount).toBe(entries.length);
-    expect(archive.articleCount).toBe(items.length);
-    expect(archive.mediaCount).toBe(0);
-    expect(archive.uuid).toBeDefined();
-    expect(archive.getDirentCacheMaxSize()).toBeDefined();
-    expect(archive.getDirentCacheCurrentSize()).toBeDefined();
+    assert(archive);
+    assert.equal(archive.filename, outFile);
+    assert.equal(archive.filesize > items.length, true);
+    assert.equal(archive.allEntryCount >= items.length, true);
+    assert.equal(archive.entryCount, entries.length);
+    assert.equal(archive.articleCount, items.length);
+    assert.equal(archive.mediaCount, 0);
+    assert(archive.uuid, undefined);
+    assert.equal(typeof archive.getDirentCacheMaxSize(), "number");
+    assert.equal(typeof archive.getDirentCacheCurrentSize(), "number");
 
     // test metadata
-    expect(archive.metadataKeys).toEqual(
-      expect.arrayContaining(Object.keys(meta)),
-    );
+    assert.partialDeepStrictEqual(archive.metadataKeys, Object.keys(meta));
     for (const [k, v] of Object.entries(meta)) {
-      expect(archive.getMetadata(k)).toEqual(v);
+      assert.equal(archive.getMetadata(k), v);
 
       const item = archive.getMetadataItem(k);
-      expect(item.title).toEqual(k);
-      expect(item.data.data.toString()).toEqual(v);
-      expect(item.size).toEqual(v.length);
-      expect(item.mimetype.length).toBeGreaterThan(3);
+      assert.equal(item.title, k);
+      assert.equal(item.data.data.toString(), v);
+      assert.equal(item.size, v.length);
+      assert.equal(item.mimetype.length > 3, true);
     }
 
-    expect(archive.hasIllustration(png_size)).toBe(true);
+    assert.equal(archive.hasIllustration(png_size), true);
     const illustration = archive.getIllustrationItem(png_size);
-    expect(illustration.data.data.toString().startsWith(png)).toBe(true);
-    expect(illustration.data.data.toString()).toEqual(png);
-    expect(illustration.size).toBeGreaterThanOrEqual(png.length);
-    expect(archive.illustrationSizes).toContain(png_size);
+    assert.equal(illustration.data.data.toString().startsWith(png), true);
+    assert.equal(illustration.data.data.toString(), png);
+    assert.equal(illustration.size >= png.length, true);
+    assert.equal(archive.illustrationSizes.has(png_size), true);
 
     // Only 1 png added
     const infos = archive.illustrationInfos;
-    expect(infos.length).toEqual(1);
-    expect(infos[0].width).toBeGreaterThan(0);
-    expect(infos[0].height).toBeGreaterThan(0);
+    assert.equal(infos.length, 1);
+    assert.equal(infos[0].width > 0, true);
+    assert.equal(infos[0].height > 0, true);
 
     // That 1 png should be retrievable again using the info
     const il1 = archive.getIllustrationItem(infos[0]);
-    expect(il1).toBeDefined();
-    expect(il1).toEqual(illustration);
-    expect(il1.data.data.toString()).toEqual(png);
+    assert(il1);
+    assert.deepEqual(il1, illustration);
+    assert.equal(il1.data.data.toString(), png);
 
     // Matching illustration
-    expect(
+    assert.equal(
       archive.getIllustrationInfos(
         infos[0].width,
         infos[0].height,
         infos[0].scale,
       ).length,
-    ).toEqual(1);
+      1,
+    );
 
     // Not matching illustrationInfos
-    expect(archive.getIllustrationInfos(100, 100, 3).length).toEqual(0);
+    assert.equal(archive.getIllustrationInfos(100, 100, 3).length, 0);
 
     for (const item of items) {
       const bypath = archive.getEntryByPath(item.path);
-      expect(bypath).toBeDefined();
+      assert(bypath);
 
       const byidx = archive.getEntryByPath(bypath.index);
       const bytitle = archive.getEntryByTitle(item.title);
 
       for (const entry of [bypath, byidx, bytitle]) {
-        expect(entry).toBeDefined();
-        expect(entry.path).toEqual(item.path);
-        expect(entry.isRedirect).toBe(false);
-        expect(entry.index).toEqual(bypath.index);
+        assert(entry);
+        assert.equal(entry.path, item.path);
+        assert.equal(entry.isRedirect, false);
+        assert.equal(entry.index, bypath.index);
       }
 
-      expect(archive.hasEntryByPath(item.path)).toBe(true);
-      expect(archive.hasEntryByTitle(item.title)).toBe(true);
+      assert.equal(archive.hasEntryByPath(item.path), true);
+      assert.equal(archive.hasEntryByTitle(item.title), true);
     }
 
-    expect(archive.hasMainEntry()).toBe(true);
-    expect(archive.mainEntry).toBeDefined();
-    expect(archive.mainEntry.isRedirect).toBe(true);
-    expect(archive.mainEntry.redirect.path).toEqual(items[0].path);
-    expect(archive.randomEntry.path).toBeDefined();
+    assert.equal(archive.hasMainEntry(), true);
+    assert(archive.mainEntry);
+    assert.equal(archive.mainEntry.isRedirect, true);
+    assert.equal(archive.mainEntry.redirect.path, items[0].path);
+    assert(archive.randomEntry.path);
 
-    expect(archive.hasFulltextIndex()).toBe(true);
-    expect(archive.hasTitleIndex()).toBe(true);
+    assert.equal(archive.hasFulltextIndex(), true);
+    assert.equal(archive.hasTitleIndex(), true);
 
     items.sort((x, y) => x.path.localeCompare(y.path));
     const iter = archive.iterByPath();
-    expect(iter).toBeDefined();
-    expect(iter.size).toEqual(entries.length);
+    assert(iter);
+    assert.equal(iter.size, entries.length);
 
-    expect(Array.from(iter).length).toEqual(entries.length);
-    expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
-    expect(iter[Symbol.iterator]().next().value.title).toBeDefined();
-    expect(iter[Symbol.iterator]().next().done).toBe(false);
+    assert.equal(Array.from(iter).length, entries.length);
+    assert.equal(typeof iter[Symbol.iterator], "function");
+    assert(iter[Symbol.iterator]().next().value.title);
+    assert.equal(iter[Symbol.iterator]().next().done, false);
 
     const itSpy = mock.fn();
     for (const entry of iter) {
-      expect(entry).toBeDefined();
+      assert(entry);
       const item = entries.find((e) => e.path === entry.path);
-      expect(item).toBeDefined();
-      expect(entry.path).toEqual(item!.path);
-      expect(entry.title).toEqual(item!.title);
+      assert(item);
+      assert.equal(entry.path, item.path);
+      assert.equal(entry.title, item.title);
       itSpy();
     }
-    expect(itSpy.mock.callCount()).toBe(entries.length);
+    assert.equal(itSpy.mock.callCount(), entries.length);
 
     // NOTE: expects items to be stored by path still
-    expect(Array.from(archive.iterByPath().offset(3, 1)).length).toEqual(1);
+    assert.equal(Array.from(archive.iterByPath().offset(3, 1)).length, 1);
     // blobs don't have titles but items do.
-    expect(Array.from(archive.iterByTitle()).length).toEqual(items.length);
-    expect(Array.from(archive.iterEfficient()).length).toEqual(entries.length);
+    assert.equal(Array.from(archive.iterByTitle()).length, items.length);
+    assert.equal(Array.from(archive.iterEfficient()).length, entries.length);
 
-    expect(Array.from(archive.findByTitle(items[2].title)).length).toEqual(1);
-    expect(Array.from(archive.findByTitle(items[3].title))[0].title).toEqual(
+    assert.equal(Array.from(archive.findByTitle(items[2].title)).length, 1);
+    assert.equal(
+      Array.from(archive.findByTitle(items[3].title))[0].title,
       items[3].title,
     );
 
-    expect(Array.from(archive.findByPath(items[2].path)).length).toEqual(1);
-    expect(Array.from(archive.findByPath(items[3].path))[0].path).toEqual(
+    assert.equal(Array.from(archive.findByPath(items[2].path)).length, 1);
+    assert.equal(
+      Array.from(archive.findByPath(items[3].path))[0].path,
       items[3].path,
     );
 
-    expect(archive.hasChecksum).toBe(true);
-    expect(archive.checksum).toBeDefined();
+    assert.equal(archive.hasChecksum, true);
+    assert(archive.checksum);
 
-    expect(archive.check()).toBe(true);
-    expect(archive.checkIntegrity(IntegrityCheck.CHECKSUM)).toBe(true);
+    assert.equal(archive.check(), true);
+    assert.equal(archive.checkIntegrity(IntegrityCheck.CHECKSUM), true);
 
-    expect(archive.isMultiPart).toBe(false);
-    expect(archive.hasNewNamespaceScheme).toBe(true);
+    assert.equal(archive.isMultiPart, false);
+    assert.equal(archive.hasNewNamespaceScheme, true);
   });
 
   it("verifies that blobs were stored / read to / from the archive correctly", () => {
     const archive = new Archive(outFile);
-    expect(archive).toBeDefined();
+    assert(archive);
 
     for (const bi of blobs) {
       const entry = Array.from(archive.findByPath(bi.path))[0];
-      expect(entry).toBeDefined();
-      expect(entry.title).toEqual(bi.title);
+      assert(entry);
+      assert.equal(entry.title, bi.title);
 
       const hash = crypto.createHash("md5").update(entry.title).digest();
-      expect(hash.length).toEqual(16); // md5 size is 16 bytes
+      assert.equal(hash.length, 16); // md5 size is 16 bytes
 
       const data = entry.item.data.data;
-      expect(entry.item.data.size).toEqual(hash.length);
-      expect(data).toEqual(hash);
+      assert.equal(entry.item.data.size, hash.length);
+      assert.deepEqual(data, hash);
     }
   });
 
   it("verifies that blobs containing and ending in null were stored correctly from the archive", () => {
     const archive = new Archive(outFile);
-    expect(archive).toBeDefined();
+    assert(archive);
 
     for (const nb of null_blobs) {
       const contentProvider = nb.getContentProvider();
       const feed = contentProvider.feed();
-      expect(feed).toBeDefined();
-      expect(feed.size).toBeGreaterThan(0);
+      assert(feed);
+      assert.equal(feed.size > 0, true);
       if (nb.path === "null_blob_1") {
         // 4th byte is null, last byte is not
-        expect(feed.data[5]).toEqual(0);
-        expect(feed.data[feed.data.length - 1]).not.toEqual(0);
+        assert.equal(feed.data[5], 0);
+        assert.notEqual(feed.data[feed.data.length - 1], 0);
       } else if (nb.path === "null_blob_2") {
         // last byte is null
-        expect(feed.data[feed.data.length - 1]).toEqual(0);
+        assert.equal(feed.data[feed.data.length - 1], 0);
       }
 
       const entry = Array.from(archive.findByPath(nb.path))[0];
-      expect(entry).toBeDefined();
-      expect(entry.title).toEqual(nb.title);
+      assert(entry);
+      assert.equal(entry.title, nb.title);
 
-      expect(entry.item.data.size).toEqual(feed.data.length);
-      expect(entry.item.data.data).toEqual(feed.data);
+      assert.equal(entry.item.data.size, feed.data.length);
+      assert.deepEqual(entry.item.data.data, feed.data);
     }
   });
 
   describe("Searcher", () => {
     it("searches the archive", () => {
       const archive = new Archive(outFile);
-      expect(archive.hasFulltextIndex()).toBe(true);
-      expect(archive.hasTitleIndex()).toBe(true);
+      assert.equal(archive.hasFulltextIndex(), true);
+      assert.equal(archive.hasTitleIndex(), true);
 
       const searcher = new Searcher(archive);
       searcher.setVerbose(true);
       const search = searcher.search(new Query(testText));
-      expect(search).toBeDefined();
-      expect(search.estimatedMatches).toEqual(items.length);
+      assert(search);
+      assert.equal(search.estimatedMatches, items.length);
 
       const results = search.getResults(0, 100);
-      expect(results).toBeDefined();
-      expect(results.size).toEqual(items.length);
+      assert(results);
+      assert.equal(results.size, items.length);
 
       const iter = results;
-      expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
-      expect(iter[Symbol.iterator]().next().done).toBe(false);
+      assert.equal(typeof iter[Symbol.iterator], "function");
+      assert.equal(iter[Symbol.iterator]().next().done, false);
 
-      expect(Array.from(iter).length).toEqual(items.length);
+      assert.equal(Array.from(iter).length, items.length);
       for (const item of iter) {
-        expect(item.entry).toBeDefined();
-        expect(item.title).toMatch(new RegExp(`^${testText} \\d+\$`));
+        assert(item.entry);
+        assert.match(item.title, new RegExp(`^${testText} \\d+\$`));
       }
     });
   });
@@ -636,28 +642,28 @@ describe("Archive", () => {
   describe("Suggestion Search", () => {
     it("searches for suggestions in the archive", () => {
       const archive = new Archive(outFile);
-      expect(archive.hasFulltextIndex()).toBe(true);
-      expect(archive.hasTitleIndex()).toBe(true);
+      assert.equal(archive.hasFulltextIndex(), true);
+      assert.equal(archive.hasTitleIndex(), true);
 
       const suggestionSearcher = new SuggestionSearcher(archive);
       suggestionSearcher.setVerbose(true);
 
       const suggestion = suggestionSearcher.suggest(testText);
-      expect(suggestion).toBeDefined();
-      expect(suggestion.estimatedMatches).toEqual(items.length);
+      assert(suggestion);
+      assert.equal(suggestion.estimatedMatches, items.length);
 
       const results = suggestion.getResults(0, 100);
-      expect(results).toBeDefined();
-      expect(results.size).toEqual(items.length);
+      assert(results);
+      assert.equal(results.size, items.length);
 
       const iter = results;
-      expect(iter[Symbol.iterator]).toEqual(expect.any(Function));
-      expect(iter[Symbol.iterator]().next().done).toBe(false);
+      assert.equal(typeof iter[Symbol.iterator], "function");
+      assert.equal(iter[Symbol.iterator]().next().done, false);
 
-      expect(Array.from(iter).length).toEqual(items.length);
+      assert.equal(Array.from(iter).length, items.length);
       for (const item of iter) {
-        expect(item.entry).toBeDefined();
-        expect(item.title).toMatch(new RegExp(`^${testText} \\d+\$`));
+        assert(item.entry);
+        assert.match(item.title, new RegExp(`^${testText} \\d+\$`));
       }
     });
   });
@@ -665,20 +671,20 @@ describe("Archive", () => {
   describe("Cache sizes", () => {
     it("Manipulate cluster cache max size", () => {
       setClusterCacheMaxSize(10);
-      expect(getClusterCacheMaxSize()).toBe(10);
-      expect(getClusterCacheCurrentSize()).toEqual(expect.any(Number));
+      assert.equal(getClusterCacheMaxSize(), 10);
+      assert.equal(typeof getClusterCacheCurrentSize(), "number");
       setClusterCacheMaxSize(2);
-      expect(getClusterCacheMaxSize()).toBe(2);
-      expect(getClusterCacheCurrentSize()).toEqual(expect.any(Number));
+      assert.equal(getClusterCacheMaxSize(), 2);
+      assert.equal(typeof getClusterCacheCurrentSize(), "number");
     });
     it("Manipulate dirent cache max size", () => {
       const archive = new Archive(outFile);
       archive.setDirentCacheMaxSize(10);
-      expect(archive.getDirentCacheMaxSize()).toBe(10);
-      expect(archive.getDirentCacheCurrentSize()).toBe(10);
+      assert.equal(archive.getDirentCacheMaxSize(), 10);
+      assert.equal(archive.getDirentCacheCurrentSize(), 10);
       archive.setDirentCacheMaxSize(5);
-      expect(archive.getDirentCacheMaxSize()).toBe(5);
-      expect(archive.getDirentCacheCurrentSize()).toBe(5);
+      assert.equal(archive.getDirentCacheMaxSize(), 5);
+      assert.equal(archive.getDirentCacheCurrentSize(), 5);
     });
   });
 });
@@ -686,17 +692,17 @@ describe("Archive", () => {
 describe("Query", () => {
   it("constructs a query", () => {
     const query = new Query("hello world");
-    expect(query).toBeDefined();
-    expect(query.query).toEqual("hello world");
-    expect(query.toString()).toEqual("hello world");
-    expect(query.georange).toBe(null);
+    assert(query);
+    assert.equal(query.query, "hello world");
+    assert.equal(query.toString(), "hello world");
+    assert.equal(query.georange, null);
 
     const range = { latitude: 1, longitude: 2, distance: 3 };
     query.georange = range;
-    expect(query.georange).toEqual(range);
+    assert.deepEqual(query.georange, range);
 
     range.latitude = 10;
     query.setGeorange(10, 2, 3);
-    expect(query.georange).toEqual(range);
+    assert.deepEqual(query.georange, range);
   });
 });
