@@ -1,4 +1,4 @@
-import { expect } from "expect";
+import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   Archive,
@@ -18,18 +18,18 @@ import {
 
 describe("libzim dist", () => {
   it("should have all the functions", () => {
-    expect(Archive).toBeDefined();
-    expect(Entry).toBeDefined();
-    expect(IntegrityCheck).toBeDefined();
-    expect(Compression).toBeDefined();
-    expect(Blob).toBeDefined();
-    expect(Searcher).toBeDefined();
-    expect(Query).toBeDefined();
-    expect(SuggestionSearcher).toBeDefined();
-    expect(Creator).toBeDefined();
-    expect(StringProvider).toBeDefined();
-    expect(FileProvider).toBeDefined();
-    expect(StringItem).toBeDefined();
-    expect(FileItem).toBeDefined();
+    assert(Archive);
+    assert(Entry);
+    assert(IntegrityCheck);
+    assert(Compression);
+    assert(Blob);
+    assert(Searcher);
+    assert(Query);
+    assert(SuggestionSearcher);
+    assert(Creator);
+    assert(StringProvider);
+    assert(FileProvider);
+    assert(StringItem);
+    assert(FileItem);
   });
 });
