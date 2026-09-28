@@ -21,6 +21,7 @@ import {
   Query,
   Searcher,
   StringItem,
+  FileItem,
   StringProvider,
   SuggestionSearcher,
   type WriterItem,
@@ -242,6 +243,164 @@ describe("Creator", () => {
       creator.setUuid("1234567890ABCDEF");
     } finally {
       await creator.finishZimCreation();
+    }
+  });
+
+  it("treats null item titles as empty strings", async () => {
+    const creator = new Creator();
+    const outFile = "./test-null-title.zim";
+    const inputFile = "./test-null-title.txt";
+    try {
+      fs.writeFileSync(inputFile, "file item content");
+
+      creator.configIndexing(true, "en");
+      creator.startZimCreation(outFile);
+
+      await creator.addItem(
+        new StringItem(
+          "string-item",
+          "text/plain",
+          null as unknown as string,
+          {},
+          "string item content",
+        ),
+      );
+
+      await creator.addItem(
+        new FileItem(
+          "file-item",
+          "text/plain",
+          null as unknown as string,
+          {},
+          inputFile,
+        ),
+      );
+
+      await creator.addItem({
+        path: "custom-item",
+        mimeType: "text/plain",
+        title: null as unknown as string,
+        hints: {},
+        getContentProvider() {
+          const content = "custom item content";
+          let sent = false;
+
+          return {
+            size: content.length,
+            feed() {
+              if (!sent) {
+                sent = true;
+                return new Blob(content);
+              }
+              return new Blob();
+            },
+          };
+        },
+      });
+
+      await creator.finishZimCreation();
+
+      const archive = new Archive(outFile);
+
+      assert.equal(archive.getEntryByPath("string-item")?.title, "string-item");
+      assert.equal(archive.getEntryByPath("file-item")?.title, "file-item");
+      assert.equal(archive.getEntryByPath("custom-item")?.title, "custom-item");
+    } finally {
+      try {
+        fs.unlinkSync(outFile);
+      } catch {
+        // noop
+      }
+
+      try {
+        fs.unlinkSync(inputFile);
+      } catch {
+        // noop
+      }
+    }
+  });
+
+  it("treats undefined item titles as empty strings", async () => {
+    const creator = new Creator();
+    const outFile = "./test-undefined-title.zim";
+    const inputFile = "./test-undefined-title.txt";
+
+    try {
+      fs.writeFileSync(inputFile, "file item content");
+
+      creator.configIndexing(true, "en");
+      creator.startZimCreation(outFile);
+
+      await creator.addItem(
+        new StringItem(
+          "string-item-undefined",
+          "text/plain",
+          undefined as unknown as string,
+          {},
+          "string item content",
+        ),
+      );
+
+      await creator.addItem(
+        new FileItem(
+          "file-item-undefined",
+          "text/plain",
+          undefined as unknown as string,
+          {},
+          inputFile,
+        ),
+      );
+
+      await creator.addItem({
+        path: "custom-item-undefined",
+        mimeType: "text/plain",
+        title: undefined as unknown as string,
+        hints: {},
+        getContentProvider() {
+          const content = "custom item content";
+          let sent = false;
+
+          return {
+            size: content.length,
+            feed() {
+              if (!sent) {
+                sent = true;
+                return new Blob(content);
+              }
+              return new Blob();
+            },
+          };
+        },
+      });
+
+      await creator.finishZimCreation();
+
+      const archive = new Archive(outFile);
+
+      assert.equal(
+        archive.getEntryByPath("string-item-undefined")?.title,
+        "string-item-undefined",
+      );
+      assert.equal(
+        archive.getEntryByPath("file-item-undefined")?.title,
+        "file-item-undefined",
+      );
+      assert.equal(
+        archive.getEntryByPath("custom-item-undefined")?.title,
+        "custom-item-undefined",
+      );
+    } finally {
+      try {
+        fs.unlinkSync(outFile);
+      } catch {
+        // noop
+      }
+
+      try {
+        fs.unlinkSync(inputFile);
+      } catch {
+        // noop
+      }
     }
   });
 });

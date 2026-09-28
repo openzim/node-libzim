@@ -1,4 +1,5 @@
 Unreleased
+* FIX: Handle null and undefined item titles
 
 4.6.0
 * UPDATE: Use libzim 9.8.2
