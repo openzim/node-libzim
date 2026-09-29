@@ -33,6 +33,12 @@ zim::writer::Hints Object2Hints(const Napi::Object &obj) {
   return hints;
 }
 
+inline std::string TitleOrEmpty(const Napi::Value &value) {
+  return value.IsNull() || value.IsUndefined()
+             ? std::string()
+             : value.ToString().Utf8Value();
+}
+
 /**
  * Wraps a JS World Object to IndexData and implements IndexData
  */
@@ -50,7 +56,7 @@ class IndexDataWrapper : public zim::writer::IndexData {
 
     if (!hasIndexData_) return;
 
-    if (indexData.Has("title")) title_ = indexData.Get("title").ToString();
+    if (indexData.Has("title")) title_ = TitleOrEmpty(indexData.Get("title"));
     if (indexData.Has("content"))
       content_ = indexData.Get("content").ToString();
     if (indexData.Has("keywords"))
@@ -242,7 +248,7 @@ class ItemWrapper : public zim::writer::Item {
  public:
   ItemWrapper(Napi::Env env, Napi::Object item) {
     path_ = item.Get("path").ToString();
-    title_ = item.Get("title").ToString();
+    title_ = TitleOrEmpty(item.Get("title"));
     mimeType_ = item.Get("mimeType").ToString();
 
     const auto hasHints = item.Has("hints");
@@ -329,7 +335,7 @@ class StringItem : public Napi::ObjectWrap<StringItem> {
     try {
       auto path = info[0].ToString().Utf8Value();
       auto mimetype = info[1].ToString().Utf8Value();
-      auto title = info[2].ToString().Utf8Value();
+      auto title = TitleOrEmpty(info[2]);
       auto hints = Object2Hints(info[3].ToObject());
 
       const auto &&cval = info[4];
@@ -456,7 +462,7 @@ class FileItem : public Napi::ObjectWrap<FileItem> {
     try {
       auto path = info[0].ToString();
       auto mimetype = info[1].ToString();
-      auto title = info[2].ToString();
+      auto title = TitleOrEmpty(info[2]);
       auto hints = Object2Hints(info[3].ToObject());
       auto filepath = info[4].ToString();
       item_ = std::make_shared<zim::writer::FileItem>(path, mimetype, title,
