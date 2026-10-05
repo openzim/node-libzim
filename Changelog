@@ -1,5 +1,7 @@
 Unreleased
 * FIX: Handle null and undefined item titles
+* UPDATE: Use libzim 9.8.2-1
+* FIX: Update Node.JS dependencies
 
 4.6.0
 * UPDATE: Use libzim 9.8.2
